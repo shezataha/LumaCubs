@@ -389,6 +389,33 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 
 .learn-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
 
+.learn-card-wrap {
+  min-width: 0;
+  position: relative;
+  padding-bottom: 44px;
+}
+.learn-card-wrap .learn-card {
+  width: 100%;
+}
+.learn-card-speaker {
+  position: absolute;
+  right: 5px;
+  bottom: 0;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--ink);
+  font-size: 18px;
+  box-shadow: 0 3px 0 rgba(59, 59, 92, 0.16);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.learn-card-speaker:active { transform: scale(0.92); }
+
 .learn-card { animation: bounceIn 0.5s var(--spring) both; }
 .learn-card .emoji-bubble { animation: float 3.4s ease-in-out infinite; }
 
@@ -472,6 +499,44 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
   padding: 7px 24px;
   border-radius: 999px;
   box-shadow: 0 5px 0 rgba(59, 59, 92, 0.18);
+}
+
+.learn-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 20px auto 0;
+  max-width: 260px;
+}
+.learn-nav-btn {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent, var(--pink));
+  color: #fff;
+  font-size: 26px;
+  font-weight: 900;
+  box-shadow: 0 5px 0 rgba(59, 59, 92, 0.2);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.learn-nav-btn:active:not(:disabled) { transform: translateY(3px); }
+.learn-nav-btn:disabled {
+  opacity: 0.4;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.learn-nav-counter {
+  min-width: 76px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .hint {
@@ -1934,32 +1999,32 @@ const POEMS = [
     title: "My Alphabet Poem",
     emoji: "📝",
     lines: [
-      "A is for Apple, crunchy and sweet,",
-      "B is for Ball that bounces at our feet!",
-      "C is for Cup to drink our milk,",
-      "D is for Door — come out and play!",
-      "E is for Egg, a breakfast delight,",
-      "F is for Fork — dig in with all your might!",
-      "G is for Grapes that grow on a vine,",
-      "H is for Hat that fits just fine!",
-      "I is for Ice cream, cold and yummy,",
-      "J is for Juice inside my tummy!",
-      "K is for Keys that jingle and chime,",
-      "L is for Lamp that shines at night-time!",
-      "M is for Milk in a glass so white,",
-      "N is for Napkin to wipe just right!",
-      "O is for Orange, juicy and round,",
-      "P is for Plate where food is found!",
-      "Q is for Quilt to snuggle up tight,",
-      "R is for Rice — take a little bite!",
-      "S is for Soap that makes bubbles blow,",
-      "T is for Toothbrush — brush, brush, go!",
-      "U is for Umbrella to keep us dry,",
-      "V is for Veggies — give them a try!",
-      "W is for Water we drink every day,",
-      "X is for Xylophone — hip hooray!",
-      "Y is for Yogurt in a little spoon,",
-      "Z is for Zipper — zip up soon!",
+      "A is for apple, crisp and sweet.",
+      "B is for ball; bounce to the beat.",
+      "C is for cup; sip milk with glee.",
+      "D is for door; come play with me.",
+      "E is for egg, a tasty treat.",
+      "F is for fork, to help us eat.",
+      "G is for grapes that grow on vines.",
+      "H is for hat that fits just fine.",
+      "I is for ice cream, cold and sweet.",
+      "J is for juice, a fruity treat.",
+      "K is for keys that jingle bright.",
+      "L is for lamp to light the night.",
+      "M is for milk, cool in a cup.",
+      "N is for napkins; pick one up.",
+      "O is for orange, round and sweet.",
+      "P is for plate, a tasty treat.",
+      "Q is for quilt, cozy at night.",
+      "R is for rice, a yummy bite.",
+      "S is for soap to scrub and shine.",
+      "T is for toothbrush, teeth so fine.",
+      "U is for umbrella; stay dry.",
+      "V is for veggies; please do try.",
+      "W is for water, sip each day.",
+      "X is for xylophone; hooray.",
+      "Y is for yogurt, cool and white.",
+      "Z is for zipper, pull it tight.",
     ],
   },
 ];
@@ -2165,8 +2230,9 @@ const POEMS = [
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.85;
-      u.pitch = 1.1;
+      u.rate = opts.rate == null ? 0.85 : opts.rate;
+      u.pitch = opts.pitch == null ? 1.1 : opts.pitch;
+      u.volume = opts.volume == null ? 1 : opts.volume;
       const chosen = pickVoice();
       if (chosen) u.voice = chosen;
       speechSynthesis.speak(u);
@@ -2318,7 +2384,7 @@ const POEMS = [
 
   function go(name, arg) {
     token++;
-    stopBgMusic();
+    stopPoemAudio();
     try { if ("speechSynthesis" in window) speechSynthesis.cancel(); } catch (e) {}
     current = name;
     screenRoot.innerHTML = "";
@@ -2730,19 +2796,35 @@ const POEMS = [
 
     const grid = el("div", "grid learn-grid");
     ALPHABET.forEach((item, i) => {
+      const cardWrap = el("div", "learn-card-wrap");
       const card = el("button", "card learn-card",
         `<span class="emoji-bubble">${item.emoji}</span><span class="letter">${item.letter}</span>`);
       card.setAttribute("style", tintStyle(i));
       card.style.animationDelay = (i * 0.03) + "s";
-      card.addEventListener("click", () => openLearn(item, i));
-      grid.appendChild(card);
+      card.addEventListener("click", () => openLearn(item));
+
+      const speaker = el("button", "learn-card-speaker", "🔊");
+      speaker.type = "button";
+      speaker.setAttribute("aria-label", `Hear ${item.letter}, ${item.word}`);
+      speaker.title = `Hear ${item.letter} and ${item.word}`;
+      speaker.addEventListener("click", () => {
+        snd.pop();
+        sayLetterAndWord(item);
+      });
+
+      cardWrap.append(card, speaker);
+      grid.appendChild(cardWrap);
     });
     screenRoot.appendChild(grid);
   };
 
-  function openLearn(item, tintIndex) {
+  function sayLetterAndWord(item) {
+    speak(`${item.letter}. ${item.word}.`, { rate: 0.78, pitch: 1.14, volume: 0.9 });
+  }
+
+  function openLearn(item) {
     snd.pop();
-    const t = tintFor(tintIndex == null ? 0 : tintIndex);
+    let currentIndex = Math.max(0, ALPHABET.findIndex(x => x.letter === item.letter));
 
     const overlay = el("div", "overlay");
     const box = el("div", "popup", `
@@ -2750,15 +2832,53 @@ const POEMS = [
       <div class="learn-emoji">${item.emoji}</div>
       <div class="learn-letter">${item.letter}</div>
       <div class="learn-word">${item.word}</div>
+      <div class="learn-nav">
+        <button class="learn-nav-btn previous" aria-label="Previous letter">←</button>
+        <span class="learn-nav-counter" aria-live="polite"></span>
+        <button class="learn-nav-btn next" aria-label="Next letter">→</button>
+      </div>
       <div class="hint">🔊 Tap to hear it again</div>`);
-    box.setAttribute("style", `--accent:${t[0]};--soft:${t[1]}`);
     overlay.appendChild(box);
     document.body.appendChild(overlay);
 
-    const say = () => speak(`${PHONICS[item.letter] || item.letter}. ${item.letter} is for ${item.word}.`);
+    const emoji = $(".learn-emoji", box);
+    const letter = $(".learn-letter", box);
+    const word = $(".learn-word", box);
+    const counter = $(".learn-nav-counter", box);
+    const previous = $(".learn-nav-btn.previous", box);
+    const next = $(".learn-nav-btn.next", box);
+
+    const showLetter = () => {
+      const currentItem = ALPHABET[currentIndex];
+      const tint = tintFor(currentIndex);
+      box.setAttribute("style", `--accent:${tint[0]};--soft:${tint[1]}`);
+      emoji.textContent = currentItem.emoji;
+      letter.textContent = currentItem.letter;
+      word.textContent = currentItem.word;
+      counter.textContent = `${currentItem.letter} of ${ALPHABET.length}`;
+      previous.disabled = currentIndex === 0;
+      next.disabled = currentIndex === ALPHABET.length - 1;
+      award(currentItem.letter);
+      sayLetterAndWord(currentItem);
+    };
+
+    previous.addEventListener("click", () => {
+      if (currentIndex === 0) return;
+      snd.pop();
+      currentIndex--;
+      showLetter();
+    });
+    next.addEventListener("click", () => {
+      if (currentIndex === ALPHABET.length - 1) return;
+      snd.pop();
+      currentIndex++;
+      showLetter();
+    });
 
     box.addEventListener("click", e => {
-      if (!e.target.closest(".close-btn")) say();
+      if (!e.target.closest(".close-btn, .learn-nav-btn")) {
+        sayLetterAndWord(ALPHABET[currentIndex]);
+      }
     });
     $(".close-btn", box).addEventListener("click", e => {
       e.stopPropagation();
@@ -2768,8 +2888,7 @@ const POEMS = [
       if (e.target === overlay) overlay.remove();
     });
 
-    award(item.letter);
-    say();
+    showLetter();
   }
 
   /* -------- find it -------- */
@@ -3271,214 +3390,305 @@ const POEMS = [
     screenRoot.appendChild(wrap);
   };
 
-  let audioCtx = null;
-  let bgMusicGain = null;
-  let bgMusicNodes = [];
+  let activePoemAudio = null;
+  let activeSongPreview = null;
 
-  function getAudioCtx() {
-    if (!audioCtx) {
-      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
-    }
-    return audioCtx;
-  }
-
-  function playBgMusic(duration) {
-    const ctx = getAudioCtx();
-    if (!ctx) return;
-    stopBgMusic();
-    // Simple gentle melody (C major pentatonic)
-    const notes = [261.63, 293.66, 329.63, 392.00, 440.00, 392.00, 329.63, 293.66];
-    const noteLen = 0.4;
-    const totalNotes = Math.ceil(duration / noteLen) + 4;
-    bgMusicGain = ctx.createGain();
-    bgMusicGain.gain.value = 0.08;
-    bgMusicGain.connect(ctx.destination);
-
-    for (let i = 0; i < totalNotes; i++) {
-      const osc = ctx.createOscillator();
-      const noteGain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = notes[i % notes.length];
-      noteGain.gain.value = 0;
-      noteGain.gain.setValueAtTime(0, ctx.currentTime + i * noteLen);
-      noteGain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + i * noteLen + 0.05);
-      noteGain.gain.linearRampToValueAtTime(0, ctx.currentTime + i * noteLen + noteLen - 0.05);
-      osc.connect(noteGain);
-      noteGain.connect(bgMusicGain);
-      osc.start(ctx.currentTime + i * noteLen);
-      osc.stop(ctx.currentTime + i * noteLen + noteLen);
-      bgMusicNodes.push(osc);
+  function stopSongPreview() {
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    if (!activeSongPreview) return;
+    const preview = activeSongPreview;
+    activeSongPreview = null;
+    clearInterval(preview.timer);
+    if (preview.context.state !== "closed") {
+      preview.context.close().catch(() => toast("⚠️ Could not stop poem preview audio."));
     }
   }
 
-  function stopBgMusic() {
-    bgMusicNodes.forEach(n => { try { n.stop(); } catch (e) {} });
-    bgMusicNodes = [];
-    if (bgMusicGain) { try { bgMusicGain.disconnect(); } catch (e) {} bgMusicGain = null; }
-  }
-
-  function pickVoice() {
-    const en = voices.filter(v => v.lang && /^en/i.test(v.lang));
-    // Prefer natural/neural voices
-    const preferred = en.find(v => /natural|neural|premium|enhanced|google|microsoft/i.test(v.name || ""));
-    if (preferred) return preferred;
-    const female = en.find(v => /samantha|zira|aria|jenny|female|susan/i.test(v.name || ""));
-    if (female) return female;
-    return en[0] || null;
-  }
-
-  function readFullPoem(poem) {
-    readToken++;
-    const rt = readToken;
-    if ("speechSynthesis" in window) { try { speechSynthesis.cancel(); } catch (e) {} }
+  function stopPoemAudio() {
+    stopSongPreview();
+    if (activePoemAudio) {
+      activePoemAudio.pause();
+      activePoemAudio.removeAttribute("src");
+      activePoemAudio.load();
+      activePoemAudio = null;
+    }
     document.querySelectorAll(".poem-line.active").forEach(n => n.classList.remove("active"));
-    if (!speechOn || !("speechSynthesis" in window)) return;
-    try {
-      // Read line by line with expression and pauses for a natural poem feel
-      const lines = poem.lines;
-      let i = 0;
-      const speakLine = () => {
-        if (rt !== readToken || current !== "poemReader") { stopBgMusic(); return; }
-        if (i >= lines.length) {
-          stopBgMusic();
-          toast("🎉 The end!");
-          return;
-        }
-        // Highlight current line
-        const nodes = document.querySelectorAll(".poem-line");
-        nodes.forEach(n => n.classList.remove("active"));
-        if (nodes[i]) nodes[i].classList.add("active");
-
-        // Add dramatic pause for line endings
-        const line = lines[i];
-        const u = new SpeechSynthesisUtterance(line);
-        u.rate = 0.75;  // slower for expressive reading
-        u.pitch = 1.08;
-        u.volume = 1.0;
-        const chosen = pickVoice();
-        if (chosen) u.voice = chosen;
-
-        // Add pause after line (longer for end of stanza)
-        const isLastLine = (i === lines.length - 1);
-        const pauseMs = isLastLine ? 800 : 400;
-
-        u.onend = () => {
-          if (rt !== readToken) return;
-          setTimeout(() => {
-            i++;
-            speakLine();
-          }, pauseMs);
-        };
-        u.onerror = () => {
-          if (rt !== readToken) return;
-          setTimeout(() => {
-            i++;
-            speakLine();
-          }, pauseMs);
-        };
-
-        // Estimate duration for bg music
-        if (i === 0) {
-          const estDuration = lines.reduce((sum, l) => sum + l.length * 80, 0) / 0.75;
-          playBgMusic(estDuration / 1000);
-        }
-
-        speechSynthesis.speak(u);
-      };
-      speakLine();
-      toast("🎵 Reading poem with expression...");
-    } catch (e) { stopBgMusic(); }
-  }
-
-  // Karaoke-style reading: highlight each line while it is spoken.
-  // Auto-reads the whole poem line by line; tapping a line jumps to it.
-  let readToken = 0;
-
-  function readPoem(lines, from) {
-    stopBgMusic();
-    readToken++;
-    const rt = readToken;
-    if ("speechSynthesis" in window) { try { speechSynthesis.cancel(); } catch (e) {} }
-    document.querySelectorAll(".poem-line.active").forEach(n => n.classList.remove("active"));
-    if (!speechOn || !("speechSynthesis" in window) || !lines || !lines.length) return;
-
-    let i = Math.max(0, Math.min(from || 0, lines.length - 1));
-
-    const step = () => {
-      if (rt !== readToken || current !== "poemReader") return;
-      const nodes = document.querySelectorAll(".poem-line");
-      nodes.forEach(n => n.classList.remove("active"));
-      if (nodes[i]) nodes[i].classList.add("active");
-      try {
-        const u = new SpeechSynthesisUtterance(lines[i]);
-        u.rate = 0.8;
-        u.pitch = 1.08;
-        const chosen = pickVoice();
-        if (chosen) u.voice = chosen;
-        let advanced = false;
-        const advance = () => {
-          if (advanced) return;
-          advanced = true;
-          if (rt !== readToken) return;
-          // Small pause between lines for rhythm
-          setTimeout(() => {
-            if (rt !== readToken || current !== "poemReader") return;
-            i++;
-            if (i < lines.length) step();
-            else toast("🎉 The end!");
-          }, 250);
-        };
-        u.onend = advance;
-        u.onerror = advance;
-        const estMs = Math.max(1800, lines[i].length * 75);
-        setTimeout(() => { if (!advanced && rt === readToken) advance(); }, estMs);
-        speechSynthesis.speak(u);
-      } catch (e) {
-        setTimeout(() => {
-          if (rt !== readToken) return;
-          i++;
-          if (i < lines.length) step();
-          else toast("🎉 The end!");
-        }, 2000);
-      }
-    };
-    step();
   }
 
   VIEWS.poemReader = function (id) {
     const poem = POEMS.find(p => p.id === id) || POEMS[0];
     titleEl.textContent = poem.title;
 
+    stopPoemAudio();
     const wrap = el("div", "poem-reader");
-
     const head = el("div", "reader-head");
-    const playLine = el("button", "repeat-btn", "🔊");
-    playLine.setAttribute("aria-label", "Read line by line");
-    playLine.addEventListener("click", () => { snd.pop(); readPoem(poem.lines, 0); });
-    const playAll = el("button", "repeat-btn", "🎵");
-    playAll.setAttribute("aria-label", "Read the whole poem at once");
-    playAll.style.marginLeft = "8px";
-    playAll.addEventListener("click", () => {
-      snd.pop();
-      readFullPoem(poem);
-    });
-    head.append(playLine, playAll, el("div", "reader-title", `${poem.emoji} ${poem.title}`));
-
     const linesBox = el("div", "poem-lines");
+    const status = el("div", "reader-hint");
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+
+    const audio = new Audio();
+    audio.preload = "none";
+    activePoemAudio = audio;
+    const audioSrc = poem.audio || null;
+    let sourceLoaded = false;
+    let pendingLineIndex = null;
+    let fallbackMode = !audioSrc;
+    let playRequested = false;
+    let pendingStartLine = 0;
+
+    const lineStarts = poem.lineStarts;
+    const hasLineTimings = Array.isArray(lineStarts) &&
+      lineStarts.length === poem.lines.length &&
+      lineStarts.every((time, index) =>
+        Number.isFinite(time) && time >= 0 && (!index || time >= lineStarts[index - 1]));
+    const audioLineTime = index => hasLineTimings
+      ? lineStarts[index]
+      : audio.duration * index / poem.lines.length;
+
+    const updateHighlight = () => {
+      if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+      const currentLine = hasLineTimings
+        ? lineStarts.reduce((line, start, index) => audio.currentTime >= start ? index : line, 0)
+        : Math.min(poem.lines.length - 1, Math.floor(audio.currentTime / audio.duration * poem.lines.length));
+      poemLines.forEach((line, index) => line.classList.toggle("active", index === currentLine));
+    };
+
+    const startInstrumentalPreview = (fromLine, restart) => {
+      fallbackMode = true;
+      const startLine = Math.max(0, Math.min(fromLine || 0, poem.lines.length - 1));
+      if (activeSongPreview && activeSongPreview.startLine === startLine && !restart) return;
+      stopSongPreview();
+      const AudioContextType = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextType) {
+        status.textContent = "🎵 Audio preview is not supported in this browser.";
+        return;
+      }
+
+      let context;
+      try { context = new AudioContextType(); }
+      catch (e) {
+        status.textContent = "⚠️ Could not start poem audio in this browser.";
+        return;
+      }
+      const master = context.createGain();
+      master.gain.value = 0.24;
+      master.connect(context.destination);
+      const lineDurations = poem.lines.map(line =>
+        Math.max(2.4, Math.min(4.5, line.trim().split(/\s+/).length * 0.48)));
+      const starts = [];
+      let totalDuration = 0;
+      lineDurations.forEach(duration => {
+        starts.push(totalDuration);
+        totalDuration += duration;
+      });
+      const startAt = context.currentTime + 0.08;
+      const playNote = (frequency, offset, duration, type, volume) => {
+        const oscillator = context.createOscillator();
+        const envelope = context.createGain();
+        const noteStart = startAt + offset;
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, noteStart);
+        envelope.gain.setValueAtTime(0.001, noteStart);
+        envelope.gain.linearRampToValueAtTime(volume, noteStart + 0.025);
+        envelope.gain.exponentialRampToValueAtTime(0.001, noteStart + duration);
+        oscillator.connect(envelope);
+        envelope.connect(master);
+        oscillator.start(noteStart);
+        oscillator.stop(noteStart + duration + 0.02);
+      };
+
+      const scale = [261.63, 293.66, 329.63, 392, 440, 523.25, 587.33, 659.25];
+      const motif = [0, 2, 4, 2, 3, 2];
+      const roots = [130.81, 174.61, 196, 146.83];
+      for (let line = startLine; line < poem.lines.length; line++) {
+        const duration = lineDurations[line];
+        const offset = starts[line] - starts[startLine];
+        const root = roots[line % roots.length];
+        playNote(root, offset, 0.72, "triangle", 0.07);
+        playNote(root * 1.25, offset + 0.04, 0.62, "triangle", 0.035);
+        playNote(root * 1.5, offset + 0.08, 0.56, "triangle", 0.035);
+        const spacing = duration / motif.length;
+        motif.forEach((step, index) => {
+          const frequency = scale[(step + line) % scale.length];
+          const noteOffset = offset + index * spacing;
+          playNote(frequency, noteOffset, spacing * 0.78, "sine", 0.075);
+          playNote(frequency * 2, noteOffset, spacing * 0.48, "sine", 0.018);
+        });
+      }
+
+      const preview = {
+        context,
+        startLine,
+        wallStart: performance.now(),
+        elapsedBeforePause: 0,
+        paused: true,
+        lastSpokenLine: -1,
+        timer: null,
+      };
+      activeSongPreview = preview;
+      preview.timer = setInterval(() => {
+        const elapsed = preview.elapsedBeforePause +
+          (preview.paused ? 0 : (performance.now() - preview.wallStart) / 1000);
+        const poemTime = starts[startLine] + elapsed;
+        let currentLine = startLine;
+        for (let i = startLine + 1; i < starts.length; i++) {
+          if (poemTime >= starts[i]) currentLine = i;
+          else break;
+        }
+        poemLines.forEach((line, index) => line.classList.toggle("active", index === currentLine));
+        if (currentLine !== preview.lastSpokenLine) {
+          preview.lastSpokenLine = currentLine;
+          if (speechOn && "speechSynthesis" in window) {
+            try {
+              refreshVoices();
+              const utterance = new SpeechSynthesisUtterance(poem.lines[currentLine]);
+              utterance.lang = "en-GB";
+              utterance.rate = 0.82;
+              utterance.pitch = 1.15;
+              utterance.volume = 0.85;
+              const voice = pickVoice();
+              if (voice) utterance.voice = voice;
+              speechSynthesis.cancel();
+              speechSynthesis.speak(utterance);
+            } catch (e) {
+              status.textContent = "🎵 Instrumental preview only — spoken lyrics are unavailable.";
+            }
+          }
+        }
+        if (elapsed >= totalDuration - starts[startLine]) {
+          clearInterval(preview.timer);
+          poemLines.forEach(line => line.classList.remove("active"));
+          if ("speechSynthesis" in window) speechSynthesis.cancel();
+          status.textContent = "🎵 Preview ended. It used spoken lyrics, not singing.";
+          activeSongPreview = null;
+          context.close().catch(() => toast("⚠️ Could not stop poem preview audio."));
+        }
+      }, 100);
+
+      context.resume().then(() => {
+        if (activeSongPreview === preview) {
+          preview.wallStart = performance.now();
+          preview.paused = false;
+        }
+      }).catch(() => {
+        status.textContent = "⚠️ Tap Play to start the instrumental preview.";
+      });
+      status.textContent = speechOn
+        ? "🎵 Instrumental + soft spoken lyrics — not singing."
+        : "🎵 Instrumental preview — turn Speech on for spoken lyrics (not singing).";
+    };
+
+    const play = (startLine, restart) => {
+      pendingStartLine = startLine || 0;
+      playRequested = true;
+      if (fallbackMode) {
+        startInstrumentalPreview(pendingStartLine, restart);
+        return;
+      }
+      if (!sourceLoaded) {
+        audio.src = audioSrc;
+        sourceLoaded = true;
+      }
+      if (restart && audio.readyState > 0) audio.currentTime = 0;
+      else if (pendingLineIndex !== null && audio.readyState > 0) {
+        audio.currentTime = audioLineTime(pendingLineIndex);
+        pendingLineIndex = null;
+      }
+      audio.play().catch(() => {
+        if (playRequested) {
+          fallbackMode = true;
+          status.textContent = "🎵 Sung track unavailable. Tap Play for an instrumental preview (no vocals).";
+        }
+      });
+    };
+
+    const addControl = (label, icon, action) => {
+      const button = el("button", "repeat-btn", icon);
+      button.setAttribute("aria-label", label);
+      button.addEventListener("click", () => { snd.pop(); action(); });
+      head.appendChild(button);
+    };
+
+    addControl("Play poem audio", "▶️", () => play(0, true));
+    addControl("Pause audio", "⏸️", () => {
+      playRequested = false;
+      if (activeSongPreview) {
+        const preview = activeSongPreview;
+        if (!preview.paused) {
+          preview.elapsedBeforePause += (performance.now() - preview.wallStart) / 1000;
+          preview.paused = true;
+        }
+        if ("speechSynthesis" in window) speechSynthesis.pause();
+        preview.context.suspend().catch(() => {
+          status.textContent = "⚠️ Could not pause poem preview audio.";
+        });
+      }
+      else audio.pause();
+    });
+    addControl("Resume audio", "⏯️", () => {
+      playRequested = true;
+      if (activeSongPreview) {
+        const preview = activeSongPreview;
+        if ("speechSynthesis" in window) speechSynthesis.resume();
+        preview.context.resume().then(() => {
+          if (activeSongPreview === preview) {
+            preview.wallStart = performance.now();
+            preview.paused = false;
+          }
+        }).catch(() => {
+          status.textContent = "⚠️ Could not resume poem preview audio.";
+        });
+      }
+      else play(pendingStartLine, false);
+    });
+    addControl("Replay audio", "🔁", () => {
+      playRequested = true;
+      if (fallbackMode) startInstrumentalPreview(0, true);
+      else play(0, true);
+    });
+    head.appendChild(el("div", "reader-title", `${poem.emoji} ${poem.title}`));
+
+    const poemLines = [];
     poem.lines.forEach((line, idx) => {
       const ln = el("div", "poem-line", line);
-      ln.addEventListener("click", () => readPoem(poem.lines, idx));
+      ln.addEventListener("click", () => {
+        if (fallbackMode) {
+          play(idx, true);
+        } else {
+          if (audio.readyState === 0) pendingLineIndex = idx;
+          else if (audio.readyState > 0) audio.currentTime = audioLineTime(idx);
+          play(idx, false);
+        }
+      });
+      poemLines.push(ln);
       linesBox.appendChild(ln);
     });
 
-    const hint = el("div", "reader-hint", speechOn
-      ? "🎵 Auto-reading with expression… tap 🔊 for line-by-line"
-      : "Speech is off — hold ⚙️ for 3 seconds to turn it on");
+    status.textContent = fallbackMode
+      ? `🎵 Play uses music${speechOn ? " + spoken lyrics" : ""}, not singing. Add a licensed MP3 for vocals.`
+      : `🎵 Ready to play the sung recording: ${audioSrc}`;
+    audio.addEventListener("loadedmetadata", () => {
+      if (pendingLineIndex !== null) {
+        audio.currentTime = audioLineTime(pendingLineIndex);
+        pendingLineIndex = null;
+      }
+      status.textContent = hasLineTimings
+        ? "🎵 Song ready — lyrics will highlight in sync."
+        : "🎵 Song ready — add line start times for exact lyric sync.";
+    });
+    audio.addEventListener("timeupdate", updateHighlight);
+    audio.addEventListener("ended", () => {
+      poemLines.forEach(line => line.classList.remove("active"));
+      status.textContent = "🎵 Song finished — tap Replay to hear it again.";
+    });
+    audio.addEventListener("error", () => {
+      fallbackMode = true;
+      status.textContent = `🎵 Sung track missing. Check ${audioSrc}, then tap Play for an instrumental preview.`;
+    });
 
-    wrap.append(head, linesBox, hint);
+    wrap.append(head, linesBox, status);
     screenRoot.appendChild(wrap);
-    // Auto-read the full poem on open
-    if (speechOn) readFullPoem(poem);
   };
 
   /* ------------------------------ parent gate ------------------------------ */
