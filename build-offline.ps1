@@ -1,4 +1,4 @@
-# Builds "My Alphabet Day.html" — one fully offline file for any device.
+# Builds "Lumacubs.html" — one fully offline file for any device.
 # Re-run this script after editing index.html, style.css, data.js or game.js.
 $root = $PSScriptRoot
 if (-not $root) { $root = 'C:\Users\Shiza\Documents\Default Project' }
@@ -17,7 +17,7 @@ if ($html -match 'href="style.css"|src="data.js"|src="game.js"') {
   exit 1
 }
 
-$out = Join-Path $root 'My Alphabet Day.html'
+$out = Join-Path $root 'Lumacubs.html'
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [IO.File]::WriteAllText($out, $html, $utf8NoBom)
 Write-Output "Built: $out ($([math]::Round((Get-Item $out).Length / 1kb, 1)) KB)"

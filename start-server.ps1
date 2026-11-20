@@ -1,4 +1,4 @@
-# Start My Alphabet Day (database + web server)
+# Start Lumacubs (database + web server)
 # Run this in PowerShell to start everything.
 
 $mdb = "C:\mariadb"

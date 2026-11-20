@@ -1,5 +1,5 @@
 /* ============================================================
-   My Alphabet Day — v2 playful redesign
+   Lumacubs — v2 playful redesign
    Sky-candy scene, gradient tiles, mascot, springy motion
    ============================================================ */
 
@@ -450,25 +450,148 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 }
 .close-btn:active { transform: translateY(5px) scale(0.95); }
 
+.learn-popup { overflow: hidden; }
+
+.learn-slider {
+  width: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
+  perspective: 1000px;
+}
+
+.learn-slide {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 4px;
+}
+
+.learn-slide.slide-out-left  { animation: learnSlideOutLeft 0.16s ease-in forwards; }
+.learn-slide.slide-out-right { animation: learnSlideOutRight 0.16s ease-in forwards; }
+.learn-slide.slide-in-left   { animation: learnSlideInLeft 0.22s var(--spring) both; }
+.learn-slide.slide-in-right  { animation: learnSlideInRight 0.22s var(--spring) both; }
+
+@keyframes learnSlideOutLeft {
+  to { transform: translateX(-28%) scale(0.94); opacity: 0; }
+}
+@keyframes learnSlideOutRight {
+  to { transform: translateX(28%) scale(0.94); opacity: 0; }
+}
+@keyframes learnSlideInLeft {
+  from { transform: translateX(-28%) scale(0.94); opacity: 0; }
+  to   { transform: translateX(0) scale(1); opacity: 1; }
+}
+@keyframes learnSlideInRight {
+  from { transform: translateX(28%) scale(0.94); opacity: 0; }
+  to   { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+.flip-card {
+  width: min(100%, 300px);
+  height: clamp(280px, 68vw, 360px);
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  perspective: 1200px;
+  -webkit-tap-highlight-color: transparent;
+}
+.flip-inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s var(--spring);
+}
+.flip-card.is-flipped .flip-inner { transform: rotateY(180deg); }
+
+.flip-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 14px 0 rgba(59, 59, 92, 0.14), 0 18px 36px rgba(59, 59, 92, 0.16);
+}
+
+.flip-front {
+  background:
+    radial-gradient(circle at 30% 24%, #ffffff, var(--soft, #ffe4ee) 70%),
+    linear-gradient(160deg, var(--soft, #ffe4ee), #fff);
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  outline: 3px solid var(--accent, var(--pink));
+  outline-offset: -6px;
+}
+
+.flip-back {
+  background: linear-gradient(165deg, #fff 0%, var(--soft, #ffe4ee) 100%);
+  border: 4px solid var(--accent, var(--pink));
+  transform: rotateY(180deg);
+}
+
+.flip-cue {
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(59, 59, 92, 0.55);
+  letter-spacing: 0.02em;
+}
+
+.learn-phonics {
+  display: inline-block;
+  font-size: clamp(18px, 4.4vw, 24px);
+  font-weight: 900;
+  color: var(--accent, var(--pink));
+  background: rgba(255, 255, 255, 0.85);
+  padding: 6px 16px;
+  border-radius: 999px;
+  box-shadow: 0 4px 0 rgba(59, 59, 92, 0.12);
+}
+
+.learn-phonics-back {
+  margin-top: 2px;
+  font-size: clamp(14px, 3.4vw, 17px);
+  font-weight: 800;
+  color: rgba(59, 59, 92, 0.7);
+}
+
 .learn-emoji {
-  width: clamp(130px, 34vw, 180px);
-  height: clamp(130px, 34vw, 180px);
+  width: clamp(96px, 26vw, 140px);
+  height: clamp(96px, 26vw, 140px);
   margin: 0 auto;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(74px, 19vw, 110px);
+  font-size: clamp(56px, 15vw, 88px);
   background: radial-gradient(circle at 32% 26%, #fff, var(--soft, #ffe4ee));
   box-shadow: inset 0 -8px 0 rgba(59, 59, 92, 0.07), 0 10px 24px rgba(59, 59, 92, 0.14);
   animation: bob 2.6s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.flip-front .learn-emoji-front {
+  width: clamp(100px, 28vw, 148px);
+  height: clamp(100px, 28vw, 148px);
+  font-size: clamp(60px, 16vw, 96px);
+}
+
+.flip-back .learn-emoji-back {
+  width: clamp(120px, 32vw, 168px);
+  height: clamp(120px, 32vw, 168px);
+  font-size: clamp(72px, 19vw, 112px);
 }
 
 .learn-letter {
-  font-size: clamp(66px, 16vw, 112px);
+  font-size: clamp(56px, 14vw, 84px);
   font-weight: 900;
   line-height: 1;
-  margin-top: 12px;
+  margin-top: 0;
   background: linear-gradient(135deg, #ff6b9d 0%, #ff9f43 30%, #ffd93d 55%, #6bcb77 80%, #4d96ff 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -478,7 +601,7 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 
 .learn-word {
   display: inline-block;
-  margin-top: 10px;
+  margin-top: 4px;
   font-size: clamp(22px, 5vw, 30px);
   font-weight: 900;
   color: #fff;

@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>My Alphabet Day — Alphabet Fun for Little Learners</title>
-  <meta name="description" content="A colorful alphabet game for 3-year-olds, built around everyday essentials like milk, toothbrush and soap.">
+  <title>Lumacubs — Alphabet Fun for Little Learners</title>
+  <meta name="description" content="Lumacubs is a colorful alphabet game for toddlers, built around everyday essentials like milk, toothbrush and soap.">
   <meta name="theme-color" content="#aee9ff">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Alphabet Day">
+  <meta name="apple-mobile-web-app-title" content="Lumacubs">
   <style>
 /* ============================================================
-   My Alphabet Day — v2 playful redesign
+   Lumacubs — v2 playful redesign
    Sky-candy scene, gradient tiles, mascot, springy motion
    ============================================================ */
 
@@ -463,25 +463,148 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 }
 .close-btn:active { transform: translateY(5px) scale(0.95); }
 
+.learn-popup { overflow: hidden; }
+
+.learn-slider {
+  width: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
+  perspective: 1000px;
+}
+
+.learn-slide {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 4px;
+}
+
+.learn-slide.slide-out-left  { animation: learnSlideOutLeft 0.16s ease-in forwards; }
+.learn-slide.slide-out-right { animation: learnSlideOutRight 0.16s ease-in forwards; }
+.learn-slide.slide-in-left   { animation: learnSlideInLeft 0.22s var(--spring) both; }
+.learn-slide.slide-in-right  { animation: learnSlideInRight 0.22s var(--spring) both; }
+
+@keyframes learnSlideOutLeft {
+  to { transform: translateX(-28%) scale(0.94); opacity: 0; }
+}
+@keyframes learnSlideOutRight {
+  to { transform: translateX(28%) scale(0.94); opacity: 0; }
+}
+@keyframes learnSlideInLeft {
+  from { transform: translateX(-28%) scale(0.94); opacity: 0; }
+  to   { transform: translateX(0) scale(1); opacity: 1; }
+}
+@keyframes learnSlideInRight {
+  from { transform: translateX(28%) scale(0.94); opacity: 0; }
+  to   { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+.flip-card {
+  width: min(100%, 300px);
+  height: clamp(280px, 68vw, 360px);
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  perspective: 1200px;
+  -webkit-tap-highlight-color: transparent;
+}
+.flip-inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s var(--spring);
+}
+.flip-card.is-flipped .flip-inner { transform: rotateY(180deg); }
+
+.flip-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 14px 0 rgba(59, 59, 92, 0.14), 0 18px 36px rgba(59, 59, 92, 0.16);
+}
+
+.flip-front {
+  background:
+    radial-gradient(circle at 30% 24%, #ffffff, var(--soft, #ffe4ee) 70%),
+    linear-gradient(160deg, var(--soft, #ffe4ee), #fff);
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  outline: 3px solid var(--accent, var(--pink));
+  outline-offset: -6px;
+}
+
+.flip-back {
+  background: linear-gradient(165deg, #fff 0%, var(--soft, #ffe4ee) 100%);
+  border: 4px solid var(--accent, var(--pink));
+  transform: rotateY(180deg);
+}
+
+.flip-cue {
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(59, 59, 92, 0.55);
+  letter-spacing: 0.02em;
+}
+
+.learn-phonics {
+  display: inline-block;
+  font-size: clamp(18px, 4.4vw, 24px);
+  font-weight: 900;
+  color: var(--accent, var(--pink));
+  background: rgba(255, 255, 255, 0.85);
+  padding: 6px 16px;
+  border-radius: 999px;
+  box-shadow: 0 4px 0 rgba(59, 59, 92, 0.12);
+}
+
+.learn-phonics-back {
+  margin-top: 2px;
+  font-size: clamp(14px, 3.4vw, 17px);
+  font-weight: 800;
+  color: rgba(59, 59, 92, 0.7);
+}
+
 .learn-emoji {
-  width: clamp(130px, 34vw, 180px);
-  height: clamp(130px, 34vw, 180px);
+  width: clamp(96px, 26vw, 140px);
+  height: clamp(96px, 26vw, 140px);
   margin: 0 auto;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(74px, 19vw, 110px);
+  font-size: clamp(56px, 15vw, 88px);
   background: radial-gradient(circle at 32% 26%, #fff, var(--soft, #ffe4ee));
   box-shadow: inset 0 -8px 0 rgba(59, 59, 92, 0.07), 0 10px 24px rgba(59, 59, 92, 0.14);
   animation: bob 2.6s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.flip-front .learn-emoji-front {
+  width: clamp(100px, 28vw, 148px);
+  height: clamp(100px, 28vw, 148px);
+  font-size: clamp(60px, 16vw, 96px);
+}
+
+.flip-back .learn-emoji-back {
+  width: clamp(120px, 32vw, 168px);
+  height: clamp(120px, 32vw, 168px);
+  font-size: clamp(72px, 19vw, 112px);
 }
 
 .learn-letter {
-  font-size: clamp(66px, 16vw, 112px);
+  font-size: clamp(56px, 14vw, 84px);
   font-weight: 900;
   line-height: 1;
-  margin-top: 12px;
+  margin-top: 0;
   background: linear-gradient(135deg, #ff6b9d 0%, #ff9f43 30%, #ffd93d 55%, #6bcb77 80%, #4d96ff 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -491,7 +614,7 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 
 .learn-word {
   display: inline-block;
-  margin-top: 10px;
+  margin-top: 4px;
   font-size: clamp(22px, 5vw, 30px);
   font-weight: 900;
   color: #fff;
@@ -1634,7 +1757,7 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
   <header id="topbar">
     <button id="menuBtn" class="icon-btn" aria-label="Menu">☰</button>
     <button id="backBtn" class="icon-btn hidden" aria-label="Go back">←</button>
-    <h1 id="title">My Alphabet Day</h1>
+    <h1 id="title">Lumacubs</h1>
     <button id="parentBtn" class="icon-btn" aria-label="Grown-up settings, press and hold">⚙️</button>
   </header>
 
@@ -1685,7 +1808,7 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
   </noscript>
 
   <script>
-/* My Alphabet Day — daily-life essentials for every letter */
+/* Lumacubs — daily-life essentials for every letter */
 const ALPHABET = [
   { letter: "A", word: "Apple",      emoji: "🍎" },
   { letter: "B", word: "Ball",       emoji: "⚽" },
@@ -2031,7 +2154,7 @@ const POEMS = [
 </script>
   <script>
 /* ============================================================
-   My Alphabet Day — game engine
+   Lumacubs — game engine
    Modes: Learn, Find It, Picture Match, Letter Match, Memory
    ============================================================ */
 
@@ -2209,6 +2332,8 @@ const POEMS = [
   }
 
   let lastThrottle = 0;
+  let speakTimer = null;
+  let speakToken = 0;
 
   function pickVoice() {
     const en = voices.filter(v => v.lang && /^en/i.test(v.lang));
@@ -2227,16 +2352,30 @@ const POEMS = [
       if (now - lastThrottle < 1600) return;
       lastThrottle = now;
     }
+    // Chrome/Edge often drop speech if speak() runs immediately after cancel().
+    // Delay slightly and resume if the engine got stuck paused.
+    const myToken = ++speakToken;
     try {
+      if (speakTimer) { clearTimeout(speakTimer); speakTimer = null; }
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = opts.rate == null ? 0.85 : opts.rate;
-      u.pitch = opts.pitch == null ? 1.1 : opts.pitch;
-      u.volume = opts.volume == null ? 1 : opts.volume;
-      const chosen = pickVoice();
-      if (chosen) u.voice = chosen;
-      speechSynthesis.speak(u);
     } catch (e) {}
+
+    speakTimer = setTimeout(() => {
+      speakTimer = null;
+      if (myToken !== speakToken) return;
+      try {
+        if (speechSynthesis.paused) speechSynthesis.resume();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = opts.rate == null ? 0.85 : opts.rate;
+        u.pitch = opts.pitch == null ? 1.1 : opts.pitch;
+        u.volume = opts.volume == null ? 1 : opts.volume;
+        const chosen = pickVoice();
+        if (chosen) u.voice = chosen;
+        speechSynthesis.speak(u);
+        // Some Chrome builds need a second resume after queueing.
+        if (speechSynthesis.paused) speechSynthesis.resume();
+      } catch (e) {}
+    }, 55);
   }
 
   /* ------------------------------ sounds ------------------------------ */
@@ -2384,6 +2523,8 @@ const POEMS = [
 
   function go(name, arg) {
     token++;
+    speakToken++;
+    if (speakTimer) { clearTimeout(speakTimer); speakTimer = null; }
     stopPoemAudio();
     try { if ("speechSynthesis" in window) speechSynthesis.cancel(); } catch (e) {}
     current = name;
@@ -2407,7 +2548,7 @@ const POEMS = [
   /* -------- home -------- */
 
   VIEWS.home = function () {
-    titleEl.textContent = "🌈 My Alphabet Day";
+    titleEl.textContent = "🌈 Lumacubs";
 
     // --- hero: sun mascot + greeting + sticker progress ---
     const count = stickerCount();
@@ -2819,67 +2960,187 @@ const POEMS = [
   };
 
   function sayLetterAndWord(item) {
-    speak(`${item.letter}. ${item.word}.`, { rate: 0.78, pitch: 1.14, volume: 0.9 });
+    const sound = PHONICS[item.letter] || item.letter;
+    // Letter name + phonics sound + word (e.g. "A. ah. Apple.")
+    speak(`${item.letter}. ${sound}. ${item.word}.`, { rate: 0.72, pitch: 1.14, volume: 0.9 });
   }
 
   function openLearn(item) {
     snd.pop();
     let currentIndex = Math.max(0, ALPHABET.findIndex(x => x.letter === item.letter));
+    let flipped = false;
+    let slideLock = false;
 
     const overlay = el("div", "overlay");
-    const box = el("div", "popup", `
+    const box = el("div", "popup learn-popup", `
       <button class="close-btn" aria-label="Close">✖</button>
-      <div class="learn-emoji">${item.emoji}</div>
-      <div class="learn-letter">${item.letter}</div>
-      <div class="learn-word">${item.word}</div>
+      <div class="learn-slider" aria-live="polite">
+        <div class="learn-slide">
+          <button type="button" class="flip-card" aria-label="Flip card">
+            <span class="flip-inner">
+              <span class="flip-face flip-front">
+                <span class="learn-emoji learn-emoji-front"></span>
+                <span class="learn-letter"></span>
+                <span class="learn-phonics"></span>
+                <span class="flip-cue">Tap to see the word</span>
+              </span>
+              <span class="flip-face flip-back">
+                <span class="learn-emoji learn-emoji-back"></span>
+                <span class="learn-word"></span>
+                <span class="learn-phonics-back"></span>
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
       <div class="learn-nav">
         <button class="learn-nav-btn previous" aria-label="Previous letter">←</button>
-        <span class="learn-nav-counter" aria-live="polite"></span>
+        <span class="learn-nav-counter"></span>
         <button class="learn-nav-btn next" aria-label="Next letter">→</button>
       </div>
-      <div class="hint">🔊 Tap to hear it again</div>`);
+      <div class="hint">👆 Swipe letters · tap card to flip · 🔊 hear again</div>`);
     overlay.appendChild(box);
     document.body.appendChild(overlay);
 
-    const emoji = $(".learn-emoji", box);
+    const slider = $(".learn-slider", box);
+    const slide = $(".learn-slide", box);
+    const flipCard = $(".flip-card", box);
+    const emojiFront = $(".learn-emoji-front", box);
+    const emojiBack = $(".learn-emoji-back", box);
     const letter = $(".learn-letter", box);
     const word = $(".learn-word", box);
+    const phonicsEl = $(".learn-phonics", box);
+    const phonicsBack = $(".learn-phonics-back", box);
     const counter = $(".learn-nav-counter", box);
     const previous = $(".learn-nav-btn.previous", box);
     const next = $(".learn-nav-btn.next", box);
 
-    const showLetter = () => {
+    const setFlipped = (on) => {
+      flipped = !!on;
+      flipCard.classList.toggle("is-flipped", flipped);
+    };
+
+    const showLetter = (opts) => {
+      opts = opts || {};
       const currentItem = ALPHABET[currentIndex];
       const tint = tintFor(currentIndex);
+      const sound = PHONICS[currentItem.letter] || currentItem.letter;
       box.setAttribute("style", `--accent:${tint[0]};--soft:${tint[1]}`);
-      emoji.textContent = currentItem.emoji;
+      emojiFront.textContent = currentItem.emoji;
+      emojiBack.textContent = currentItem.emoji;
       letter.textContent = currentItem.letter;
       word.textContent = currentItem.word;
+      phonicsEl.textContent = `🔊 /${sound}/`;
+      phonicsBack.textContent = `${currentItem.letter} says /${sound}/`;
       counter.textContent = `${currentItem.letter} of ${ALPHABET.length}`;
       previous.disabled = currentIndex === 0;
       next.disabled = currentIndex === ALPHABET.length - 1;
+      flipCard.setAttribute(
+        "aria-label",
+        flipped
+          ? `${currentItem.letter} says ${sound}. ${currentItem.letter} is for ${currentItem.word}. Tap to flip back.`
+          : `Letter ${currentItem.letter} says ${sound}. Tap to flip.`
+      );
       award(currentItem.letter);
-      sayLetterAndWord(currentItem);
+      if (opts.speak !== false) sayLetterAndWord(currentItem);
+    };
+
+    const goTo = (index, direction) => {
+      if (slideLock) return;
+      const nextIndex = Math.max(0, Math.min(ALPHABET.length - 1, index));
+      if (nextIndex === currentIndex) return;
+      slideLock = true;
+      setFlipped(false);
+      const outClass = direction < 0 ? "slide-out-right" : "slide-out-left";
+      const inClass = direction < 0 ? "slide-in-left" : "slide-in-right";
+      slide.classList.remove("slide-out-left", "slide-out-right", "slide-in-left", "slide-in-right");
+      void slide.offsetWidth;
+      slide.classList.add(outClass);
+      later(() => {
+        currentIndex = nextIndex;
+        showLetter();
+        slide.classList.remove(outClass);
+        void slide.offsetWidth;
+        slide.classList.add(inClass);
+        later(() => {
+          slide.classList.remove(inClass);
+          slideLock = false;
+        }, 220);
+      }, 160);
     };
 
     previous.addEventListener("click", () => {
-      if (currentIndex === 0) return;
+      if (currentIndex === 0 || slideLock) return;
       snd.pop();
-      currentIndex--;
-      showLetter();
+      goTo(currentIndex - 1, -1);
     });
     next.addEventListener("click", () => {
-      if (currentIndex === ALPHABET.length - 1) return;
+      if (currentIndex === ALPHABET.length - 1 || slideLock) return;
       snd.pop();
-      currentIndex++;
-      showLetter();
+      goTo(currentIndex + 1, 1);
     });
 
-    box.addEventListener("click", e => {
-      if (!e.target.closest(".close-btn, .learn-nav-btn")) {
-        sayLetterAndWord(ALPHABET[currentIndex]);
+    flipCard.addEventListener("click", e => {
+      e.stopPropagation();
+      if (slideLock) return;
+      snd.flip();
+      setFlipped(!flipped);
+      sayLetterAndWord(ALPHABET[currentIndex]);
+    });
+
+    // Horizontal swipe between letters (ignore tiny moves / vertical scrolls).
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let swiping = false;
+    slider.addEventListener("touchstart", e => {
+      if (!e.touches || !e.touches[0]) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      swiping = true;
+    }, { passive: true });
+    slider.addEventListener("touchend", e => {
+      if (!swiping) return;
+      swiping = false;
+      const t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+      if (dx < 0) {
+        if (currentIndex < ALPHABET.length - 1 && !slideLock) {
+          snd.pop();
+          goTo(currentIndex + 1, 1);
+        }
+      } else if (currentIndex > 0 && !slideLock) {
+        snd.pop();
+        goTo(currentIndex - 1, -1);
+      }
+    }, { passive: true });
+
+    // Pointer drag support for desktop / mouse.
+    let pointerStartX = null;
+    slider.addEventListener("pointerdown", e => {
+      if (e.pointerType === "touch") return;
+      if (e.button != null && e.button !== 0) return;
+      pointerStartX = e.clientX;
+    });
+    slider.addEventListener("pointerup", e => {
+      if (pointerStartX == null || e.pointerType === "touch") return;
+      const dx = e.clientX - pointerStartX;
+      pointerStartX = null;
+      if (Math.abs(dx) < 56) return;
+      if (dx < 0) {
+        if (currentIndex < ALPHABET.length - 1 && !slideLock) {
+          snd.pop();
+          goTo(currentIndex + 1, 1);
+        }
+      } else if (currentIndex > 0 && !slideLock) {
+        snd.pop();
+        goTo(currentIndex - 1, -1);
       }
     });
+    slider.addEventListener("pointercancel", () => { pointerStartX = null; });
+
     $(".close-btn", box).addEventListener("click", e => {
       e.stopPropagation();
       overlay.remove();

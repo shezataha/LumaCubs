@@ -1,4 +1,4 @@
-/* My Alphabet Day — daily-life essentials for every letter */
+/* Lumacubs — daily-life essentials for every letter */
 const ALPHABET = [
   { letter: "A", word: "Apple",      emoji: "🍎" },
   { letter: "B", word: "Ball",       emoji: "⚽" },

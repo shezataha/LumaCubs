@@ -1,5 +1,5 @@
 /* ============================================================
-   My Alphabet Day — game engine
+   Lumacubs — game engine
    Modes: Learn, Find It, Picture Match, Letter Match, Memory
    ============================================================ */
 
@@ -177,6 +177,8 @@
   }
 
   let lastThrottle = 0;
+  let speakTimer = null;
+  let speakToken = 0;
 
   function pickVoice() {
     const en = voices.filter(v => v.lang && /^en/i.test(v.lang));
@@ -195,16 +197,30 @@
       if (now - lastThrottle < 1600) return;
       lastThrottle = now;
     }
+    // Chrome/Edge often drop speech if speak() runs immediately after cancel().
+    // Delay slightly and resume if the engine got stuck paused.
+    const myToken = ++speakToken;
     try {
+      if (speakTimer) { clearTimeout(speakTimer); speakTimer = null; }
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = opts.rate == null ? 0.85 : opts.rate;
-      u.pitch = opts.pitch == null ? 1.1 : opts.pitch;
-      u.volume = opts.volume == null ? 1 : opts.volume;
-      const chosen = pickVoice();
-      if (chosen) u.voice = chosen;
-      speechSynthesis.speak(u);
     } catch (e) {}
+
+    speakTimer = setTimeout(() => {
+      speakTimer = null;
+      if (myToken !== speakToken) return;
+      try {
+        if (speechSynthesis.paused) speechSynthesis.resume();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = opts.rate == null ? 0.85 : opts.rate;
+        u.pitch = opts.pitch == null ? 1.1 : opts.pitch;
+        u.volume = opts.volume == null ? 1 : opts.volume;
+        const chosen = pickVoice();
+        if (chosen) u.voice = chosen;
+        speechSynthesis.speak(u);
+        // Some Chrome builds need a second resume after queueing.
+        if (speechSynthesis.paused) speechSynthesis.resume();
+      } catch (e) {}
+    }, 55);
   }
 
   /* ------------------------------ sounds ------------------------------ */
@@ -352,6 +368,8 @@
 
   function go(name, arg) {
     token++;
+    speakToken++;
+    if (speakTimer) { clearTimeout(speakTimer); speakTimer = null; }
     stopPoemAudio();
     try { if ("speechSynthesis" in window) speechSynthesis.cancel(); } catch (e) {}
     current = name;
@@ -375,7 +393,7 @@
   /* -------- home -------- */
 
   VIEWS.home = function () {
-    titleEl.textContent = "🌈 My Alphabet Day";
+    titleEl.textContent = "🌈 Lumacubs";
 
     // --- hero: sun mascot + greeting + sticker progress ---
     const count = stickerCount();
@@ -787,67 +805,187 @@
   };
 
   function sayLetterAndWord(item) {
-    speak(`${item.letter}. ${item.word}.`, { rate: 0.78, pitch: 1.14, volume: 0.9 });
+    const sound = PHONICS[item.letter] || item.letter;
+    // Letter name + phonics sound + word (e.g. "A. ah. Apple.")
+    speak(`${item.letter}. ${sound}. ${item.word}.`, { rate: 0.72, pitch: 1.14, volume: 0.9 });
   }
 
   function openLearn(item) {
     snd.pop();
     let currentIndex = Math.max(0, ALPHABET.findIndex(x => x.letter === item.letter));
+    let flipped = false;
+    let slideLock = false;
 
     const overlay = el("div", "overlay");
-    const box = el("div", "popup", `
+    const box = el("div", "popup learn-popup", `
       <button class="close-btn" aria-label="Close">✖</button>
-      <div class="learn-emoji">${item.emoji}</div>
-      <div class="learn-letter">${item.letter}</div>
-      <div class="learn-word">${item.word}</div>
+      <div class="learn-slider" aria-live="polite">
+        <div class="learn-slide">
+          <button type="button" class="flip-card" aria-label="Flip card">
+            <span class="flip-inner">
+              <span class="flip-face flip-front">
+                <span class="learn-emoji learn-emoji-front"></span>
+                <span class="learn-letter"></span>
+                <span class="learn-phonics"></span>
+                <span class="flip-cue">Tap to see the word</span>
+              </span>
+              <span class="flip-face flip-back">
+                <span class="learn-emoji learn-emoji-back"></span>
+                <span class="learn-word"></span>
+                <span class="learn-phonics-back"></span>
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
       <div class="learn-nav">
         <button class="learn-nav-btn previous" aria-label="Previous letter">←</button>
-        <span class="learn-nav-counter" aria-live="polite"></span>
+        <span class="learn-nav-counter"></span>
         <button class="learn-nav-btn next" aria-label="Next letter">→</button>
       </div>
-      <div class="hint">🔊 Tap to hear it again</div>`);
+      <div class="hint">👆 Swipe letters · tap card to flip · 🔊 hear again</div>`);
     overlay.appendChild(box);
     document.body.appendChild(overlay);
 
-    const emoji = $(".learn-emoji", box);
+    const slider = $(".learn-slider", box);
+    const slide = $(".learn-slide", box);
+    const flipCard = $(".flip-card", box);
+    const emojiFront = $(".learn-emoji-front", box);
+    const emojiBack = $(".learn-emoji-back", box);
     const letter = $(".learn-letter", box);
     const word = $(".learn-word", box);
+    const phonicsEl = $(".learn-phonics", box);
+    const phonicsBack = $(".learn-phonics-back", box);
     const counter = $(".learn-nav-counter", box);
     const previous = $(".learn-nav-btn.previous", box);
     const next = $(".learn-nav-btn.next", box);
 
-    const showLetter = () => {
+    const setFlipped = (on) => {
+      flipped = !!on;
+      flipCard.classList.toggle("is-flipped", flipped);
+    };
+
+    const showLetter = (opts) => {
+      opts = opts || {};
       const currentItem = ALPHABET[currentIndex];
       const tint = tintFor(currentIndex);
+      const sound = PHONICS[currentItem.letter] || currentItem.letter;
       box.setAttribute("style", `--accent:${tint[0]};--soft:${tint[1]}`);
-      emoji.textContent = currentItem.emoji;
+      emojiFront.textContent = currentItem.emoji;
+      emojiBack.textContent = currentItem.emoji;
       letter.textContent = currentItem.letter;
       word.textContent = currentItem.word;
+      phonicsEl.textContent = `🔊 /${sound}/`;
+      phonicsBack.textContent = `${currentItem.letter} says /${sound}/`;
       counter.textContent = `${currentItem.letter} of ${ALPHABET.length}`;
       previous.disabled = currentIndex === 0;
       next.disabled = currentIndex === ALPHABET.length - 1;
+      flipCard.setAttribute(
+        "aria-label",
+        flipped
+          ? `${currentItem.letter} says ${sound}. ${currentItem.letter} is for ${currentItem.word}. Tap to flip back.`
+          : `Letter ${currentItem.letter} says ${sound}. Tap to flip.`
+      );
       award(currentItem.letter);
-      sayLetterAndWord(currentItem);
+      if (opts.speak !== false) sayLetterAndWord(currentItem);
+    };
+
+    const goTo = (index, direction) => {
+      if (slideLock) return;
+      const nextIndex = Math.max(0, Math.min(ALPHABET.length - 1, index));
+      if (nextIndex === currentIndex) return;
+      slideLock = true;
+      setFlipped(false);
+      const outClass = direction < 0 ? "slide-out-right" : "slide-out-left";
+      const inClass = direction < 0 ? "slide-in-left" : "slide-in-right";
+      slide.classList.remove("slide-out-left", "slide-out-right", "slide-in-left", "slide-in-right");
+      void slide.offsetWidth;
+      slide.classList.add(outClass);
+      later(() => {
+        currentIndex = nextIndex;
+        showLetter();
+        slide.classList.remove(outClass);
+        void slide.offsetWidth;
+        slide.classList.add(inClass);
+        later(() => {
+          slide.classList.remove(inClass);
+          slideLock = false;
+        }, 220);
+      }, 160);
     };
 
     previous.addEventListener("click", () => {
-      if (currentIndex === 0) return;
+      if (currentIndex === 0 || slideLock) return;
       snd.pop();
-      currentIndex--;
-      showLetter();
+      goTo(currentIndex - 1, -1);
     });
     next.addEventListener("click", () => {
-      if (currentIndex === ALPHABET.length - 1) return;
+      if (currentIndex === ALPHABET.length - 1 || slideLock) return;
       snd.pop();
-      currentIndex++;
-      showLetter();
+      goTo(currentIndex + 1, 1);
     });
 
-    box.addEventListener("click", e => {
-      if (!e.target.closest(".close-btn, .learn-nav-btn")) {
-        sayLetterAndWord(ALPHABET[currentIndex]);
+    flipCard.addEventListener("click", e => {
+      e.stopPropagation();
+      if (slideLock) return;
+      snd.flip();
+      setFlipped(!flipped);
+      sayLetterAndWord(ALPHABET[currentIndex]);
+    });
+
+    // Horizontal swipe between letters (ignore tiny moves / vertical scrolls).
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let swiping = false;
+    slider.addEventListener("touchstart", e => {
+      if (!e.touches || !e.touches[0]) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      swiping = true;
+    }, { passive: true });
+    slider.addEventListener("touchend", e => {
+      if (!swiping) return;
+      swiping = false;
+      const t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+      if (dx < 0) {
+        if (currentIndex < ALPHABET.length - 1 && !slideLock) {
+          snd.pop();
+          goTo(currentIndex + 1, 1);
+        }
+      } else if (currentIndex > 0 && !slideLock) {
+        snd.pop();
+        goTo(currentIndex - 1, -1);
+      }
+    }, { passive: true });
+
+    // Pointer drag support for desktop / mouse.
+    let pointerStartX = null;
+    slider.addEventListener("pointerdown", e => {
+      if (e.pointerType === "touch") return;
+      if (e.button != null && e.button !== 0) return;
+      pointerStartX = e.clientX;
+    });
+    slider.addEventListener("pointerup", e => {
+      if (pointerStartX == null || e.pointerType === "touch") return;
+      const dx = e.clientX - pointerStartX;
+      pointerStartX = null;
+      if (Math.abs(dx) < 56) return;
+      if (dx < 0) {
+        if (currentIndex < ALPHABET.length - 1 && !slideLock) {
+          snd.pop();
+          goTo(currentIndex + 1, 1);
+        }
+      } else if (currentIndex > 0 && !slideLock) {
+        snd.pop();
+        goTo(currentIndex - 1, -1);
       }
     });
+    slider.addEventListener("pointercancel", () => { pointerStartX = null; });
+
     $(".close-btn", box).addEventListener("click", e => {
       e.stopPropagation();
       overlay.remove();

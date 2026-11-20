@@ -1,4 +1,4 @@
--- My Alphabet Day — database setup
+-- Lumacubs — database setup
 -- Run: C:\mariadb\bin\mysql.exe -u root < setup.sql
 -- (or mysql -u root < setup.sql)
 

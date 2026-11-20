@@ -1,5 +1,5 @@
 <?php
-/* My Alphabet Day — user management & auth API (MariaDB) */
+/* Lumacubs — user management & auth API (MariaDB) */
 
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
