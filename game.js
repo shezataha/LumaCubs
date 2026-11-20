@@ -223,6 +223,53 @@
     }, 55);
   }
 
+  /* Promise-based speech for synced highlighting (Count Together) */
+  function speakLine(text, opts) {
+    opts = opts || {};
+    return new Promise(resolve => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+      if (!("speechSynthesis" in window) || !text) {
+        later(finish, 350);
+        return;
+      }
+      if (!speechOn && !opts.force) {
+        later(finish, 450);
+        return;
+      }
+      const myToken = ++speakToken;
+      try {
+        if (speakTimer) { clearTimeout(speakTimer); speakTimer = null; }
+        speechSynthesis.cancel();
+      } catch (e) {}
+      speakTimer = setTimeout(() => {
+        speakTimer = null;
+        if (myToken !== speakToken) { finish(); return; }
+        try {
+          if (speechSynthesis.paused) speechSynthesis.resume();
+          const u = new SpeechSynthesisUtterance(text);
+          u.rate = opts.rate == null ? 0.86 : opts.rate;
+          u.pitch = opts.pitch == null ? 1.14 : opts.pitch;
+          u.volume = opts.volume == null ? 1 : opts.volume;
+          const chosen = pickVoice();
+          if (chosen) u.voice = chosen;
+          u.onend = finish;
+          u.onerror = finish;
+          speechSynthesis.speak(u);
+          if (speechSynthesis.paused) speechSynthesis.resume();
+          // Safety net if onend never fires
+          setTimeout(finish, Math.min(8000, 1200 + String(text).length * 120));
+        } catch (e) {
+          finish();
+        }
+      }, 55);
+    });
+  }
+
   /* ------------------------------ sounds ------------------------------ */
 
   let actx = null;
@@ -321,7 +368,7 @@
 
   /* ------------------------------ difficulty ------------------------------ */
 
-  const MAX_LEVEL = { find: 2, matchPic: 2, matchCase: 2, memory: 3 };
+  const MAX_LEVEL = { find: 2, matchPic: 2, matchCase: 2, memory: 3, countQuiz: 2 };
   const streaks = {};
   const misses = {};
 
@@ -438,6 +485,11 @@
 
     const modes = [
       { id: "learn",     emoji: "📖", label: "Learn Letters" },
+      { id: "learnCount", emoji: "🔢", label: "Learn Numbers" },
+      { id: "count",     emoji: "🧮", label: "Counting Fun" },
+      { id: "countQuiz", emoji: "🎯", label: "Count the Objects" },
+      { id: "countTrace", emoji: "✏️", label: "Number Trace" },
+      { id: "countTogether", emoji: "👩‍🏫", label: "Count Together" },
       { id: "find",      emoji: "🔊", label: "Find It" },
       { id: "matchPic",  emoji: "🍎", label: "Picture Match" },
       { id: "matchCase", emoji: "🔤", label: "Letter Match" },
@@ -995,6 +1047,1308 @@
     });
 
     showLetter();
+  }
+
+  /* -------- Learn Numbers (same style as Learn Letters) -------- */
+
+  VIEWS.learnCount = function () {
+    titleEl.textContent = "🔢 Learn the Numbers";
+
+    const grid = el("div", "grid learn-grid");
+    NUMBERS_1_20.forEach((item, i) => {
+      const theme = item.theme || COUNT_THEMES[i % COUNT_THEMES.length];
+      const cardWrap = el("div", "learn-card-wrap");
+      const card = el("button", "card learn-card",
+        `<span class="emoji-bubble">${theme.emoji}</span><span class="letter">${item.n}</span>`);
+      card.setAttribute("style", tintStyle(i));
+      card.style.animationDelay = (i * 0.03) + "s";
+      card.addEventListener("click", () => openLearnNumber(item));
+
+      const speaker = el("button", "learn-card-speaker", "🔊");
+      speaker.type = "button";
+      speaker.setAttribute("aria-label", `Hear ${item.n}, ${item.word}`);
+      speaker.title = `Hear ${item.n} and ${item.word}`;
+      speaker.addEventListener("click", () => {
+        snd.pop();
+        sayLearnNumber(item);
+      });
+
+      cardWrap.append(card, speaker);
+      grid.appendChild(cardWrap);
+    });
+    screenRoot.appendChild(grid);
+    speak("Let's learn the numbers!");
+  };
+
+  function sayLearnNumber(item) {
+    // Word only once — avoids "5" + "Five" double sound
+    speak(item.word + ".", { rate: 0.78, pitch: 1.12, volume: 0.9 });
+  }
+
+  function openLearnNumber(item) {
+    snd.pop();
+    let currentIndex = Math.max(0, NUMBERS_1_20.findIndex(x => x.n === item.n));
+    let flipped = false;
+    let slideLock = false;
+
+    const overlay = el("div", "overlay");
+    const box = el("div", "popup learn-popup", `
+      <button class="close-btn" aria-label="Close">✖</button>
+      <div class="learn-slider" aria-live="polite">
+        <div class="learn-slide">
+          <button type="button" class="flip-card" aria-label="Flip card">
+            <span class="flip-inner">
+              <span class="flip-face flip-front">
+                <span class="learn-emoji learn-emoji-front"></span>
+                <span class="learn-letter count-display"></span>
+                <span class="learn-phonics"></span>
+                <span class="flip-cue">Tap to see the word</span>
+              </span>
+              <span class="flip-face flip-back">
+                <span class="learn-emoji learn-emoji-back"></span>
+                <span class="learn-word"></span>
+                <span class="learn-phonics-back"></span>
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
+      <div class="learn-nav">
+        <button class="learn-nav-btn previous" aria-label="Previous number">←</button>
+        <span class="learn-nav-counter"></span>
+        <button class="learn-nav-btn next" aria-label="Next number">→</button>
+      </div>
+      <div class="hint">👆 Swipe numbers · tap card to flip · 🔊 hear again</div>`);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    const slider = $(".learn-slider", box);
+    const slide = $(".learn-slide", box);
+    const flipCard = $(".flip-card", box);
+    const emojiFront = $(".learn-emoji-front", box);
+    const emojiBack = $(".learn-emoji-back", box);
+    const numberEl = $(".count-display", box);
+    const word = $(".learn-word", box);
+    const phonicsEl = $(".learn-phonics", box);
+    const phonicsBack = $(".learn-phonics-back", box);
+    const counter = $(".learn-nav-counter", box);
+    const previous = $(".learn-nav-btn.previous", box);
+    const next = $(".learn-nav-btn.next", box);
+
+    const setFlipped = (on) => {
+      flipped = !!on;
+      flipCard.classList.toggle("is-flipped", flipped);
+    };
+
+    const showNumber = (opts) => {
+      opts = opts || {};
+      const currentItem = NUMBERS_1_20[currentIndex];
+      const theme = currentItem.theme || COUNT_THEMES[(currentItem.n - 1) % COUNT_THEMES.length];
+      const tint = tintFor(currentIndex);
+      box.setAttribute("style", `--accent:${tint[0]};--soft:${tint[1]}`);
+      emojiFront.textContent = theme.emoji;
+      emojiBack.textContent = theme.emoji;
+      numberEl.textContent = String(currentItem.n);
+      word.textContent = currentItem.word;
+      phonicsEl.textContent = `🔊 ${currentItem.word}`;
+      phonicsBack.textContent = `${currentItem.n} is ${currentItem.word}`;
+      counter.textContent = `${currentItem.n} of ${NUMBERS_1_20.length}`;
+      previous.disabled = currentIndex === 0;
+      next.disabled = currentIndex === NUMBERS_1_20.length - 1;
+      flipCard.setAttribute(
+        "aria-label",
+        flipped
+          ? `${currentItem.n} is ${currentItem.word}. Tap to flip back.`
+          : `Number ${currentItem.n}. Tap to see the word.`
+      );
+      if (opts.speak !== false) sayLearnNumber(currentItem);
+    };
+
+    const goTo = (index, direction) => {
+      if (slideLock) return;
+      const nextIndex = Math.max(0, Math.min(NUMBERS_1_20.length - 1, index));
+      if (nextIndex === currentIndex) return;
+      slideLock = true;
+      setFlipped(false);
+      const outClass = direction < 0 ? "slide-out-right" : "slide-out-left";
+      const inClass = direction < 0 ? "slide-in-left" : "slide-in-right";
+      slide.classList.remove("slide-out-left", "slide-out-right", "slide-in-left", "slide-in-right");
+      void slide.offsetWidth;
+      slide.classList.add(outClass);
+      later(() => {
+        currentIndex = nextIndex;
+        showNumber();
+        slide.classList.remove(outClass);
+        void slide.offsetWidth;
+        slide.classList.add(inClass);
+        later(() => {
+          slide.classList.remove(inClass);
+          slideLock = false;
+        }, 220);
+      }, 160);
+    };
+
+    previous.addEventListener("click", () => {
+      if (currentIndex === 0 || slideLock) return;
+      snd.pop();
+      goTo(currentIndex - 1, -1);
+    });
+    next.addEventListener("click", () => {
+      if (currentIndex === NUMBERS_1_20.length - 1 || slideLock) return;
+      snd.pop();
+      goTo(currentIndex + 1, 1);
+    });
+
+    flipCard.addEventListener("click", e => {
+      e.stopPropagation();
+      if (slideLock) return;
+      snd.flip();
+      setFlipped(!flipped);
+      sayLearnNumber(NUMBERS_1_20[currentIndex]);
+    });
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let swiping = false;
+    slider.addEventListener("touchstart", e => {
+      if (!e.touches || !e.touches[0]) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      swiping = true;
+    }, { passive: true });
+    slider.addEventListener("touchend", e => {
+      if (!swiping) return;
+      swiping = false;
+      const t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+      if (dx < 0) {
+        if (currentIndex < NUMBERS_1_20.length - 1 && !slideLock) {
+          snd.pop();
+          goTo(currentIndex + 1, 1);
+        }
+      } else if (currentIndex > 0 && !slideLock) {
+        snd.pop();
+        goTo(currentIndex - 1, -1);
+      }
+    }, { passive: true });
+
+    let pointerStartX = null;
+    slider.addEventListener("pointerdown", e => {
+      if (e.pointerType === "touch") return;
+      if (e.button != null && e.button !== 0) return;
+      pointerStartX = e.clientX;
+    });
+    slider.addEventListener("pointerup", e => {
+      if (pointerStartX == null || e.pointerType === "touch") return;
+      const dx = e.clientX - pointerStartX;
+      pointerStartX = null;
+      if (Math.abs(dx) < 56) return;
+      if (dx < 0) {
+        if (currentIndex < NUMBERS_1_20.length - 1 && !slideLock) {
+          snd.pop();
+          goTo(currentIndex + 1, 1);
+        }
+      } else if (currentIndex > 0 && !slideLock) {
+        snd.pop();
+        goTo(currentIndex - 1, -1);
+      }
+    });
+    slider.addEventListener("pointercancel", () => { pointerStartX = null; });
+
+    $(".close-btn", box).addEventListener("click", e => {
+      e.stopPropagation();
+      overlay.remove();
+    });
+    overlay.addEventListener("click", e => {
+      if (e.target === overlay) overlay.remove();
+    });
+
+    showNumber();
+  }
+
+  /* -------- counting (interactive 1–20 + classic 21–100) -------- */
+
+  VIEWS.count = function () {
+    titleEl.textContent = "🔢 Let's Count!";
+
+    const wrap = el("div", "count-wrap");
+    wrap.appendChild(el("div", "count-hero", `
+      <div class="count-hero-badge">1 – 20</div>
+      <h2 class="count-hero-title">Tap a number & count the toys!</h2>
+      <p class="count-hero-sub">Big numbers · cute objects · listen & count along</p>`));
+
+    const launches = el("div", "count-launches");
+    const learnLaunch = el("button", "count-game-launch count-learn-launch", `
+      <span class="count-game-launch-emoji">🔢</span>
+      <span class="count-game-launch-text">
+        <strong>Learn Numbers</strong>
+        <small>Just like Learn Letters — flip cards for 1 to 20</small>
+      </span>
+      <span class="count-game-launch-go">Learn →</span>`);
+    learnLaunch.type = "button";
+    learnLaunch.addEventListener("click", () => { snd.pop(); go("learnCount"); });
+    launches.appendChild(learnLaunch);
+    const gameLaunch = el("button", "count-game-launch", `
+      <span class="count-game-launch-emoji">🎯</span>
+      <span class="count-game-launch-text">
+        <strong>Count the Objects</strong>
+        <small>How many can you count? Fun quiz game!</small>
+      </span>
+      <span class="count-game-launch-go">Play →</span>`);
+    gameLaunch.type = "button";
+    gameLaunch.addEventListener("click", () => { snd.pop(); go("countQuiz"); });
+
+    const traceLaunch = el("button", "count-game-launch count-trace-launch", `
+      <span class="count-game-launch-emoji">✏️</span>
+      <span class="count-game-launch-text">
+        <strong>Number Trace</strong>
+        <small>Trace dotted numbers 1–10 with your finger!</small>
+      </span>
+      <span class="count-game-launch-go">Trace →</span>`);
+    traceLaunch.type = "button";
+    traceLaunch.addEventListener("click", () => { snd.pop(); go("countTrace"); });
+
+    const togetherLaunch = el("button", "count-game-launch count-together-launch", `
+      <span class="count-game-launch-emoji">👩‍🏫</span>
+      <span class="count-game-launch-text">
+        <strong>Let's Count Together!</strong>
+        <small>A friendly teacher counts objects with you</small>
+      </span>
+      <span class="count-game-launch-go">Start →</span>`);
+    togetherLaunch.type = "button";
+    togetherLaunch.addEventListener("click", () => { snd.pop(); go("countTogether"); });
+
+    launches.append(gameLaunch, traceLaunch, togetherLaunch);
+    wrap.appendChild(launches);
+
+    const pad = el("div", "count-pad");
+    NUMBERS_1_20.forEach((item, i) => {
+      const theme = item.theme || COUNT_THEMES[i];
+      const btn = el("button", "count-pad-btn", `
+        <span class="count-pad-emoji">${theme.emoji}</span>
+        <span class="count-pad-num">${item.n}</span>`);
+      btn.type = "button";
+      btn.style.setProperty("--pad-color", theme.color);
+      btn.style.animationDelay = (i * 0.03) + "s";
+      btn.setAttribute("aria-label", `Count ${item.word}`);
+      btn.addEventListener("click", () => {
+        snd.pop();
+        openCountPlay(item);
+      });
+      pad.appendChild(btn);
+    });
+    wrap.appendChild(pad);
+
+    // Preserve 21–100 classic grid behind a toggle
+    const more = el("div", "count-more");
+    const moreBtn = el("button", "count-more-toggle", "📚 More numbers 21–100");
+    moreBtn.type = "button";
+    const morePanel = el("div", "count-more-panel hidden");
+    const filters = el("div", "count-filters");
+    const grid = el("div", "grid count-grid");
+    let activeRange = "21";
+    let moreOpen = false;
+
+    const ranges = [
+      { id: "21", label: "21–30" },
+      { id: "31", label: "31–40" },
+      { id: "41", label: "41–50" },
+      { id: "51", label: "51–60" },
+      { id: "61", label: "61–70" },
+      { id: "71", label: "71–80" },
+      { id: "81", label: "81–90" },
+      { id: "91", label: "91–100" },
+    ];
+
+    const renderMoreGrid = () => {
+      grid.innerHTML = "";
+      const start = parseInt(activeRange, 10);
+      NUMBERS.filter(item => item.n >= start && item.n < start + 10).forEach((item, i) => {
+        const cardWrap = el("div", "learn-card-wrap count-card-wrap");
+        const card = el("button", "card learn-card count-card",
+          `<span class="emoji-bubble">${item.emoji}</span><span class="letter count-num">${item.n}</span>`);
+        card.setAttribute("style", tintStyle((item.n - 1) % TINTS.length));
+        card.style.animationDelay = (i * 0.02) + "s";
+        card.addEventListener("click", () => openCount(item));
+        const speaker = el("button", "learn-card-speaker", "🔊");
+        speaker.type = "button";
+        speaker.setAttribute("aria-label", `Hear ${item.word}`);
+        speaker.addEventListener("click", () => { snd.pop(); sayNumber(item); });
+        cardWrap.append(card, speaker);
+        grid.appendChild(cardWrap);
+      });
+    };
+
+    ranges.forEach(r => {
+      const chip = el("button", "count-chip" + (r.id === "21" ? " sel" : ""), r.label);
+      chip.type = "button";
+      chip.addEventListener("click", () => {
+        snd.pop();
+        activeRange = r.id;
+        filters.querySelectorAll(".count-chip").forEach(c => c.classList.remove("sel"));
+        chip.classList.add("sel");
+        renderMoreGrid();
+      });
+      filters.appendChild(chip);
+    });
+    morePanel.append(filters, grid);
+
+    moreBtn.addEventListener("click", () => {
+      snd.pop();
+      moreOpen = !moreOpen;
+      morePanel.classList.toggle("hidden", !moreOpen);
+      moreBtn.textContent = moreOpen ? "🔼 Hide 21–100" : "📚 More numbers 21–100";
+      if (moreOpen) renderMoreGrid();
+    });
+
+    more.append(moreBtn, morePanel);
+    wrap.appendChild(more);
+    screenRoot.appendChild(wrap);
+    speak("Let's count! Tap a number.");
+  };
+
+  function sayNumber(item) {
+    // Speak the word once only — saying both "5" and "Five" sounds like a double.
+    speak(`Number ${item.word}.`, { rate: 0.78, pitch: 1.12, volume: 0.9 });
+  }
+
+  function sayCountStep(n) {
+    speak(String(n), { rate: 0.85, pitch: 1.15, volume: 0.95 });
+  }
+
+  /* -------- Let's Count Together! (guided teacher) -------- */
+
+  VIEWS.countTogether = function () {
+    titleEl.textContent = "👩‍🏫 Count Together";
+
+    let amount = 4;
+    let theme = COUNT_THEMES[9]; // cupcakes default; will randomize
+    let runId = 0;
+    let busy = false;
+
+    const wrap = el("div", "together-wrap");
+
+    const teacher = el("div", "together-teacher", `
+      <div class="together-teacher-art" aria-hidden="true">
+        <svg class="teacher-svg" viewBox="0 0 160 160" role="img" aria-label="Friendly teacher">
+          <defs>
+            <linearGradient id="teacherFace" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#ffe0b2"/>
+              <stop offset="1" stop-color="#ffcc80"/>
+            </linearGradient>
+            <linearGradient id="teacherHair" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#6d4c41"/>
+              <stop offset="1" stop-color="#4e342e"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="80" cy="138" rx="46" ry="12" fill="rgba(59,59,92,0.12)"/>
+          <path d="M34 78 Q80 18 126 78 L118 92 Q80 48 42 92 Z" fill="url(#teacherHair)"/>
+          <circle cx="80" cy="86" r="46" fill="url(#teacherFace)" stroke="#fff" stroke-width="5"/>
+          <circle class="teacher-eye" cx="64" cy="82" r="6" fill="#3b3b5c"/>
+          <circle class="teacher-eye" cx="96" cy="82" r="6" fill="#3b3b5c"/>
+          <circle cx="52" cy="96" r="8" fill="#ff8a80" opacity="0.55"/>
+          <circle cx="108" cy="96" r="8" fill="#ff8a80" opacity="0.55"/>
+          <path class="teacher-smile" d="M62 104 Q80 118 98 104" fill="none" stroke="#3b3b5c" stroke-width="5" stroke-linecap="round"/>
+          <ellipse class="teacher-mouth talk" cx="80" cy="108" rx="7" ry="5" fill="#e57373" opacity="0"/>
+          <path d="M48 128 Q80 148 112 128 L108 158 L52 158 Z" fill="#4facfe"/>
+          <circle cx="128" cy="70" r="14" fill="#ffd93d" stroke="#fff" stroke-width="3"/>
+          <text x="128" y="75" text-anchor="middle" font-size="14" font-weight="900" fill="#3b3b5c">★</text>
+        </svg>
+      </div>
+      <div class="together-bubble">
+        <div class="together-bubble-text">Hi! Pick a number, then press Start.</div>
+      </div>`);
+
+    const picker = el("div", "together-picker");
+    for (let n = 1; n <= 20; n++) {
+      const b = el("button", "together-pick" + (n === amount ? " sel" : ""), String(n));
+      b.type = "button";
+      b.addEventListener("click", () => {
+        if (busy) return;
+        snd.pop();
+        amount = n;
+        picker.querySelectorAll(".together-pick").forEach(x => x.classList.remove("sel"));
+        b.classList.add("sel");
+        theme = COUNT_THEMES[(Math.random() * COUNT_THEMES.length) | 0];
+        renderStage(false);
+        setBubble(`Great! Let's get ready to count ${amount} ${theme.label}.`);
+      });
+      picker.appendChild(b);
+    }
+
+    const meta = el("div", "together-meta");
+    const stage = el("div", "together-stage");
+    const actions = el("div", "together-actions");
+    const startBtn = el("button", "together-btn start", "▶️ Start Counting");
+    const replayBtn = el("button", "together-btn replay", "🔁 Replay");
+    const againBtn = el("button", "together-btn again", "🎲 Count Again");
+    startBtn.type = replayBtn.type = againBtn.type = "button";
+    actions.append(startBtn, replayBtn, againBtn);
+
+    wrap.append(teacher, picker, meta, stage, actions);
+    screenRoot.appendChild(wrap);
+
+    const bubbleText = $(".together-bubble-text", teacher);
+    const teacherArt = $(".together-teacher-art", teacher);
+
+    function setBubble(msg) {
+      bubbleText.textContent = msg;
+    }
+
+    function setTalking(on) {
+      teacherArt.classList.toggle("is-talking", !!on);
+      teacherArt.classList.toggle("is-happy", !on);
+    }
+
+    function renderStage(animate) {
+      meta.innerHTML = `
+        <span class="together-meta-badge">${amount}</span>
+        <span class="together-meta-label">${theme.emoji} ${amount} ${theme.label}</span>`;
+      stage.innerHTML = "";
+      stage.style.setProperty("--obj-color", theme.color);
+      for (let i = 0; i < amount; i++) {
+        const obj = el("span", "together-obj" + (animate ? " spawn" : ""), theme.emoji);
+        obj.style.animationDelay = (i * 0.05) + "s";
+        obj.setAttribute("aria-hidden", "true");
+        stage.appendChild(obj);
+      }
+    }
+
+    function clearHighlights() {
+      stage.querySelectorAll(".together-obj").forEach(o => o.classList.remove("lit", "pop", "counted"));
+    }
+
+    async function runSequence() {
+      const myRun = ++runId;
+      busy = true;
+      startBtn.disabled = replayBtn.disabled = againBtn.disabled = true;
+      picker.querySelectorAll(".together-pick").forEach(b => { b.disabled = true; });
+      clearHighlights();
+      setTalking(true);
+
+      const stillHere = () => myRun === runId && current === "countTogether";
+
+      setBubble("Let's count together!");
+      await speakLine("Let's count together!", { rate: 0.88, pitch: 1.14 });
+      if (!stillHere()) return;
+
+      const objs = [...stage.querySelectorAll(".together-obj")];
+      for (let i = 0; i < objs.length; i++) {
+        if (!stillHere()) return;
+        objs.forEach(o => o.classList.remove("lit", "pop"));
+        objs[i].classList.add("lit", "pop", "counted");
+        objs[i].scrollIntoView({ block: "nearest", behavior: "smooth" });
+        const word = numberWord(i + 1);
+        setBubble(word + "!");
+        snd.pop();
+        setTalking(true);
+        await speakLine(word, { rate: 0.82, pitch: 1.16 });
+        setTalking(false);
+        if (!stillHere()) return;
+      }
+
+      objs.forEach(o => o.classList.add("lit"));
+      const finale = `Amazing! ${numberWord(amount)} ${theme.label}!`;
+      setBubble(finale);
+      setTalking(true);
+      teacherArt.classList.add("is-celebrate");
+      snd.fanfare();
+      confetti(26);
+      await speakLine(finale, { rate: 0.88, pitch: 1.14 });
+      setTalking(false);
+      if (!stillHere()) return;
+
+      toast("🎉 " + finale);
+      busy = false;
+      startBtn.disabled = replayBtn.disabled = againBtn.disabled = false;
+      picker.querySelectorAll(".together-pick").forEach(b => { b.disabled = false; });
+      later(() => teacherArt.classList.remove("is-celebrate"), 1200);
+    }
+
+    function freshThemeKeepAmount() {
+      theme = COUNT_THEMES[(Math.random() * COUNT_THEMES.length) | 0];
+      renderStage(true);
+      setBubble(`Ready! ${amount} ${theme.label}. Press Start or Replay.`);
+    }
+
+    startBtn.addEventListener("click", () => {
+      if (busy) return;
+      snd.pop();
+      runSequence();
+    });
+    replayBtn.addEventListener("click", () => {
+      if (busy) return;
+      snd.pop();
+      clearHighlights();
+      runSequence();
+    });
+    againBtn.addEventListener("click", () => {
+      if (busy) return;
+      snd.pop();
+      amount = 1 + ((Math.random() * 20) | 0);
+      picker.querySelectorAll(".together-pick").forEach(b => {
+        b.classList.toggle("sel", parseInt(b.textContent, 10) === amount);
+      });
+      theme = COUNT_THEMES[(Math.random() * COUNT_THEMES.length) | 0];
+      renderStage(true);
+      setBubble(`New ones! ${amount} ${theme.label}. Let's count together!`);
+      runSequence();
+    });
+
+    // Initial setup: 4 bananas-style random fruit-ish theme
+    amount = 4;
+    theme = COUNT_THEMES.find(t => /banana|apple|cupcake|star|balloon/i.test(t.label)) || COUNT_THEMES[0];
+    picker.querySelectorAll(".together-pick").forEach(b => {
+      b.classList.toggle("sel", parseInt(b.textContent, 10) === amount);
+    });
+    renderStage(true);
+    setBubble("Hi! Pick a number, then press Start Counting.");
+    speak("Let's count together! Pick a number and press start.", { rate: 0.88 });
+  };
+
+  /* -------- Count the Objects quiz game -------- */
+
+  VIEWS.countQuiz = function () {
+    titleEl.textContent = "🎯 Count the Objects";
+    let locked = false;
+    let roundScore = 0;
+
+    const DIFF = [
+      { min: 1, max: 5,  label: "Easy" },
+      { min: 3, max: 8,  label: "Medium" },
+      { min: 5, max: 12, label: "Tricky" },
+    ];
+
+    const wrap = el("div", "count-quiz-wrap");
+    const header = el("div", "count-quiz-header");
+    const stars = levelStars("countQuiz");
+    const levelLabel = el("div", "count-quiz-level");
+    header.append(stars, levelLabel);
+
+    const ask = el("div", "count-quiz-ask");
+    const stage = el("div", "count-quiz-stage");
+    const choices = el("div", "count-quiz-choices");
+    const feedback = el("div", "count-quiz-feedback");
+    feedback.setAttribute("role", "status");
+    feedback.setAttribute("aria-live", "polite");
+
+    const hearAsk = el("button", "count-quiz-hear", "🔊 Hear the question");
+    hearAsk.type = "button";
+
+    wrap.append(header, ask, hearAsk, stage, choices, feedback);
+    screenRoot.appendChild(wrap);
+
+    function difficulty() {
+      return DIFF[Math.min(levelOf("countQuiz"), DIFF.length - 1)];
+    }
+
+    function makeChoices(answer, maxN) {
+      const opts = new Set([answer]);
+      let guard = 0;
+      while (opts.size < 3 && guard++ < 40) {
+        const delta = (Math.random() < 0.5 ? -1 : 1) * (1 + ((Math.random() * 2) | 0));
+        let n = answer + delta;
+        if (n < 1) n = answer + 1 + ((Math.random() * 2) | 0);
+        if (n > maxN) n = Math.max(1, answer - 1 - ((Math.random() * 2) | 0));
+        if (n !== answer && n >= 1 && n <= Math.max(maxN, 12)) opts.add(n);
+      }
+      // fill if needed
+      let fill = 1;
+      while (opts.size < 3 && fill <= 20) {
+        if (fill !== answer) opts.add(fill);
+        fill++;
+      }
+      return shuffle([...opts]).slice(0, 3);
+    }
+
+    function round() {
+      token++;
+      locked = false;
+      feedback.textContent = "";
+      feedback.className = "count-quiz-feedback";
+      choices.innerHTML = "";
+      stage.innerHTML = "";
+
+      const diff = difficulty();
+      levelLabel.textContent = `Level: ${diff.label} · ⭐ ${roundScore} correct`;
+      const answer = diff.min + ((Math.random() * (diff.max - diff.min + 1)) | 0);
+      const theme = COUNT_THEMES[(Math.random() * COUNT_THEMES.length) | 0];
+      stage.style.setProperty("--obj-color", theme.color);
+
+      ask.innerHTML = `
+        <div class="count-quiz-prompt">How many can you count?</div>
+        <div class="count-quiz-theme">${theme.emoji} ${theme.label}</div>`;
+
+      for (let i = 0; i < answer; i++) {
+        const obj = el("span", "count-quiz-obj spawn", theme.emoji);
+        obj.style.animationDelay = (i * 0.05) + "s";
+        obj.setAttribute("aria-hidden", "true");
+        stage.appendChild(obj);
+      }
+
+      const sayQuestion = () => {
+        speak(`How many ${theme.label} can you count?`, { rate: 0.82, pitch: 1.12 });
+      };
+      hearAsk.onclick = () => { snd.pop(); sayQuestion(); };
+
+      makeChoices(answer, diff.max).forEach(n => {
+        const btn = el("button", "count-quiz-choice", String(n));
+        btn.type = "button";
+        btn.setAttribute("aria-label", `Choose ${n}`);
+        btn.addEventListener("click", () => {
+          if (locked) return;
+          if (n === answer) {
+            locked = true;
+            btn.classList.add("correct");
+            choices.querySelectorAll(".count-quiz-choice").forEach(b => {
+              b.disabled = true;
+              if (b !== btn) b.classList.add("dim");
+            });
+            stage.querySelectorAll(".count-quiz-obj").forEach((o, i) => {
+              later(() => o.classList.add("lit", "pop"), i * 70);
+            });
+            roundScore++;
+            noteCorrect("countQuiz");
+            snd.fanfare();
+            confetti(28);
+            feedback.className = "count-quiz-feedback yes";
+            feedback.textContent = "🎉 Amazing! You got it right!";
+            speak("Amazing! You got it right!", { rate: 0.9, pitch: 1.15 });
+            toast("🎉 Amazing!");
+            later(() => {
+              header.querySelector(".level-stars")?.replaceWith(levelStars("countQuiz"));
+              round();
+            }, 1800);
+          } else {
+            noteWrong("countQuiz");
+            snd.wrong();
+            wobble(btn);
+            btn.classList.add("wrong");
+            later(() => btn.classList.remove("wrong"), 500);
+            feedback.className = "count-quiz-feedback no";
+            feedback.textContent = "💛 Oops! Try again — you can do it!";
+            speak("Try again! You can do it!", { throttle: true, rate: 0.9, pitch: 1.1 });
+          }
+        });
+        choices.appendChild(btn);
+      });
+
+      later(sayQuestion, 280);
+    }
+
+    round();
+  };
+
+  /* -------- Number Tracing 1–10 -------- */
+
+  VIEWS.countTrace = function () {
+    titleEl.textContent = "✏️ Number Trace";
+
+    let digitIndex = 0;
+    let drawing = false;
+    let completed = false;
+    let lastPt = null;
+    let lastVb = null;
+    let hitPoints = [];
+    let hitCount = 0;
+    // Toddler-friendly: easier pass + wider hit area
+    const PASS = 0.55;
+    const HIT_R = 34;
+    const VB = { w: 200, h: 280 };
+
+    const wrap = el("div", "trace-wrap");
+    const picker = el("div", "trace-picker");
+    const tip = el("div", "trace-tip");
+    const board = el("div", "trace-board");
+    const progressWrap = el("div", "trace-progress-wrap", `
+      <div class="trace-progress-bar"><div class="trace-progress-fill"></div></div>
+      <span class="trace-progress-label">0%</span>`);
+    const actions = el("div", "trace-actions");
+    const status = el("div", "trace-status");
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", `0 0 ${VB.w} ${VB.h}`);
+    // Stretch guide to fill board so hit-tests match finger/mouse drawing
+    svg.setAttribute("preserveAspectRatio", "none");
+    svg.setAttribute("class", "trace-svg");
+    svg.setAttribute("aria-hidden", "true");
+
+    const canvas = el("canvas", "trace-canvas");
+    canvas.setAttribute("aria-label", "Tracing canvas");
+    board.append(svg, canvas);
+
+    const clearBtn = el("button", "trace-btn clear", "🧹 Clear");
+    const retryBtn = el("button", "trace-btn retry", "🔄 Retry");
+    const hearBtn = el("button", "trace-btn hear", "🔊 Hear");
+    clearBtn.type = retryBtn.type = hearBtn.type = "button";
+    actions.append(clearBtn, retryBtn, hearBtn);
+
+    wrap.append(picker, tip, board, progressWrap, actions, status);
+    screenRoot.appendChild(wrap);
+
+    const fillEl = $(".trace-progress-fill", progressWrap);
+    const labelEl = $(".trace-progress-label", progressWrap);
+    const ctx = canvas.getContext("2d");
+
+    TRACE_NUMBERS.forEach((digit, i) => {
+      const b = el("button", "trace-pick" + (i === 0 ? " sel" : ""), String(digit.n));
+      b.type = "button";
+      b.setAttribute("aria-label", `Trace number ${digit.n}`);
+      b.addEventListener("click", () => {
+        snd.pop();
+        digitIndex = i;
+        picker.querySelectorAll(".trace-pick").forEach(x => x.classList.remove("sel"));
+        b.classList.add("sel");
+        loadDigit(true);
+      });
+      picker.appendChild(b);
+    });
+
+    function setupStrokeStyle() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#ff6b9d";
+      ctx.lineWidth = Math.max(14, rect.width * 0.045);
+    }
+
+    function resizeCanvas() {
+      const avail = board.parentElement ? board.parentElement.getBoundingClientRect().width : board.getBoundingClientRect().width;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // Keep exact viewBox aspect so guide + drawing stay aligned
+      let w = Math.max(260, Math.floor(avail || 320));
+      let h = Math.floor(w * (VB.h / VB.w));
+      if (h > 440) {
+        h = 440;
+        w = Math.floor(h * (VB.w / VB.h));
+      }
+      board.style.width = w + "px";
+      board.style.height = h + "px";
+      board.style.marginLeft = "auto";
+      board.style.marginRight = "auto";
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      setupStrokeStyle();
+      ctx.clearRect(0, 0, w, h);
+    }
+
+    function clientToViewBox(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return { x: 0, y: 0 };
+      return {
+        x: ((clientX - rect.left) / rect.width) * VB.w,
+        y: ((clientY - rect.top) / rect.height) * VB.h,
+      };
+    }
+
+    function clientToCanvas(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top,
+      };
+    }
+
+    function samplePath(pathEl, step) {
+      const len = pathEl.getTotalLength();
+      if (!len || !isFinite(len)) return [];
+      const pts = [];
+      const n = Math.max(16, Math.ceil(len / step));
+      for (let i = 0; i <= n; i++) {
+        const p = pathEl.getPointAtLength((len * i) / n);
+        pts.push({ x: p.x, y: p.y, hit: false });
+      }
+      return pts;
+    }
+
+    function updateProgress() {
+      const pct = hitPoints.length ? Math.round((hitCount / hitPoints.length) * 100) : 0;
+      fillEl.style.width = pct + "%";
+      labelEl.textContent = pct + "%";
+      if (!completed && hitPoints.length && hitCount / hitPoints.length >= PASS) {
+        completed = true;
+        status.className = "trace-status yes";
+        status.textContent = "🎉 Amazing tracing! You did it!";
+        snd.fanfare();
+        confetti(30);
+        toast("🎉 Perfect tracing!");
+        const digit = TRACE_NUMBERS[digitIndex];
+        speak(`Amazing! You traced number ${digit.word}!`, { rate: 0.9, pitch: 1.15 });
+        board.classList.add("trace-done");
+      }
+    }
+
+    function markHits(vx, vy) {
+      let gained = 0;
+      const r2 = HIT_R * HIT_R;
+      for (let i = 0; i < hitPoints.length; i++) {
+        const p = hitPoints[i];
+        if (p.hit) continue;
+        const dx = p.x - vx;
+        const dy = p.y - vy;
+        if (dx * dx + dy * dy <= r2) {
+          p.hit = true;
+          hitCount++;
+          gained++;
+        }
+      }
+      if (gained) updateProgress();
+    }
+
+    // Fill gaps between pointer samples so fast swipes still count
+    function markSegment(v0, v1) {
+      if (!v0 || !v1) {
+        if (v1) markHits(v1.x, v1.y);
+        return;
+      }
+      const dist = Math.hypot(v1.x - v0.x, v1.y - v0.y);
+      const steps = Math.max(1, Math.ceil(dist / 6));
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        markHits(v0.x + (v1.x - v0.x) * t, v0.y + (v1.y - v0.y) * t);
+      }
+    }
+
+    function clearInk(resetHits) {
+      const rect = canvas.getBoundingClientRect();
+      setupStrokeStyle();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      if (resetHits) {
+        hitPoints.forEach(p => { p.hit = false; });
+        hitCount = 0;
+        completed = false;
+        board.classList.remove("trace-done");
+        status.className = "trace-status";
+        status.textContent = "Follow the arrows and trace the dots!";
+        updateProgress();
+      }
+    }
+
+    function loadDigit(speakIt) {
+      const digit = TRACE_NUMBERS[digitIndex];
+      tip.innerHTML = `
+        <div class="trace-tip-num">${digit.n}</div>
+        <div class="trace-tip-text">
+          <strong>Trace ${digit.n}</strong>
+          <span>${digit.tip}</span>
+        </div>`;
+      svg.innerHTML = "";
+      const guide = document.createElementNS(svgNS, "g");
+      guide.setAttribute("class", "trace-guide");
+      digit.paths.forEach(d => {
+        const path = document.createElementNS(svgNS, "path");
+        path.setAttribute("d", d);
+        path.setAttribute("class", "trace-path-dots");
+        guide.appendChild(path);
+      });
+      // Directional arrow at start
+      const start = digit.start;
+      const arrow = document.createElementNS(svgNS, "g");
+      arrow.setAttribute("class", "trace-arrow");
+      arrow.setAttribute("transform", `translate(${start.x}, ${start.y})`);
+      arrow.innerHTML = `
+        <circle class="trace-start-dot" r="10" cx="0" cy="0"></circle>
+        <path class="trace-arrow-head" d="M 0 18 L -12 40 L 0 34 L 12 40 Z"></path>
+        <text class="trace-start-label" x="0" y="-18" text-anchor="middle">Start</text>`;
+      svg.append(guide, arrow);
+
+      // Sample hit points from rendered paths
+      hitPoints = [];
+      hitCount = 0;
+      completed = false;
+      board.classList.remove("trace-done");
+      const pathNodes = svg.querySelectorAll(".trace-path-dots");
+      pathNodes.forEach(pathEl => {
+        hitPoints = hitPoints.concat(samplePath(pathEl, 6));
+      });
+      resizeCanvas();
+      clearInk(true);
+      status.className = "trace-status";
+      status.textContent = "Follow the pink Start dot and trace the purple dots!";
+      if (speakIt) {
+        speak(`Let's trace number ${digit.word}. ${digit.tip}.`, { rate: 0.82, pitch: 1.1 });
+      }
+    }
+
+    function pointerDown(e) {
+      if (completed) return;
+      e.preventDefault();
+      drawing = true;
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+      const c = clientToCanvas(e.clientX, e.clientY);
+      const v = clientToViewBox(e.clientX, e.clientY);
+      lastPt = c;
+      lastVb = v;
+      ctx.beginPath();
+      ctx.moveTo(c.x, c.y);
+      markHits(v.x, v.y);
+    }
+
+    function pointerMove(e) {
+      if (!drawing || completed) return;
+      e.preventDefault();
+      const c = clientToCanvas(e.clientX, e.clientY);
+      const v = clientToViewBox(e.clientX, e.clientY);
+      if (lastPt) {
+        ctx.beginPath();
+        ctx.moveTo(lastPt.x, lastPt.y);
+        ctx.lineTo(c.x, c.y);
+        ctx.stroke();
+      }
+      markSegment(lastVb, v);
+      lastPt = c;
+      lastVb = v;
+    }
+
+    function pointerUp(e) {
+      if (!drawing) return;
+      drawing = false;
+      lastPt = null;
+      lastVb = null;
+      try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+
+    canvas.addEventListener("pointerdown", pointerDown);
+    canvas.addEventListener("pointermove", pointerMove);
+    canvas.addEventListener("pointerup", pointerUp);
+    canvas.addEventListener("pointercancel", pointerUp);
+    canvas.addEventListener("pointerleave", e => { if (drawing) pointerUp(e); });
+
+    clearBtn.addEventListener("click", () => {
+      snd.pop();
+      clearInk(true);
+      speak("Cleared! Try again.", { rate: 0.9 });
+    });
+    retryBtn.addEventListener("click", () => {
+      snd.pop();
+      loadDigit(true);
+    });
+    hearBtn.addEventListener("click", () => {
+      snd.pop();
+      const digit = TRACE_NUMBERS[digitIndex];
+      speak(`Number ${digit.word}. ${digit.tip}.`, { rate: 0.82, pitch: 1.1 });
+    });
+
+    const resizeToken = token;
+    const onResize = () => {
+      if (token !== resizeToken) {
+        window.removeEventListener("resize", onResize);
+        return;
+      }
+      resizeCanvas();
+    };
+    window.addEventListener("resize", onResize);
+
+    loadDigit(true);
+  };
+
+  /* Interactive counting playground for 1–20 */
+  function openCountPlay(item) {
+    snd.pop();
+    let currentIndex = Math.max(0, NUMBERS_1_20.findIndex(x => x.n === item.n));
+    let counting = false;
+    let countGen = 0;
+
+    const overlay = el("div", "overlay count-play-overlay");
+    const box = el("div", "popup count-play-popup");
+    box.innerHTML = `
+      <button class="close-btn" aria-label="Close">✖</button>
+      <div class="count-play-top">
+        <div class="count-play-number" aria-live="polite"></div>
+        <div class="count-play-word"></div>
+        <div class="count-play-theme"></div>
+      </div>
+      <div class="count-play-stage" role="list" aria-label="Counting objects"></div>
+      <div class="count-play-actions">
+        <button type="button" class="count-play-btn hear">🔊 Hear</button>
+        <button type="button" class="count-play-btn count">✨ Count with me</button>
+      </div>
+      <div class="learn-nav count-play-nav">
+        <button class="learn-nav-btn previous" aria-label="Previous number">←</button>
+        <span class="learn-nav-counter"></span>
+        <button class="learn-nav-btn next" aria-label="Next number">→</button>
+      </div>
+      <div class="hint">Tap objects or press Count with me!</div>`;
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    const numberEl = $(".count-play-number", box);
+    const wordEl = $(".count-play-word", box);
+    const themeEl = $(".count-play-theme", box);
+    const stage = $(".count-play-stage", box);
+    const hearBtn = $(".count-play-btn.hear", box);
+    const countBtn = $(".count-play-btn.count", box);
+    const counter = $(".learn-nav-counter", box);
+    const previous = $(".learn-nav-btn.previous", box);
+    const next = $(".learn-nav-btn.next", box);
+
+    const stopCounting = () => {
+      countGen++;
+      counting = false;
+      countBtn.disabled = false;
+      countBtn.textContent = "✨ Count with me";
+    };
+
+    const renderObjects = (current, animateIn) => {
+      const theme = current.theme || COUNT_THEMES[(current.n - 1) % COUNT_THEMES.length];
+      stage.innerHTML = "";
+      stage.style.setProperty("--obj-color", theme.color);
+      for (let i = 0; i < current.n; i++) {
+        const obj = el("button", "count-obj" + (animateIn ? " spawn" : ""), theme.emoji);
+        obj.type = "button";
+        obj.setAttribute("role", "listitem");
+        obj.setAttribute("aria-label", `${theme.label} ${i + 1}`);
+        obj.style.animationDelay = animateIn ? (i * 0.06) + "s" : "0s";
+        obj.addEventListener("click", () => {
+          if (counting) return;
+          stage.querySelectorAll(".count-obj").forEach(o => o.classList.remove("lit", "pop"));
+          obj.classList.add("lit", "pop");
+          snd.pop();
+          sayCountStep(i + 1);
+        });
+        stage.appendChild(obj);
+      }
+    };
+
+    const showPlay = (opts) => {
+      opts = opts || {};
+      stopCounting();
+      const current = NUMBERS_1_20[currentIndex];
+      const theme = current.theme || COUNT_THEMES[(current.n - 1) % COUNT_THEMES.length];
+      const tint = tintFor((current.n - 1) % TINTS.length);
+      box.setAttribute("style", `--accent:${tint[0]};--soft:${tint[1]};--obj-color:${theme.color}`);
+      numberEl.textContent = String(current.n);
+      wordEl.textContent = current.word;
+      themeEl.textContent = `${current.n} ${theme.label}`;
+      counter.textContent = `${current.n} of 20`;
+      previous.disabled = currentIndex === 0;
+      next.disabled = currentIndex === NUMBERS_1_20.length - 1;
+      renderObjects(current, true);
+      if (opts.speak !== false) later(() => sayNumber(current), 180);
+    };
+
+    const countAlong = () => {
+      if (counting) return;
+      const current = NUMBERS_1_20[currentIndex];
+      const objs = [...stage.querySelectorAll(".count-obj")];
+      if (!objs.length) return;
+      counting = true;
+      const gen = ++countGen;
+      countBtn.disabled = true;
+      countBtn.textContent = "Counting…";
+      objs.forEach(o => o.classList.remove("lit", "pop"));
+
+      objs.forEach((obj, i) => {
+        later(() => {
+          if (gen !== countGen) return;
+          objs.forEach(o => o.classList.remove("lit", "pop"));
+          obj.classList.add("lit", "pop");
+          obj.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          snd.pop();
+          sayCountStep(i + 1);
+          if (i === objs.length - 1) {
+            later(() => {
+              if (gen !== countGen) return;
+              confetti(14);
+              snd.fanfare();
+              sayNumber(current);
+              stopCounting();
+            }, 650);
+          }
+        }, i * 720);
+      });
+    };
+
+    hearBtn.addEventListener("click", () => {
+      snd.pop();
+      sayNumber(NUMBERS_1_20[currentIndex]);
+    });
+    countBtn.addEventListener("click", () => {
+      snd.pop();
+      countAlong();
+    });
+    previous.addEventListener("click", () => {
+      if (currentIndex === 0 || counting) return;
+      snd.pop();
+      currentIndex--;
+      showPlay();
+    });
+    next.addEventListener("click", () => {
+      if (currentIndex === NUMBERS_1_20.length - 1 || counting) return;
+      snd.pop();
+      currentIndex++;
+      showPlay();
+    });
+
+    $(".close-btn", box).addEventListener("click", e => {
+      e.stopPropagation();
+      stopCounting();
+      overlay.remove();
+    });
+    overlay.addEventListener("click", e => {
+      if (e.target === overlay) {
+        stopCounting();
+        overlay.remove();
+      }
+    });
+
+    showPlay({ speak: false });
+    later(() => sayNumber(NUMBERS_1_20[currentIndex]), 220);
+  }
+
+  /* Classic flip cards for numbers 21–100 (preserved) */
+  function openCount(item) {
+    snd.pop();
+    let currentIndex = Math.max(0, NUMBERS.findIndex(x => x.n === item.n));
+    let flipped = false;
+    let slideLock = false;
+
+    const overlay = el("div", "overlay");
+    const box = el("div", "popup learn-popup", `
+      <button class="close-btn" aria-label="Close">✖</button>
+      <div class="learn-slider" aria-live="polite">
+        <div class="learn-slide">
+          <button type="button" class="flip-card" aria-label="Flip card">
+            <span class="flip-inner">
+              <span class="flip-face flip-front">
+                <span class="learn-emoji learn-emoji-front"></span>
+                <span class="learn-letter count-display"></span>
+                <span class="flip-cue">Tap to see the word</span>
+              </span>
+              <span class="flip-face flip-back">
+                <span class="learn-emoji learn-emoji-back"></span>
+                <span class="learn-word"></span>
+                <span class="learn-phonics-back"></span>
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
+      <div class="learn-nav">
+        <button class="learn-nav-btn previous" aria-label="Previous number">←</button>
+        <span class="learn-nav-counter"></span>
+        <button class="learn-nav-btn next" aria-label="Next number">→</button>
+      </div>
+      <div class="hint">👆 Swipe numbers · tap card to flip · 🔊 hear again</div>`);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    const slider = $(".learn-slider", box);
+    const slide = $(".learn-slide", box);
+    const flipCard = $(".flip-card", box);
+    const emojiFront = $(".learn-emoji-front", box);
+    const emojiBack = $(".learn-emoji-back", box);
+    const numberEl = $(".count-display", box);
+    const word = $(".learn-word", box);
+    const wordHint = $(".learn-phonics-back", box);
+    const counter = $(".learn-nav-counter", box);
+    const previous = $(".learn-nav-btn.previous", box);
+    const next = $(".learn-nav-btn.next", box);
+
+    const setFlipped = (on) => {
+      flipped = !!on;
+      flipCard.classList.toggle("is-flipped", flipped);
+    };
+
+    const showNumber = (opts) => {
+      opts = opts || {};
+      const currentItem = NUMBERS[currentIndex];
+      const tint = tintFor((currentItem.n - 1) % TINTS.length);
+      box.setAttribute("style", `--accent:${tint[0]};--soft:${tint[1]}`);
+      emojiFront.textContent = currentItem.emoji;
+      emojiBack.textContent = currentItem.emoji;
+      numberEl.textContent = String(currentItem.n);
+      word.textContent = currentItem.word;
+      wordHint.textContent = `Number ${currentItem.n}`;
+      counter.textContent = `${currentItem.n} of ${NUMBERS.length}`;
+      previous.disabled = currentIndex === 0;
+      next.disabled = currentIndex === NUMBERS.length - 1;
+      if (opts.speak !== false) sayNumber(currentItem);
+    };
+
+    const goTo = (index, direction) => {
+      if (slideLock) return;
+      const nextIndex = Math.max(0, Math.min(NUMBERS.length - 1, index));
+      if (nextIndex === currentIndex) return;
+      slideLock = true;
+      setFlipped(false);
+      const outClass = direction < 0 ? "slide-out-right" : "slide-out-left";
+      const inClass = direction < 0 ? "slide-in-left" : "slide-in-right";
+      slide.classList.remove("slide-out-left", "slide-out-right", "slide-in-left", "slide-in-right");
+      void slide.offsetWidth;
+      slide.classList.add(outClass);
+      later(() => {
+        currentIndex = nextIndex;
+        showNumber();
+        slide.classList.remove(outClass);
+        void slide.offsetWidth;
+        slide.classList.add(inClass);
+        later(() => {
+          slide.classList.remove(inClass);
+          slideLock = false;
+        }, 220);
+      }, 160);
+    };
+
+    previous.addEventListener("click", () => {
+      if (currentIndex === 0 || slideLock) return;
+      snd.pop();
+      goTo(currentIndex - 1, -1);
+    });
+    next.addEventListener("click", () => {
+      if (currentIndex === NUMBERS.length - 1 || slideLock) return;
+      snd.pop();
+      goTo(currentIndex + 1, 1);
+    });
+    flipCard.addEventListener("click", e => {
+      e.stopPropagation();
+      if (slideLock) return;
+      snd.flip();
+      setFlipped(!flipped);
+      sayNumber(NUMBERS[currentIndex]);
+    });
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let swiping = false;
+    slider.addEventListener("touchstart", e => {
+      if (!e.touches || !e.touches[0]) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      swiping = true;
+    }, { passive: true });
+    slider.addEventListener("touchend", e => {
+      if (!swiping) return;
+      swiping = false;
+      const t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+      if (dx < 0) {
+        if (currentIndex < NUMBERS.length - 1 && !slideLock) { snd.pop(); goTo(currentIndex + 1, 1); }
+      } else if (currentIndex > 0 && !slideLock) { snd.pop(); goTo(currentIndex - 1, -1); }
+    }, { passive: true });
+
+    $(".close-btn", box).addEventListener("click", e => {
+      e.stopPropagation();
+      overlay.remove();
+    });
+    overlay.addEventListener("click", e => {
+      if (e.target === overlay) overlay.remove();
+    });
+
+    showNumber();
   }
 
   /* -------- find it -------- */

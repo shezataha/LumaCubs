@@ -37,6 +37,145 @@ const PHONICS = {
   Y: "yuh", Z: "zzz",
 };
 
+/* Counting 1–100 — number, spoken word name, and a fun emoji */
+const NUMBER_ONES = [
+  "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+];
+const NUMBER_TEENS = [
+  "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen",
+  "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen",
+];
+const NUMBER_TENS = [
+  "", "", "Twenty", "Thirty", "Forty", "Fifty",
+  "Sixty", "Seventy", "Eighty", "Ninety",
+];
+const COUNT_EMOJIS = [
+  "⭐", "🔵", "🟢", "🟡", "🟣", "🟠", "❤️", "💎", "🌟", "🎈",
+  "🍎", "🐶", "🌸", "🦋", "🐟", "🌈", "🍭", "🧁", "🧸", "🚀",
+];
+
+/* Cute object themes for interactive counting (1–20) */
+const COUNT_THEMES = [
+  { emoji: "🍎", label: "apples",    color: "#ff6b6b" },
+  { emoji: "⭐", label: "stars",     color: "#ffd93d" },
+  { emoji: "🎈", label: "balloons",  color: "#ff6b9d" },
+  { emoji: "🧸", label: "teddy bears", color: "#d4a574" },
+  { emoji: "🐶", label: "puppies",   color: "#ffa94d" },
+  { emoji: "🐱", label: "kittens",   color: "#ff922b" },
+  { emoji: "🦋", label: "butterflies", color: "#a78bfa" },
+  { emoji: "🐟", label: "fish",      color: "#4dabf7" },
+  { emoji: "🌸", label: "flowers",   color: "#f783ac" },
+  { emoji: "🧁", label: "cupcakes",  color: "#ff8787" },
+  { emoji: "🚗", label: "cars",      color: "#74c0fc" },
+  { emoji: "🚀", label: "rockets",   color: "#845ef7" },
+  { emoji: "🌈", label: "rainbows",  color: "#63e6be" },
+  { emoji: "🍭", label: "lollipops", color: "#ff6bcb" },
+  { emoji: "🏀", label: "balls",     color: "#ff922b" },
+  { emoji: "🦆", label: "ducks",     color: "#fcc419" },
+  { emoji: "🐸", label: "frogs",     color: "#51cf66" },
+  { emoji: "🐰", label: "bunnies",   color: "#e599f7" },
+  { emoji: "🍌", label: "bananas",   color: "#ffd43b" },
+  { emoji: "💎", label: "gems",      color: "#3bc9db" },
+];
+
+function numberWord(n) {
+  n = n | 0;
+  if (n < 1 || n > 100) return String(n);
+  if (n === 100) return "One Hundred";
+  if (n < 10) return NUMBER_ONES[n];
+  if (n < 20) return NUMBER_TEENS[n - 10];
+  const tens = (n / 10) | 0;
+  const ones = n % 10;
+  return ones ? NUMBER_TENS[tens] + "-" + NUMBER_ONES[ones] : NUMBER_TENS[tens];
+}
+
+const NUMBERS = Array.from({ length: 100 }, (_, i) => {
+  const n = i + 1;
+  const theme = COUNT_THEMES[(n - 1) % COUNT_THEMES.length];
+  return {
+    n,
+    word: numberWord(n),
+    emoji: n <= 20 ? theme.emoji : COUNT_EMOJIS[i % COUNT_EMOJIS.length],
+    theme: n <= 20 ? theme : null,
+  };
+});
+
+const NUMBERS_1_20 = NUMBERS.slice(0, 20);
+
+/* SVG paths for number tracing (viewBox 0 0 200 280) — single-stroke friendly */
+const TRACE_NUMBERS = [
+  {
+    n: 1,
+    word: "One",
+    paths: ["M 110 48 L 110 236"],
+    start: { x: 110, y: 48 },
+    tip: "Start at the top and go straight down",
+  },
+  {
+    n: 2,
+    word: "Two",
+    paths: ["M 48 78 Q 48 42 100 42 Q 152 42 152 78 Q 152 118 58 168 L 152 236"],
+    start: { x: 48, y: 78 },
+    tip: "Curve across the top, then slide down and across",
+  },
+  {
+    n: 3,
+    word: "Three",
+    paths: ["M 52 70 Q 52 42 100 42 Q 152 42 152 78 Q 152 110 110 118 Q 152 126 152 168 Q 152 220 100 220 Q 52 220 52 190"],
+    start: { x: 52, y: 70 },
+    tip: "Make two bumps from top to bottom",
+  },
+  {
+    n: 4,
+    word: "Four",
+    paths: ["M 148 42 L 52 168 L 168 168", "M 148 42 L 148 236"],
+    start: { x: 148, y: 42 },
+    tip: "Down the slant, across, then down the tall line",
+  },
+  {
+    n: 5,
+    word: "Five",
+    paths: ["M 148 48 L 62 48 L 54 128 Q 54 108 100 108 Q 156 108 156 168 Q 156 228 100 228 Q 52 228 52 188"],
+    start: { x: 148, y: 48 },
+    tip: "Across the top, down, then around the belly",
+  },
+  {
+    n: 6,
+    word: "Six",
+    paths: ["M 132 58 Q 52 90 52 160 Q 52 230 100 230 Q 156 230 156 176 Q 156 128 100 128 Q 62 128 62 160"],
+    start: { x: 132, y: 58 },
+    tip: "Curl down from the top and loop around",
+  },
+  {
+    n: 7,
+    word: "Seven",
+    paths: ["M 48 52 L 152 52 L 88 236"],
+    start: { x: 48, y: 52 },
+    tip: "Across the top, then down the diagonal",
+  },
+  {
+    n: 8,
+    word: "Eight",
+    paths: ["M 100 42 Q 156 42 156 90 Q 156 124 100 140 Q 44 156 44 198 Q 44 240 100 240 Q 156 240 156 198 Q 156 156 100 140 Q 44 124 44 90 Q 44 42 100 42"],
+    start: { x: 100, y: 42 },
+    tip: "Trace the top loop, then the bottom loop",
+  },
+  {
+    n: 9,
+    word: "Nine",
+    paths: ["M 132 160 Q 132 108 100 108 Q 52 108 52 156 Q 52 204 100 204 Q 148 204 148 156 L 148 58 Q 148 42 100 42 Q 58 42 52 78"],
+    start: { x: 132, y: 160 },
+    tip: "Around the circle, then down the stick",
+  },
+  {
+    n: 10,
+    word: "Ten",
+    paths: ["M 58 48 L 58 236", "M 128 78 Q 98 78 98 140 Q 98 202 128 202 Q 168 202 168 140 Q 168 78 128 78"],
+    start: { x: 58, y: 48 },
+    tip: "Trace the 1, then the 0",
+  },
+];
+
 /* Extra fruits & vegetables for coloring and matching games */
 const FRUITS = [
   { name: "Apple",      emoji: "🍎", color: "#ff3b30" },
