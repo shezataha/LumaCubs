@@ -196,6 +196,14 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 }
 
 .hero-text { text-align: center; }
+.hero-brand {
+  font-size: clamp(28px, 6vw, 42px);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(59, 59, 92, 0.28);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
 .hero-title {
   font-size: clamp(24px, 5vw, 36px);
   font-weight: 900;
@@ -3759,7 +3767,7 @@ const POEMS = [
       grid.appendChild(b);
     });
 
-    const tip = el("div", "parent-tip", "Grown-up tip: press and hold ⚙️ for settings");
+    const tip = el("div", "parent-tip", "LumaCubs · Grown-up tip: press and hold ⚙️ for settings");
     screenRoot.append(hero, progress, grid, tip);
   };
 
