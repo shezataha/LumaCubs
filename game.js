@@ -440,48 +440,79 @@
   /* -------- home -------- */
 
   VIEWS.home = function () {
-    titleEl.textContent = "🌈 Lumacubs";
+    titleEl.textContent = "LumaCubs";
 
-    // --- hero: sun mascot + greeting + sticker progress ---
+    // --- hero: cub mascot + greeting + Start Learning CTA ---
     const count = stickerCount();
     const pct = Math.round((count / 26) * 100);
-    const hero = el("div", "hero", `
-      <svg class="mascot-svg" viewBox="0 0 130 130" role="img" aria-label="Smiling sun">
-        <defs>
-          <linearGradient id="sunGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#ffe066"/>
-            <stop offset="1" stop-color="#ff9f43"/>
-          </linearGradient>
-        </defs>
-        <g stroke="#ffd93d" stroke-width="7" stroke-linecap="round">
-          <line x1="65" y1="4"  x2="65" y2="18"/>
-          <line x1="65" y1="112" x2="65" y2="126"/>
-          <line x1="4"  y1="65" x2="18" y2="65"/>
-          <line x1="112" y1="65" x2="126" y2="65"/>
-          <line x1="22" y1="22" x2="32" y2="32"/>
-          <line x1="98" y1="98" x2="108" y2="108"/>
-          <line x1="108" y1="22" x2="98" y2="32"/>
-          <line x1="32" y1="98" x2="22" y2="108"/>
-        </g>
-        <circle cx="65" cy="65" r="46" fill="url(#sunGrad)" stroke="#fff" stroke-width="6"/>
-        <circle cx="50" cy="58" r="6.5" fill="#3b3b5c"/>
-        <circle cx="80" cy="58" r="6.5" fill="#3b3b5c"/>
-        <circle cx="37" cy="71" r="7" fill="#ff6b9d" opacity="0.55"/>
-        <circle cx="93" cy="71" r="7" fill="#ff6b9d" opacity="0.55"/>
-        <path d="M49 78 Q65 93 81 78" stroke="#3b3b5c" stroke-width="5.5" fill="none" stroke-linecap="round"/>
-      </svg>
+    const greeting = activeProfile
+      ? "Hi " + escapeHtml(activeProfile.name) + "! Soft lessons, big smiles, and playful discovery await."
+      : "Gentle lessons for little learners — letters, numbers, and everyday wonder.";
+
+    const hero = el("section", "hero", `
+      <div class="hero-stage" aria-hidden="true">
+        <span class="hero-blob hero-blob-a"></span>
+        <span class="hero-blob hero-blob-b"></span>
+        <span class="hero-blob hero-blob-c"></span>
+      </div>
+      <div class="mascot-wrap">
+        <svg class="mascot-svg" viewBox="0 0 200 200" role="img" aria-label="Luma the friendly cub">
+          <defs>
+            <linearGradient id="cubFur" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#FFE0C2"/>
+              <stop offset="1" stop-color="#FFC9A3"/>
+            </linearGradient>
+            <linearGradient id="cubCheek" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#FFB4C8"/>
+              <stop offset="1" stop-color="#FF9EB5"/>
+            </linearGradient>
+            <radialGradient id="cubGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#E8D5F5" stop-opacity="0.85"/>
+              <stop offset="1" stop-color="#E8D5F5" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="100" cy="108" r="78" fill="url(#cubGlow)"/>
+          <ellipse cx="58" cy="58" rx="28" ry="26" fill="url(#cubFur)"/>
+          <ellipse cx="142" cy="58" rx="28" ry="26" fill="url(#cubFur)"/>
+          <ellipse cx="58" cy="60" rx="14" ry="13" fill="#FFF6EC"/>
+          <ellipse cx="142" cy="60" rx="14" ry="13" fill="#FFF6EC"/>
+          <ellipse cx="100" cy="112" rx="62" ry="58" fill="url(#cubFur)"/>
+          <ellipse cx="100" cy="128" rx="38" ry="30" fill="#FFF6EC"/>
+          <circle cx="78" cy="104" r="7" fill="#5C4F6E"/>
+          <circle cx="122" cy="104" r="7" fill="#5C4F6E"/>
+          <circle cx="80.5" cy="102" r="2.2" fill="#fff"/>
+          <circle cx="124.5" cy="102" r="2.2" fill="#fff"/>
+          <ellipse cx="72" cy="118" rx="10" ry="7" fill="url(#cubCheek)" opacity="0.75"/>
+          <ellipse cx="128" cy="118" rx="10" ry="7" fill="url(#cubCheek)" opacity="0.75"/>
+          <ellipse cx="100" cy="120" rx="9" ry="7" fill="#F4A261"/>
+          <path d="M88 136 Q100 148 112 136" stroke="#5C4F6E" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <g class="mascot-sparkles">
+            <circle cx="36" cy="88" r="3.5" fill="#C9B1E8"/>
+            <circle cx="168" cy="82" r="3" fill="#A8E6CF"/>
+            <circle cx="156" cy="148" r="2.5" fill="#FFD8C2"/>
+          </g>
+        </svg>
+      </div>
       <div class="hero-text">
-        <div class="hero-title">Let's learn the alphabet!</div>
-        <div class="hero-sub">${activeProfile
-          ? "Hi " + escapeHtml(activeProfile.name) + "! Pick a game below 👇"
-          : "Pick a game below 👇"}</div>
+        <p class="hero-brand">LumaCubs</p>
+        <h2 class="hero-title">Little Learners, Big Discoveries!</h2>
+        <p class="hero-sub">${greeting}</p>
+        <button type="button" class="start-learning-btn" id="startLearningBtn">
+          <span class="start-learning-icon" aria-hidden="true">✦</span>
+          Start Learning
+        </button>
       </div>`);
 
     const progress = el("div", "mini-progress", `
       <div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div>
-      <span class="mini-label">⭐ ${count}/26</span>`);
+      <span class="mini-label">⭐ ${count}/26 stickers</span>`);
+
+    const sectionLabel = el("div", "home-section-label", `
+      <h3>Choose an activity</h3>
+      <p>Tap a card to begin</p>`);
 
     const grid = el("div", "mode-grid");
+    grid.id = "homeModes";
 
     const modes = [
       { id: "learn",     emoji: "📖", label: "Learn Letters" },
@@ -502,19 +533,27 @@
       { id: "poems",     emoji: "📝", label: "Poems" },
     ];
 
-    modes.forEach(m => {
+    modes.forEach((m, i) => {
       const b = el(
         "button",
-        "mode-btn",
-        `<span class="m-emoji">${m.emoji}</span><span>${m.label}</span>` +
+        "mode-btn tone-" + (i % 4),
+        `<span class="m-emoji">${m.emoji}</span><span class="m-label">${m.label}</span>` +
         (m.badge ? `<span class="badge">⭐ ${m.badge}</span>` : "")
       );
       b.addEventListener("click", () => { snd.pop(); go(m.id); });
       grid.appendChild(b);
     });
 
-    const tip = el("div", "parent-tip", "Grown-up tip: press and hold ⚙️ for settings");
-    screenRoot.append(hero, progress, grid, tip);
+    const tip = el("div", "parent-tip", "LumaCubs · Grown-up tip: press and hold ⚙️ for settings");
+    screenRoot.append(hero, progress, sectionLabel, grid, tip);
+
+    const startBtn = hero.querySelector("#startLearningBtn");
+    if (startBtn) {
+      startBtn.addEventListener("click", () => {
+        snd.pop();
+        go("learn");
+      });
+    }
   };
 
   /* -------- profile picker (server mode) -------- */
@@ -1754,8 +1793,8 @@
     let lastVb = null;
     let hitPoints = [];
     let hitCount = 0;
-    const PASS = 0.42; // toddler-friendly
-    const HIT_R = 48;  // wide target in viewBox units
+    const PASS = 0.32; // toddler-friendly — about 1/3 of the path
+    const HIT_R = 58;  // fat-finger friendly (viewBox units)
     const VB = { w: 200, h: 280 };
     const svgNS = "http://www.w3.org/2000/svg";
 
@@ -1808,16 +1847,27 @@
       picker.appendChild(b);
     });
 
-    function samplePathD(d, step) {
-      const probe = document.createElementNS(svgNS, "path");
-      probe.setAttribute("d", d);
+    /* Shared layout: board content box ↔ viewBox (same math for ink + hits) */
+    function layoutMetrics() {
+      const rect = board.getBoundingClientRect();
+      const bw = board.clientWidth || rect.width;
+      const bh = board.clientHeight || rect.height;
+      const borderX = (rect.width - bw) / 2;
+      const borderY = (rect.height - bh) / 2;
+      const scale = Math.min(bw / VB.w, bh / VB.h);
+      const ox = (bw - VB.w * scale) / 2;
+      const oy = (bh - VB.h * scale) / 2;
+      return { rect, bw, bh, borderX, borderY, scale, ox, oy };
+    }
+
+    function samplePathEl(pathEl, step) {
       let len = 0;
-      try { len = probe.getTotalLength(); } catch (e) { return []; }
+      try { len = pathEl.getTotalLength(); } catch (e) { return []; }
       if (!len || !isFinite(len)) return [];
       const pts = [];
-      const n = Math.max(20, Math.ceil(len / step));
+      const n = Math.max(24, Math.ceil(len / step));
       for (let i = 0; i <= n; i++) {
-        const p = probe.getPointAtLength((len * i) / n);
+        const p = pathEl.getPointAtLength((len * i) / n);
         pts.push({ x: p.x, y: p.y, hit: false });
       }
       return pts;
@@ -1829,55 +1879,50 @@
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       ctx.strokeStyle = "#ff6b9d";
-      ctx.lineWidth = Math.max(16, cssW * 0.05);
+      ctx.lineWidth = Math.max(18, cssW * 0.06);
     }
 
     function resizeCanvas() {
       const avail = wrap.getBoundingClientRect().width || 320;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      let w = Math.max(280, Math.floor(avail));
-      let h = Math.floor(w * (VB.h / VB.w));
-      if (h > 460) {
-        h = 460;
-        w = Math.floor(h * (VB.w / VB.h));
+      let outerW = Math.max(280, Math.floor(avail));
+      let outerH = Math.floor(outerW * (VB.h / VB.w));
+      if (outerH > 460) {
+        outerH = 460;
+        outerW = Math.floor(outerH * (VB.w / VB.h));
       }
-      board.style.width = w + "px";
-      board.style.height = h + "px";
+      board.style.width = outerW + "px";
+      board.style.height = outerH + "px";
       board.style.marginLeft = "auto";
       board.style.marginRight = "auto";
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
-      canvas.style.width = w + "px";
-      canvas.style.height = h + "px";
-      setupStrokeStyle(w);
-      ctx.clearRect(0, 0, w, h);
+
+      // Match SVG exactly: use content box (border-box subtracts the 4px border)
+      const cw = board.clientWidth || outerW;
+      const ch = board.clientHeight || outerH;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.floor(cw * dpr));
+      canvas.height = Math.max(1, Math.floor(ch * dpr));
+      canvas.style.width = cw + "px";
+      canvas.style.height = ch + "px";
+      setupStrokeStyle(cw);
+      ctx.clearRect(0, 0, cw, ch);
     }
 
-    // Map screen point -> SVG viewBox using real CTM (handles letterboxing)
     function clientToViewBox(clientX, clientY) {
-      try {
-        const ctm = svg.getScreenCTM();
-        if (ctm) {
-          const pt = svg.createSVGPoint();
-          pt.x = clientX;
-          pt.y = clientY;
-          const p = pt.matrixTransform(ctm.inverse());
-          return { x: p.x, y: p.y };
-        }
-      } catch (e) {}
-      const rect = canvas.getBoundingClientRect();
-      const scale = Math.min(rect.width / VB.w, rect.height / VB.h);
-      const ox = (rect.width - VB.w * scale) / 2;
-      const oy = (rect.height - VB.h * scale) / 2;
+      const m = layoutMetrics();
+      const x = clientX - m.rect.left - m.borderX;
+      const y = clientY - m.rect.top - m.borderY;
       return {
-        x: (clientX - rect.left - ox) / scale,
-        y: (clientY - rect.top - oy) / scale,
+        x: (x - m.ox) / m.scale,
+        y: (y - m.oy) / m.scale,
       };
     }
 
     function clientToCanvas(clientX, clientY) {
-      const rect = canvas.getBoundingClientRect();
-      return { x: clientX - rect.left, y: clientY - rect.top };
+      const m = layoutMetrics();
+      return {
+        x: clientX - m.rect.left - m.borderX,
+        y: clientY - m.rect.top - m.borderY,
+      };
     }
 
     function celebrate() {
@@ -1926,7 +1971,7 @@
       if (!v1) return;
       if (!v0) { markHits(v1.x, v1.y); return; }
       const dist = Math.hypot(v1.x - v0.x, v1.y - v0.y);
-      const steps = Math.max(1, Math.ceil(dist / 4));
+      const steps = Math.max(1, Math.ceil(dist / 3));
       for (let i = 0; i <= steps; i++) {
         const t = i / steps;
         markHits(v0.x + (v1.x - v0.x) * t, v0.y + (v1.y - v0.y) * t);
@@ -1934,9 +1979,10 @@
     }
 
     function clearInk(resetHits) {
-      const w = canvas.getBoundingClientRect().width || 280;
-      setupStrokeStyle(w);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cw = board.clientWidth || 280;
+      const ch = board.clientHeight || 280;
+      setupStrokeStyle(cw);
+      ctx.clearRect(0, 0, cw, ch);
       if (resetHits) {
         hitPoints.forEach(p => { p.hit = false; });
         hitCount = 0;
@@ -1946,6 +1992,14 @@
         status.textContent = "Trace on the purple dots — progress goes up!";
         updateProgress();
       }
+    }
+
+    function rebuildHitsFromDom() {
+      hitPoints = [];
+      hitCount = 0;
+      svg.querySelectorAll(".trace-path-dots").forEach(pathEl => {
+        hitPoints = hitPoints.concat(samplePathEl(pathEl, 4));
+      });
     }
 
     function loadDigit(speakIt) {
@@ -1976,16 +2030,10 @@
         <text class="trace-start-label" x="0" y="-18" text-anchor="middle">Start</text>`;
       svg.append(guide, arrow);
 
-      // Build hit targets from path data (no SVG transform dependency)
-      hitPoints = [];
-      hitCount = 0;
       completed = false;
       board.classList.remove("trace-done");
-      (digit.paths || []).forEach(d => {
-        hitPoints = hitPoints.concat(samplePathD(d, 5));
-      });
-
       resizeCanvas();
+      rebuildHitsFromDom();
       clearInk(true);
 
       if (!hitPoints.length) {
@@ -2009,7 +2057,6 @@
       lastVb = v;
       ctx.beginPath();
       ctx.moveTo(c.x, c.y);
-      // tiny starter dot so first touch counts
       ctx.lineTo(c.x + 0.01, c.y + 0.01);
       ctx.stroke();
       markHits(v.x, v.y);
@@ -2031,16 +2078,15 @@
       lastVb = v;
     }
 
-    function pointerUp(e) {
+    function pointerUp() {
       if (!drawing) return;
       drawing = false;
       lastPt = null;
       lastVb = null;
-      try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
     }
 
-    canvas.addEventListener("pointerdown", pointerDown);
-    canvas.addEventListener("pointermove", pointerMove);
+    canvas.addEventListener("pointerdown", pointerDown, { passive: false });
+    canvas.addEventListener("pointermove", pointerMove, { passive: false });
     canvas.addEventListener("pointerup", pointerUp);
     canvas.addEventListener("pointercancel", pointerUp);
     canvas.addEventListener("lostpointercapture", pointerUp);
@@ -2068,13 +2114,11 @@
       }
       const pct = hitPoints.length ? hitCount / hitPoints.length : 0;
       resizeCanvas();
-      // redrawing ink is cleared on resize; keep progress so user isn't punished
       fillEl.style.width = Math.round(pct * 100) + "%";
       labelEl.textContent = Math.round(pct * 100) + "%";
     };
     window.addEventListener("resize", onResize);
 
-    // Layout then load (CTM ready)
     later(() => loadDigit(true), 30);
   };
 
