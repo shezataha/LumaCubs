@@ -2297,11 +2297,11 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
   margin-bottom: 12px;
 }
 .trace-pick {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border: 0;
-  border-radius: 16px;
-  font-size: 20px;
+  border-radius: 14px;
+  font-size: 16px;
   font-weight: 900;
   color: var(--ink);
   background: rgba(255, 255, 255, 0.9);
@@ -2392,10 +2392,10 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 .trace-path-dots {
   fill: none;
   stroke: #a78bfa;
-  stroke-width: 16;
+  stroke-width: 22;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 2 18;
+  stroke-dasharray: 2 20;
   opacity: 0.95;
 }
 .trace-arrow { pointer-events: none; }
@@ -2832,79 +2832,105 @@ const NUMBERS = Array.from({ length: 100 }, (_, i) => {
 
 const NUMBERS_1_20 = NUMBERS.slice(0, 20);
 
-/* SVG paths for number tracing (viewBox 0 0 200 280) — single-stroke friendly */
-const TRACE_NUMBERS = [
-  {
-    n: 1,
-    word: "One",
-    paths: ["M 110 48 L 110 236"],
-    start: { x: 110, y: 48 },
-    tip: "Start at the top and go straight down",
+/* Digit glyphs for tracing (local box ~0–90 x 40–240), composed into 1–30 */
+const TRACE_GLYPHS = {
+  0: {
+    paths: ["M 45 70 Q 14 70 14 140 Q 14 210 45 210 Q 76 210 76 140 Q 76 70 45 70"],
+    start: { x: 45, y: 70 },
   },
-  {
-    n: 2,
-    word: "Two",
-    paths: ["M 48 78 Q 48 42 100 42 Q 152 42 152 78 Q 152 118 58 168 L 152 236"],
-    start: { x: 48, y: 78 },
-    tip: "Curve across the top, then slide down and across",
+  1: {
+    paths: ["M 45 48 L 45 236"],
+    start: { x: 45, y: 48 },
   },
-  {
-    n: 3,
-    word: "Three",
-    paths: ["M 52 70 Q 52 42 100 42 Q 152 42 152 78 Q 152 110 110 118 Q 152 126 152 168 Q 152 220 100 220 Q 52 220 52 190"],
-    start: { x: 52, y: 70 },
-    tip: "Make two bumps from top to bottom",
+  2: {
+    paths: ["M 16 78 Q 16 42 45 42 Q 78 42 78 78 Q 78 118 18 168 L 78 236"],
+    start: { x: 16, y: 78 },
   },
-  {
-    n: 4,
-    word: "Four",
-    paths: ["M 148 42 L 52 168 L 168 168", "M 148 42 L 148 236"],
-    start: { x: 148, y: 42 },
-    tip: "Down the slant, across, then down the tall line",
+  3: {
+    paths: ["M 18 70 Q 18 42 45 42 Q 78 42 78 78 Q 78 110 50 118 Q 78 126 78 168 Q 78 220 45 220 Q 18 220 18 190"],
+    start: { x: 18, y: 70 },
   },
-  {
-    n: 5,
-    word: "Five",
-    paths: ["M 148 48 L 62 48 L 54 128 Q 54 108 100 108 Q 156 108 156 168 Q 156 228 100 228 Q 52 228 52 188"],
-    start: { x: 148, y: 48 },
-    tip: "Across the top, down, then around the belly",
+  4: {
+    paths: ["M 70 42 L 14 168 L 80 168", "M 70 42 L 70 236"],
+    start: { x: 70, y: 42 },
   },
-  {
-    n: 6,
-    word: "Six",
-    paths: ["M 132 58 Q 52 90 52 160 Q 52 230 100 230 Q 156 230 156 176 Q 156 128 100 128 Q 62 128 62 160"],
-    start: { x: 132, y: 58 },
-    tip: "Curl down from the top and loop around",
+  5: {
+    paths: ["M 74 48 L 20 48 L 16 128 Q 16 108 45 108 Q 78 108 78 168 Q 78 228 45 228 Q 16 228 16 188"],
+    start: { x: 74, y: 48 },
   },
-  {
-    n: 7,
-    word: "Seven",
-    paths: ["M 48 52 L 152 52 L 88 236"],
-    start: { x: 48, y: 52 },
-    tip: "Across the top, then down the diagonal",
+  6: {
+    paths: ["M 66 58 Q 16 90 16 160 Q 16 230 45 230 Q 78 230 78 176 Q 78 128 45 128 Q 24 128 24 160"],
+    start: { x: 66, y: 58 },
   },
-  {
-    n: 8,
-    word: "Eight",
-    paths: ["M 100 42 Q 156 42 156 90 Q 156 124 100 140 Q 44 156 44 198 Q 44 240 100 240 Q 156 240 156 198 Q 156 156 100 140 Q 44 124 44 90 Q 44 42 100 42"],
-    start: { x: 100, y: 42 },
-    tip: "Trace the top loop, then the bottom loop",
+  7: {
+    paths: ["M 14 52 L 78 52 L 40 236"],
+    start: { x: 14, y: 52 },
   },
-  {
-    n: 9,
-    word: "Nine",
-    paths: ["M 132 160 Q 132 108 100 108 Q 52 108 52 156 Q 52 204 100 204 Q 148 204 148 156 L 148 58 Q 148 42 100 42 Q 58 42 52 78"],
-    start: { x: 132, y: 160 },
-    tip: "Around the circle, then down the stick",
+  8: {
+    paths: ["M 45 42 Q 78 42 78 90 Q 78 124 45 140 Q 12 156 12 198 Q 12 240 45 240 Q 78 240 78 198 Q 78 156 45 140 Q 12 124 12 90 Q 12 42 45 42"],
+    start: { x: 45, y: 42 },
   },
-  {
-    n: 10,
-    word: "Ten",
-    paths: ["M 58 48 L 58 236", "M 128 78 Q 98 78 98 140 Q 98 202 128 202 Q 168 202 168 140 Q 168 78 128 78"],
-    start: { x: 58, y: 48 },
-    tip: "Trace the 1, then the 0",
+  9: {
+    paths: ["M 66 160 Q 66 108 45 108 Q 14 108 14 156 Q 14 204 45 204 Q 74 204 74 156 L 74 58 Q 74 42 45 42 Q 18 42 14 78"],
+    start: { x: 66, y: 160 },
   },
-];
+};
+
+/* Shift absolute M/L/Q path coordinates by dx (no SVG transforms needed) */
+function offsetPathD(d, dx) {
+  if (!dx) return d;
+  return d.replace(/([MLQ])([^MLQ]*)/gi, (_, cmd, body) => {
+    const nums = body.trim().split(/[\s,]+/).filter(Boolean).map(parseFloat);
+    const out = nums.map((v, i) => (i % 2 === 0 ? Math.round((v + dx) * 100) / 100 : v));
+    return cmd + " " + out.join(" ");
+  });
+}
+
+function buildTraceNumber(n) {
+  const digits = String(n).split("").map(d => parseInt(d, 10));
+  const two = digits.length > 1;
+  const slots = digits.map((digit, i) => ({
+    digit,
+    dx: two ? 12 + i * 96 : 55,
+  }));
+  const paths = [];
+  let start = null;
+  slots.forEach((slot, idx) => {
+    const glyph = TRACE_GLYPHS[slot.digit];
+    glyph.paths.forEach(d => {
+      paths.push(offsetPathD(d, slot.dx));
+    });
+    if (idx === 0) {
+      start = { x: glyph.start.x + slot.dx, y: glyph.start.y };
+    }
+  });
+  const tip = two
+    ? `Trace ${digits[0]}, then ${digits[1]}`
+    : (
+      [
+        "",
+        "Start at the top and go straight down",
+        "Curve across the top, then slide down and across",
+        "Make two bumps from top to bottom",
+        "Down the slant, across, then down the tall line",
+        "Across the top, down, then around the belly",
+        "Curl down from the top and loop around",
+        "Across the top, then down the diagonal",
+        "Trace the top loop, then the bottom loop",
+        "Around the circle, then down the stick",
+      ][n] || "Follow the dots"
+    );
+  return {
+    n,
+    word: numberWord(n),
+    paths,
+    start,
+    tip,
+  };
+}
+
+/* Traceable numbers 1–30 */
+const TRACE_NUMBERS = Array.from({ length: 30 }, (_, i) => buildTraceNumber(i + 1));
 
 /* Extra fruits & vegetables for coloring and matching games */
 const FRUITS = [
@@ -4519,7 +4545,7 @@ const POEMS = [
       <span class="count-game-launch-emoji">✏️</span>
       <span class="count-game-launch-text">
         <strong>Number Trace</strong>
-        <small>Trace dotted numbers 1–10 with your finger!</small>
+        <small>Trace dotted numbers 1–30 with your finger!</small>
       </span>
       <span class="count-game-launch-go">Trace →</span>`);
     traceLaunch.type = "button";
@@ -4956,7 +4982,7 @@ const POEMS = [
     round();
   };
 
-  /* -------- Number Tracing 1–10 -------- */
+  /* -------- Number Tracing 1–30 -------- */
 
   VIEWS.countTrace = function () {
     titleEl.textContent = "✏️ Number Trace";
@@ -4968,10 +4994,10 @@ const POEMS = [
     let lastVb = null;
     let hitPoints = [];
     let hitCount = 0;
-    // Toddler-friendly: easier pass + wider hit area
-    const PASS = 0.55;
-    const HIT_R = 34;
+    const PASS = 0.42; // toddler-friendly
+    const HIT_R = 48;  // wide target in viewBox units
     const VB = { w: 200, h: 280 };
+    const svgNS = "http://www.w3.org/2000/svg";
 
     const wrap = el("div", "trace-wrap");
     const picker = el("div", "trace-picker");
@@ -4985,11 +5011,9 @@ const POEMS = [
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
 
-    const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, "svg");
     svg.setAttribute("viewBox", `0 0 ${VB.w} ${VB.h}`);
-    // Stretch guide to fill board so hit-tests match finger/mouse drawing
-    svg.setAttribute("preserveAspectRatio", "none");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     svg.setAttribute("class", "trace-svg");
     svg.setAttribute("aria-hidden", "true");
 
@@ -5024,24 +5048,37 @@ const POEMS = [
       picker.appendChild(b);
     });
 
-    function setupStrokeStyle() {
-      const rect = canvas.getBoundingClientRect();
+    function samplePathD(d, step) {
+      const probe = document.createElementNS(svgNS, "path");
+      probe.setAttribute("d", d);
+      let len = 0;
+      try { len = probe.getTotalLength(); } catch (e) { return []; }
+      if (!len || !isFinite(len)) return [];
+      const pts = [];
+      const n = Math.max(20, Math.ceil(len / step));
+      for (let i = 0; i <= n; i++) {
+        const p = probe.getPointAtLength((len * i) / n);
+        pts.push({ x: p.x, y: p.y, hit: false });
+      }
+      return pts;
+    }
+
+    function setupStrokeStyle(cssW) {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       ctx.strokeStyle = "#ff6b9d";
-      ctx.lineWidth = Math.max(14, rect.width * 0.045);
+      ctx.lineWidth = Math.max(16, cssW * 0.05);
     }
 
     function resizeCanvas() {
-      const avail = board.parentElement ? board.parentElement.getBoundingClientRect().width : board.getBoundingClientRect().width;
+      const avail = wrap.getBoundingClientRect().width || 320;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      // Keep exact viewBox aspect so guide + drawing stay aligned
-      let w = Math.max(260, Math.floor(avail || 320));
+      let w = Math.max(280, Math.floor(avail));
       let h = Math.floor(w * (VB.h / VB.w));
-      if (h > 440) {
-        h = 440;
+      if (h > 460) {
+        h = 460;
         w = Math.floor(h * (VB.w / VB.h));
       }
       board.style.width = w + "px";
@@ -5052,54 +5089,60 @@ const POEMS = [
       canvas.height = Math.floor(h * dpr);
       canvas.style.width = w + "px";
       canvas.style.height = h + "px";
-      setupStrokeStyle();
+      setupStrokeStyle(w);
       ctx.clearRect(0, 0, w, h);
     }
 
+    // Map screen point -> SVG viewBox using real CTM (handles letterboxing)
     function clientToViewBox(clientX, clientY) {
+      try {
+        const ctm = svg.getScreenCTM();
+        if (ctm) {
+          const pt = svg.createSVGPoint();
+          pt.x = clientX;
+          pt.y = clientY;
+          const p = pt.matrixTransform(ctm.inverse());
+          return { x: p.x, y: p.y };
+        }
+      } catch (e) {}
       const rect = canvas.getBoundingClientRect();
-      if (!rect.width || !rect.height) return { x: 0, y: 0 };
+      const scale = Math.min(rect.width / VB.w, rect.height / VB.h);
+      const ox = (rect.width - VB.w * scale) / 2;
+      const oy = (rect.height - VB.h * scale) / 2;
       return {
-        x: ((clientX - rect.left) / rect.width) * VB.w,
-        y: ((clientY - rect.top) / rect.height) * VB.h,
+        x: (clientX - rect.left - ox) / scale,
+        y: (clientY - rect.top - oy) / scale,
       };
     }
 
     function clientToCanvas(clientX, clientY) {
       const rect = canvas.getBoundingClientRect();
-      return {
-        x: clientX - rect.left,
-        y: clientY - rect.top,
-      };
+      return { x: clientX - rect.left, y: clientY - rect.top };
     }
 
-    function samplePath(pathEl, step) {
-      const len = pathEl.getTotalLength();
-      if (!len || !isFinite(len)) return [];
-      const pts = [];
-      const n = Math.max(16, Math.ceil(len / step));
-      for (let i = 0; i <= n; i++) {
-        const p = pathEl.getPointAtLength((len * i) / n);
-        pts.push({ x: p.x, y: p.y, hit: false });
-      }
-      return pts;
+    function celebrate() {
+      if (completed) return;
+      completed = true;
+      status.className = "trace-status yes";
+      status.textContent = "🎉 Amazing tracing! You did it!";
+      snd.fanfare();
+      confetti(30);
+      toast("🎉 Perfect tracing!");
+      const digit = TRACE_NUMBERS[digitIndex];
+      speak(`Amazing! You traced number ${digit.word}!`, { rate: 0.9, pitch: 1.15 });
+      board.classList.add("trace-done");
     }
 
     function updateProgress() {
-      const pct = hitPoints.length ? Math.round((hitCount / hitPoints.length) * 100) : 0;
+      if (!hitPoints.length) {
+        fillEl.style.width = "0%";
+        labelEl.textContent = "0%";
+        return;
+      }
+      const pct = Math.round((hitCount / hitPoints.length) * 100);
       fillEl.style.width = pct + "%";
       labelEl.textContent = pct + "%";
-      if (!completed && hitPoints.length && hitCount / hitPoints.length >= PASS) {
-        completed = true;
-        status.className = "trace-status yes";
-        status.textContent = "🎉 Amazing tracing! You did it!";
-        snd.fanfare();
-        confetti(30);
-        toast("🎉 Perfect tracing!");
-        const digit = TRACE_NUMBERS[digitIndex];
-        speak(`Amazing! You traced number ${digit.word}!`, { rate: 0.9, pitch: 1.15 });
-        board.classList.add("trace-done");
-      }
+      if (!completed && hitCount / hitPoints.length >= PASS) celebrate();
     }
 
     function markHits(vx, vy) {
@@ -5119,14 +5162,11 @@ const POEMS = [
       if (gained) updateProgress();
     }
 
-    // Fill gaps between pointer samples so fast swipes still count
     function markSegment(v0, v1) {
-      if (!v0 || !v1) {
-        if (v1) markHits(v1.x, v1.y);
-        return;
-      }
+      if (!v1) return;
+      if (!v0) { markHits(v1.x, v1.y); return; }
       const dist = Math.hypot(v1.x - v0.x, v1.y - v0.y);
-      const steps = Math.max(1, Math.ceil(dist / 6));
+      const steps = Math.max(1, Math.ceil(dist / 4));
       for (let i = 0; i <= steps; i++) {
         const t = i / steps;
         markHits(v0.x + (v1.x - v0.x) * t, v0.y + (v1.y - v0.y) * t);
@@ -5134,16 +5174,16 @@ const POEMS = [
     }
 
     function clearInk(resetHits) {
-      const rect = canvas.getBoundingClientRect();
-      setupStrokeStyle();
-      ctx.clearRect(0, 0, rect.width, rect.height);
+      const w = canvas.getBoundingClientRect().width || 280;
+      setupStrokeStyle(w);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (resetHits) {
         hitPoints.forEach(p => { p.hit = false; });
         hitCount = 0;
         completed = false;
         board.classList.remove("trace-done");
         status.className = "trace-status";
-        status.textContent = "Follow the arrows and trace the dots!";
+        status.textContent = "Trace on the purple dots — progress goes up!";
         updateProgress();
       }
     }
@@ -5156,17 +5196,17 @@ const POEMS = [
           <strong>Trace ${digit.n}</strong>
           <span>${digit.tip}</span>
         </div>`;
+
       svg.innerHTML = "";
       const guide = document.createElementNS(svgNS, "g");
       guide.setAttribute("class", "trace-guide");
-      digit.paths.forEach(d => {
+      (digit.paths || []).forEach(d => {
         const path = document.createElementNS(svgNS, "path");
         path.setAttribute("d", d);
         path.setAttribute("class", "trace-path-dots");
         guide.appendChild(path);
       });
-      // Directional arrow at start
-      const start = digit.start;
+      const start = digit.start || { x: 100, y: 40 };
       const arrow = document.createElementNS(svgNS, "g");
       arrow.setAttribute("class", "trace-arrow");
       arrow.setAttribute("transform", `translate(${start.x}, ${start.y})`);
@@ -5176,19 +5216,23 @@ const POEMS = [
         <text class="trace-start-label" x="0" y="-18" text-anchor="middle">Start</text>`;
       svg.append(guide, arrow);
 
-      // Sample hit points from rendered paths
+      // Build hit targets from path data (no SVG transform dependency)
       hitPoints = [];
       hitCount = 0;
       completed = false;
       board.classList.remove("trace-done");
-      const pathNodes = svg.querySelectorAll(".trace-path-dots");
-      pathNodes.forEach(pathEl => {
-        hitPoints = hitPoints.concat(samplePath(pathEl, 6));
+      (digit.paths || []).forEach(d => {
+        hitPoints = hitPoints.concat(samplePathD(d, 5));
       });
+
       resizeCanvas();
       clearInk(true);
-      status.className = "trace-status";
-      status.textContent = "Follow the pink Start dot and trace the purple dots!";
+
+      if (!hitPoints.length) {
+        status.textContent = "⚠️ Could not load this number. Try another.";
+      } else {
+        status.textContent = "Follow Start → trace the purple dots!";
+      }
       if (speakIt) {
         speak(`Let's trace number ${digit.word}. ${digit.tip}.`, { rate: 0.82, pitch: 1.1 });
       }
@@ -5205,6 +5249,9 @@ const POEMS = [
       lastVb = v;
       ctx.beginPath();
       ctx.moveTo(c.x, c.y);
+      // tiny starter dot so first touch counts
+      ctx.lineTo(c.x + 0.01, c.y + 0.01);
+      ctx.stroke();
       markHits(v.x, v.y);
     }
 
@@ -5236,7 +5283,7 @@ const POEMS = [
     canvas.addEventListener("pointermove", pointerMove);
     canvas.addEventListener("pointerup", pointerUp);
     canvas.addEventListener("pointercancel", pointerUp);
-    canvas.addEventListener("pointerleave", e => { if (drawing) pointerUp(e); });
+    canvas.addEventListener("lostpointercapture", pointerUp);
 
     clearBtn.addEventListener("click", () => {
       snd.pop();
@@ -5259,11 +5306,16 @@ const POEMS = [
         window.removeEventListener("resize", onResize);
         return;
       }
+      const pct = hitPoints.length ? hitCount / hitPoints.length : 0;
       resizeCanvas();
+      // redrawing ink is cleared on resize; keep progress so user isn't punished
+      fillEl.style.width = Math.round(pct * 100) + "%";
+      labelEl.textContent = Math.round(pct * 100) + "%";
     };
     window.addEventListener("resize", onResize);
 
-    loadDigit(true);
+    // Layout then load (CTM ready)
+    later(() => loadDigit(true), 30);
   };
 
   /* Interactive counting playground for 1–20 */

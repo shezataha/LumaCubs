@@ -102,79 +102,105 @@ const NUMBERS = Array.from({ length: 100 }, (_, i) => {
 
 const NUMBERS_1_20 = NUMBERS.slice(0, 20);
 
-/* SVG paths for number tracing (viewBox 0 0 200 280) — single-stroke friendly */
-const TRACE_NUMBERS = [
-  {
-    n: 1,
-    word: "One",
-    paths: ["M 110 48 L 110 236"],
-    start: { x: 110, y: 48 },
-    tip: "Start at the top and go straight down",
+/* Digit glyphs for tracing (local box ~0–90 x 40–240), composed into 1–30 */
+const TRACE_GLYPHS = {
+  0: {
+    paths: ["M 45 70 Q 14 70 14 140 Q 14 210 45 210 Q 76 210 76 140 Q 76 70 45 70"],
+    start: { x: 45, y: 70 },
   },
-  {
-    n: 2,
-    word: "Two",
-    paths: ["M 48 78 Q 48 42 100 42 Q 152 42 152 78 Q 152 118 58 168 L 152 236"],
-    start: { x: 48, y: 78 },
-    tip: "Curve across the top, then slide down and across",
+  1: {
+    paths: ["M 45 48 L 45 236"],
+    start: { x: 45, y: 48 },
   },
-  {
-    n: 3,
-    word: "Three",
-    paths: ["M 52 70 Q 52 42 100 42 Q 152 42 152 78 Q 152 110 110 118 Q 152 126 152 168 Q 152 220 100 220 Q 52 220 52 190"],
-    start: { x: 52, y: 70 },
-    tip: "Make two bumps from top to bottom",
+  2: {
+    paths: ["M 16 78 Q 16 42 45 42 Q 78 42 78 78 Q 78 118 18 168 L 78 236"],
+    start: { x: 16, y: 78 },
   },
-  {
-    n: 4,
-    word: "Four",
-    paths: ["M 148 42 L 52 168 L 168 168", "M 148 42 L 148 236"],
-    start: { x: 148, y: 42 },
-    tip: "Down the slant, across, then down the tall line",
+  3: {
+    paths: ["M 18 70 Q 18 42 45 42 Q 78 42 78 78 Q 78 110 50 118 Q 78 126 78 168 Q 78 220 45 220 Q 18 220 18 190"],
+    start: { x: 18, y: 70 },
   },
-  {
-    n: 5,
-    word: "Five",
-    paths: ["M 148 48 L 62 48 L 54 128 Q 54 108 100 108 Q 156 108 156 168 Q 156 228 100 228 Q 52 228 52 188"],
-    start: { x: 148, y: 48 },
-    tip: "Across the top, down, then around the belly",
+  4: {
+    paths: ["M 70 42 L 14 168 L 80 168", "M 70 42 L 70 236"],
+    start: { x: 70, y: 42 },
   },
-  {
-    n: 6,
-    word: "Six",
-    paths: ["M 132 58 Q 52 90 52 160 Q 52 230 100 230 Q 156 230 156 176 Q 156 128 100 128 Q 62 128 62 160"],
-    start: { x: 132, y: 58 },
-    tip: "Curl down from the top and loop around",
+  5: {
+    paths: ["M 74 48 L 20 48 L 16 128 Q 16 108 45 108 Q 78 108 78 168 Q 78 228 45 228 Q 16 228 16 188"],
+    start: { x: 74, y: 48 },
   },
-  {
-    n: 7,
-    word: "Seven",
-    paths: ["M 48 52 L 152 52 L 88 236"],
-    start: { x: 48, y: 52 },
-    tip: "Across the top, then down the diagonal",
+  6: {
+    paths: ["M 66 58 Q 16 90 16 160 Q 16 230 45 230 Q 78 230 78 176 Q 78 128 45 128 Q 24 128 24 160"],
+    start: { x: 66, y: 58 },
   },
-  {
-    n: 8,
-    word: "Eight",
-    paths: ["M 100 42 Q 156 42 156 90 Q 156 124 100 140 Q 44 156 44 198 Q 44 240 100 240 Q 156 240 156 198 Q 156 156 100 140 Q 44 124 44 90 Q 44 42 100 42"],
-    start: { x: 100, y: 42 },
-    tip: "Trace the top loop, then the bottom loop",
+  7: {
+    paths: ["M 14 52 L 78 52 L 40 236"],
+    start: { x: 14, y: 52 },
   },
-  {
-    n: 9,
-    word: "Nine",
-    paths: ["M 132 160 Q 132 108 100 108 Q 52 108 52 156 Q 52 204 100 204 Q 148 204 148 156 L 148 58 Q 148 42 100 42 Q 58 42 52 78"],
-    start: { x: 132, y: 160 },
-    tip: "Around the circle, then down the stick",
+  8: {
+    paths: ["M 45 42 Q 78 42 78 90 Q 78 124 45 140 Q 12 156 12 198 Q 12 240 45 240 Q 78 240 78 198 Q 78 156 45 140 Q 12 124 12 90 Q 12 42 45 42"],
+    start: { x: 45, y: 42 },
   },
-  {
-    n: 10,
-    word: "Ten",
-    paths: ["M 58 48 L 58 236", "M 128 78 Q 98 78 98 140 Q 98 202 128 202 Q 168 202 168 140 Q 168 78 128 78"],
-    start: { x: 58, y: 48 },
-    tip: "Trace the 1, then the 0",
+  9: {
+    paths: ["M 66 160 Q 66 108 45 108 Q 14 108 14 156 Q 14 204 45 204 Q 74 204 74 156 L 74 58 Q 74 42 45 42 Q 18 42 14 78"],
+    start: { x: 66, y: 160 },
   },
-];
+};
+
+/* Shift absolute M/L/Q path coordinates by dx (no SVG transforms needed) */
+function offsetPathD(d, dx) {
+  if (!dx) return d;
+  return d.replace(/([MLQ])([^MLQ]*)/gi, (_, cmd, body) => {
+    const nums = body.trim().split(/[\s,]+/).filter(Boolean).map(parseFloat);
+    const out = nums.map((v, i) => (i % 2 === 0 ? Math.round((v + dx) * 100) / 100 : v));
+    return cmd + " " + out.join(" ");
+  });
+}
+
+function buildTraceNumber(n) {
+  const digits = String(n).split("").map(d => parseInt(d, 10));
+  const two = digits.length > 1;
+  const slots = digits.map((digit, i) => ({
+    digit,
+    dx: two ? 12 + i * 96 : 55,
+  }));
+  const paths = [];
+  let start = null;
+  slots.forEach((slot, idx) => {
+    const glyph = TRACE_GLYPHS[slot.digit];
+    glyph.paths.forEach(d => {
+      paths.push(offsetPathD(d, slot.dx));
+    });
+    if (idx === 0) {
+      start = { x: glyph.start.x + slot.dx, y: glyph.start.y };
+    }
+  });
+  const tip = two
+    ? `Trace ${digits[0]}, then ${digits[1]}`
+    : (
+      [
+        "",
+        "Start at the top and go straight down",
+        "Curve across the top, then slide down and across",
+        "Make two bumps from top to bottom",
+        "Down the slant, across, then down the tall line",
+        "Across the top, down, then around the belly",
+        "Curl down from the top and loop around",
+        "Across the top, then down the diagonal",
+        "Trace the top loop, then the bottom loop",
+        "Around the circle, then down the stick",
+      ][n] || "Follow the dots"
+    );
+  return {
+    n,
+    word: numberWord(n),
+    paths,
+    start,
+    tip,
+  };
+}
+
+/* Traceable numbers 1–30 */
+const TRACE_NUMBERS = Array.from({ length: 30 }, (_, i) => buildTraceNumber(i + 1));
 
 /* Extra fruits & vegetables for coloring and matching games */
 const FRUITS = [

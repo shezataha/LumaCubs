@@ -1305,7 +1305,7 @@
       <span class="count-game-launch-emoji">✏️</span>
       <span class="count-game-launch-text">
         <strong>Number Trace</strong>
-        <small>Trace dotted numbers 1–10 with your finger!</small>
+        <small>Trace dotted numbers 1–30 with your finger!</small>
       </span>
       <span class="count-game-launch-go">Trace →</span>`);
     traceLaunch.type = "button";
@@ -1742,7 +1742,7 @@
     round();
   };
 
-  /* -------- Number Tracing 1–10 -------- */
+  /* -------- Number Tracing 1–30 -------- */
 
   VIEWS.countTrace = function () {
     titleEl.textContent = "✏️ Number Trace";
@@ -1754,10 +1754,10 @@
     let lastVb = null;
     let hitPoints = [];
     let hitCount = 0;
-    // Toddler-friendly: easier pass + wider hit area
-    const PASS = 0.55;
-    const HIT_R = 34;
+    const PASS = 0.42; // toddler-friendly
+    const HIT_R = 48;  // wide target in viewBox units
     const VB = { w: 200, h: 280 };
+    const svgNS = "http://www.w3.org/2000/svg";
 
     const wrap = el("div", "trace-wrap");
     const picker = el("div", "trace-picker");
@@ -1771,11 +1771,9 @@
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
 
-    const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, "svg");
     svg.setAttribute("viewBox", `0 0 ${VB.w} ${VB.h}`);
-    // Stretch guide to fill board so hit-tests match finger/mouse drawing
-    svg.setAttribute("preserveAspectRatio", "none");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     svg.setAttribute("class", "trace-svg");
     svg.setAttribute("aria-hidden", "true");
 
@@ -1810,24 +1808,37 @@
       picker.appendChild(b);
     });
 
-    function setupStrokeStyle() {
-      const rect = canvas.getBoundingClientRect();
+    function samplePathD(d, step) {
+      const probe = document.createElementNS(svgNS, "path");
+      probe.setAttribute("d", d);
+      let len = 0;
+      try { len = probe.getTotalLength(); } catch (e) { return []; }
+      if (!len || !isFinite(len)) return [];
+      const pts = [];
+      const n = Math.max(20, Math.ceil(len / step));
+      for (let i = 0; i <= n; i++) {
+        const p = probe.getPointAtLength((len * i) / n);
+        pts.push({ x: p.x, y: p.y, hit: false });
+      }
+      return pts;
+    }
+
+    function setupStrokeStyle(cssW) {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       ctx.strokeStyle = "#ff6b9d";
-      ctx.lineWidth = Math.max(14, rect.width * 0.045);
+      ctx.lineWidth = Math.max(16, cssW * 0.05);
     }
 
     function resizeCanvas() {
-      const avail = board.parentElement ? board.parentElement.getBoundingClientRect().width : board.getBoundingClientRect().width;
+      const avail = wrap.getBoundingClientRect().width || 320;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      // Keep exact viewBox aspect so guide + drawing stay aligned
-      let w = Math.max(260, Math.floor(avail || 320));
+      let w = Math.max(280, Math.floor(avail));
       let h = Math.floor(w * (VB.h / VB.w));
-      if (h > 440) {
-        h = 440;
+      if (h > 460) {
+        h = 460;
         w = Math.floor(h * (VB.w / VB.h));
       }
       board.style.width = w + "px";
@@ -1838,54 +1849,60 @@
       canvas.height = Math.floor(h * dpr);
       canvas.style.width = w + "px";
       canvas.style.height = h + "px";
-      setupStrokeStyle();
+      setupStrokeStyle(w);
       ctx.clearRect(0, 0, w, h);
     }
 
+    // Map screen point -> SVG viewBox using real CTM (handles letterboxing)
     function clientToViewBox(clientX, clientY) {
+      try {
+        const ctm = svg.getScreenCTM();
+        if (ctm) {
+          const pt = svg.createSVGPoint();
+          pt.x = clientX;
+          pt.y = clientY;
+          const p = pt.matrixTransform(ctm.inverse());
+          return { x: p.x, y: p.y };
+        }
+      } catch (e) {}
       const rect = canvas.getBoundingClientRect();
-      if (!rect.width || !rect.height) return { x: 0, y: 0 };
+      const scale = Math.min(rect.width / VB.w, rect.height / VB.h);
+      const ox = (rect.width - VB.w * scale) / 2;
+      const oy = (rect.height - VB.h * scale) / 2;
       return {
-        x: ((clientX - rect.left) / rect.width) * VB.w,
-        y: ((clientY - rect.top) / rect.height) * VB.h,
+        x: (clientX - rect.left - ox) / scale,
+        y: (clientY - rect.top - oy) / scale,
       };
     }
 
     function clientToCanvas(clientX, clientY) {
       const rect = canvas.getBoundingClientRect();
-      return {
-        x: clientX - rect.left,
-        y: clientY - rect.top,
-      };
+      return { x: clientX - rect.left, y: clientY - rect.top };
     }
 
-    function samplePath(pathEl, step) {
-      const len = pathEl.getTotalLength();
-      if (!len || !isFinite(len)) return [];
-      const pts = [];
-      const n = Math.max(16, Math.ceil(len / step));
-      for (let i = 0; i <= n; i++) {
-        const p = pathEl.getPointAtLength((len * i) / n);
-        pts.push({ x: p.x, y: p.y, hit: false });
-      }
-      return pts;
+    function celebrate() {
+      if (completed) return;
+      completed = true;
+      status.className = "trace-status yes";
+      status.textContent = "🎉 Amazing tracing! You did it!";
+      snd.fanfare();
+      confetti(30);
+      toast("🎉 Perfect tracing!");
+      const digit = TRACE_NUMBERS[digitIndex];
+      speak(`Amazing! You traced number ${digit.word}!`, { rate: 0.9, pitch: 1.15 });
+      board.classList.add("trace-done");
     }
 
     function updateProgress() {
-      const pct = hitPoints.length ? Math.round((hitCount / hitPoints.length) * 100) : 0;
+      if (!hitPoints.length) {
+        fillEl.style.width = "0%";
+        labelEl.textContent = "0%";
+        return;
+      }
+      const pct = Math.round((hitCount / hitPoints.length) * 100);
       fillEl.style.width = pct + "%";
       labelEl.textContent = pct + "%";
-      if (!completed && hitPoints.length && hitCount / hitPoints.length >= PASS) {
-        completed = true;
-        status.className = "trace-status yes";
-        status.textContent = "🎉 Amazing tracing! You did it!";
-        snd.fanfare();
-        confetti(30);
-        toast("🎉 Perfect tracing!");
-        const digit = TRACE_NUMBERS[digitIndex];
-        speak(`Amazing! You traced number ${digit.word}!`, { rate: 0.9, pitch: 1.15 });
-        board.classList.add("trace-done");
-      }
+      if (!completed && hitCount / hitPoints.length >= PASS) celebrate();
     }
 
     function markHits(vx, vy) {
@@ -1905,14 +1922,11 @@
       if (gained) updateProgress();
     }
 
-    // Fill gaps between pointer samples so fast swipes still count
     function markSegment(v0, v1) {
-      if (!v0 || !v1) {
-        if (v1) markHits(v1.x, v1.y);
-        return;
-      }
+      if (!v1) return;
+      if (!v0) { markHits(v1.x, v1.y); return; }
       const dist = Math.hypot(v1.x - v0.x, v1.y - v0.y);
-      const steps = Math.max(1, Math.ceil(dist / 6));
+      const steps = Math.max(1, Math.ceil(dist / 4));
       for (let i = 0; i <= steps; i++) {
         const t = i / steps;
         markHits(v0.x + (v1.x - v0.x) * t, v0.y + (v1.y - v0.y) * t);
@@ -1920,16 +1934,16 @@
     }
 
     function clearInk(resetHits) {
-      const rect = canvas.getBoundingClientRect();
-      setupStrokeStyle();
-      ctx.clearRect(0, 0, rect.width, rect.height);
+      const w = canvas.getBoundingClientRect().width || 280;
+      setupStrokeStyle(w);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (resetHits) {
         hitPoints.forEach(p => { p.hit = false; });
         hitCount = 0;
         completed = false;
         board.classList.remove("trace-done");
         status.className = "trace-status";
-        status.textContent = "Follow the arrows and trace the dots!";
+        status.textContent = "Trace on the purple dots — progress goes up!";
         updateProgress();
       }
     }
@@ -1942,17 +1956,17 @@
           <strong>Trace ${digit.n}</strong>
           <span>${digit.tip}</span>
         </div>`;
+
       svg.innerHTML = "";
       const guide = document.createElementNS(svgNS, "g");
       guide.setAttribute("class", "trace-guide");
-      digit.paths.forEach(d => {
+      (digit.paths || []).forEach(d => {
         const path = document.createElementNS(svgNS, "path");
         path.setAttribute("d", d);
         path.setAttribute("class", "trace-path-dots");
         guide.appendChild(path);
       });
-      // Directional arrow at start
-      const start = digit.start;
+      const start = digit.start || { x: 100, y: 40 };
       const arrow = document.createElementNS(svgNS, "g");
       arrow.setAttribute("class", "trace-arrow");
       arrow.setAttribute("transform", `translate(${start.x}, ${start.y})`);
@@ -1962,19 +1976,23 @@
         <text class="trace-start-label" x="0" y="-18" text-anchor="middle">Start</text>`;
       svg.append(guide, arrow);
 
-      // Sample hit points from rendered paths
+      // Build hit targets from path data (no SVG transform dependency)
       hitPoints = [];
       hitCount = 0;
       completed = false;
       board.classList.remove("trace-done");
-      const pathNodes = svg.querySelectorAll(".trace-path-dots");
-      pathNodes.forEach(pathEl => {
-        hitPoints = hitPoints.concat(samplePath(pathEl, 6));
+      (digit.paths || []).forEach(d => {
+        hitPoints = hitPoints.concat(samplePathD(d, 5));
       });
+
       resizeCanvas();
       clearInk(true);
-      status.className = "trace-status";
-      status.textContent = "Follow the pink Start dot and trace the purple dots!";
+
+      if (!hitPoints.length) {
+        status.textContent = "⚠️ Could not load this number. Try another.";
+      } else {
+        status.textContent = "Follow Start → trace the purple dots!";
+      }
       if (speakIt) {
         speak(`Let's trace number ${digit.word}. ${digit.tip}.`, { rate: 0.82, pitch: 1.1 });
       }
@@ -1991,6 +2009,9 @@
       lastVb = v;
       ctx.beginPath();
       ctx.moveTo(c.x, c.y);
+      // tiny starter dot so first touch counts
+      ctx.lineTo(c.x + 0.01, c.y + 0.01);
+      ctx.stroke();
       markHits(v.x, v.y);
     }
 
@@ -2022,7 +2043,7 @@
     canvas.addEventListener("pointermove", pointerMove);
     canvas.addEventListener("pointerup", pointerUp);
     canvas.addEventListener("pointercancel", pointerUp);
-    canvas.addEventListener("pointerleave", e => { if (drawing) pointerUp(e); });
+    canvas.addEventListener("lostpointercapture", pointerUp);
 
     clearBtn.addEventListener("click", () => {
       snd.pop();
@@ -2045,11 +2066,16 @@
         window.removeEventListener("resize", onResize);
         return;
       }
+      const pct = hitPoints.length ? hitCount / hitPoints.length : 0;
       resizeCanvas();
+      // redrawing ink is cleared on resize; keep progress so user isn't punished
+      fillEl.style.width = Math.round(pct * 100) + "%";
+      labelEl.textContent = Math.round(pct * 100) + "%";
     };
     window.addEventListener("resize", onResize);
 
-    loadDigit(true);
+    // Layout then load (CTM ready)
+    later(() => loadDigit(true), 30);
   };
 
   /* Interactive counting playground for 1–20 */
