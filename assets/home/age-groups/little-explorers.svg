@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" fill="none" role="img" aria-label="Little Explorers illustration">
+  <defs>
+    <linearGradient id="leBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFE8D6"/>
+      <stop offset="55%" stop-color="#FFD4BC"/>
+      <stop offset="100%" stop-color="#F7C9B8"/>
+    </linearGradient>
+    <linearGradient id="leFur" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE4C8"/>
+      <stop offset="100%" stop-color="#FFC59A"/>
+    </linearGradient>
+    <linearGradient id="leBlockA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#A8E6CF"/>
+      <stop offset="100%" stop-color="#6FCFB0"/>
+    </linearGradient>
+    <linearGradient id="leBlockB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#A8D4F0"/>
+      <stop offset="100%" stop-color="#7BB8E0"/>
+    </linearGradient>
+    <linearGradient id="leBlockC" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFE29A"/>
+      <stop offset="100%" stop-color="#F0C96A"/>
+    </linearGradient>
+    <filter id="leSoft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#C48B6E" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="640" height="480" rx="48" fill="url(#leBg)"/>
+  <circle cx="92" cy="86" r="54" fill="#FFF6EC" opacity="0.55"/>
+  <circle cx="560" cy="70" r="70" fill="#FFB894" opacity="0.28"/>
+  <circle cx="520" cy="390" r="90" fill="#A8E6CF" opacity="0.22"/>
+  <ellipse cx="320" cy="410" rx="210" ry="28" fill="#E8B89A" opacity="0.28"/>
+
+  <!-- toy blocks -->
+  <g filter="url(#leSoft)">
+    <rect x="78" y="286" width="88" height="88" rx="18" fill="url(#leBlockA)"/>
+    <rect x="86" y="294" width="72" height="18" rx="8" fill="#FFFFFF" opacity="0.35"/>
+    <text x="122" y="345" text-anchor="middle" font-family="Nunito,Arial,sans-serif" font-size="36" font-weight="800" fill="#3F6F5E">A</text>
+    <rect x="148" y="248" width="78" height="78" rx="16" fill="url(#leBlockB)"/>
+    <rect x="156" y="256" width="62" height="16" rx="7" fill="#FFFFFF" opacity="0.35"/>
+    <text x="187" y="302" text-anchor="middle" font-family="Nunito,Arial,sans-serif" font-size="32" font-weight="800" fill="#3D5F78">1</text>
+    <rect x="112" y="210" width="64" height="64" rx="14" fill="url(#leBlockC)"/>
+    <text x="144" y="252" text-anchor="middle" font-family="Nunito,Arial,sans-serif" font-size="28" font-weight="800" fill="#7A6230">●</text>
+  </g>
+
+  <!-- cub toddler -->
+  <g filter="url(#leSoft)">
+    <ellipse cx="392" cy="360" rx="92" ry="28" fill="#D9A888" opacity="0.25"/>
+    <ellipse cx="348" cy="248" rx="26" ry="24" fill="url(#leFur)"/>
+    <ellipse cx="436" cy="248" rx="26" ry="24" fill="url(#leFur)"/>
+    <ellipse cx="348" cy="250" rx="12" ry="11" fill="#FFF6EC"/>
+    <ellipse cx="436" cy="250" rx="12" ry="11" fill="#FFF6EC"/>
+    <ellipse cx="392" cy="300" rx="78" ry="72" fill="url(#leFur)"/>
+    <ellipse cx="392" cy="318" rx="48" ry="38" fill="#FFF6EC"/>
+    <circle cx="366" cy="288" r="7" fill="#4A4458"/>
+    <circle cx="418" cy="288" r="7" fill="#4A4458"/>
+    <circle cx="368" cy="286" r="2.2" fill="#fff"/>
+    <circle cx="420" cy="286" r="2.2" fill="#fff"/>
+    <ellipse cx="358" cy="306" rx="11" ry="8" fill="#FFB4C8" opacity="0.8"/>
+    <ellipse cx="426" cy="306" rx="11" ry="8" fill="#FFB4C8" opacity="0.8"/>
+    <ellipse cx="392" cy="308" rx="10" ry="8" fill="#F4A261"/>
+    <path d="M376 328 Q392 342 408 328" stroke="#4A4458" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- paws holding ball -->
+    <circle cx="392" cy="378" r="34" fill="#A8D4F0"/>
+    <circle cx="380" cy="368" r="8" fill="#FFFFFF" opacity="0.45"/>
+    <ellipse cx="340" cy="360" rx="22" ry="16" fill="url(#leFur)"/>
+    <ellipse cx="444" cy="360" rx="22" ry="16" fill="url(#leFur)"/>
+  </g>
+
+  <!-- soft stars -->
+  <circle cx="250" cy="120" r="6" fill="#FFF6EC"/>
+  <circle cx="480" cy="150" r="5" fill="#FFE29A"/>
+  <circle cx="290" cy="160" r="4" fill="#A8E6CF"/>
+</svg>

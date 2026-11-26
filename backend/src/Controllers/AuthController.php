@@ -61,15 +61,42 @@ final class AuthController
                 if (mb_strlen($avatar) > 8) {
                     $avatar = '🧸';
                 }
-                $ageGroupId = $req->int('age_group_id', 0) ?: null;
                 $lang = $req->string('preferred_language', 'en') ?: 'en';
                 if (!in_array($lang, ['en', 'ur', 'ar'], true)) {
                     $lang = 'en';
                 }
+                $dob = $req->string('date_of_birth');
+                if ($dob === '') {
+                    $dob = $req->string('dob');
+                }
+                $dobVal = null;
+                $birthYear = null;
+                $ageGroupId = $req->int('age_group_id', 0) ?: null;
+                if ($dob !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dob)) {
+                    $ts = strtotime($dob);
+                    if ($ts !== false && $ts <= time()) {
+                        $dobVal = $dob;
+                        $birthYear = (int)substr($dob, 0, 4);
+                        $ageYears = \LumaCubs\AgeService::ageFromDob($dob);
+                        $fromDob = \LumaCubs\AgeService::ageGroupIdForAge($ageYears);
+                        if ($fromDob !== null) {
+                            $ageGroupId = $fromDob;
+                        }
+                    }
+                }
                 $pdo->prepare(
-                    'INSERT INTO children (parent_id, display_name, avatar, age_group_id, preferred_language)
-                     VALUES (?, ?, ?, ?, ?)'
-                )->execute([$parentId, mb_substr($childName, 0, 60), $avatar, $ageGroupId, $lang]);
+                    'INSERT INTO children
+                      (parent_id, display_name, avatar, age_group_id, preferred_language, birth_year, date_of_birth)
+                     VALUES (?, ?, ?, ?, ?, ?, ?)'
+                )->execute([
+                    $parentId,
+                    mb_substr($childName, 0, 60),
+                    $avatar,
+                    $ageGroupId,
+                    $lang,
+                    $birthYear,
+                    $dobVal,
+                ]);
                 $childId = (int)$pdo->lastInsertId();
                 $pdo->prepare(
                     'INSERT INTO child_settings (child_id, settings_json) VALUES (?, ?)'
@@ -77,13 +104,19 @@ final class AuthController
                     'speech_on' => true,
                     'language' => $lang,
                 ], JSON_UNESCAPED_UNICODE)]);
-                $child = [
+                $pdo->prepare(
+                    'INSERT INTO child_learning_controls (child_id) VALUES (?)'
+                )->execute([$childId]);
+                $child = \LumaCubs\AgeService::enrichChildRow([
                     'id' => $childId,
                     'display_name' => mb_substr($childName, 0, 60),
                     'avatar' => $avatar,
                     'age_group_id' => $ageGroupId,
                     'preferred_language' => $lang,
-                ];
+                    'date_of_birth' => $dobVal,
+                    'birth_year' => $birthYear,
+                    'learning_level_override' => null,
+                ]);
             }
 
             $pdo->commit();

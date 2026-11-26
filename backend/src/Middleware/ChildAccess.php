@@ -16,7 +16,8 @@ final class ChildAccess
             Response::error('bad_child', 400);
         }
         $stmt = Db::pdo()->prepare(
-            'SELECT id, parent_id, display_name, avatar, age_group_id, preferred_language, birth_year, is_active
+            'SELECT id, parent_id, display_name, avatar, age_group_id, learning_level_override,
+                    preferred_language, birth_year, date_of_birth, is_active
              FROM children WHERE id = ? AND parent_id = ? AND is_active = 1'
         );
         $stmt->execute([$childId, $parentId]);

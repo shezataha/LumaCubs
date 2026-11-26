@@ -34,21 +34,27 @@
   let catalogSegments = null;
   let saveTimer = null;
 
+  const SEGMENT_ART_FALLBACK = "assets/segments/illustrations/_fallback.svg";
+
   const FALLBACK_SEGMENTS = [
-    { id: 1,  code: "numbers_math", icon: "🔢", title: "Numbers & Math", description: "Explore number sense, counting, and growing math skills for ages 2–8." },
-    { id: 2,  code: "english_literacy", icon: "🔤", title: "English Language & Literacy" },
-    { id: 3,  code: "urdu_literacy", icon: "📝", title: "Urdu Language & Literacy" },
-    { id: 4,  code: "world_around_us", icon: "🌍", title: "World Around Us" },
-    { id: 5,  code: "colors_shapes_patterns", icon: "🎨", title: "Colors, Shapes & Patterns" },
-    { id: 6,  code: "music_rhymes_movement", icon: "🎵", title: "Music, Rhymes & Movement" },
-    { id: 7,  code: "games_brain_play", icon: "🧠", title: "Games & Brain Play" },
-    { id: 8,  code: "creativity_art", icon: "✏️", title: "Creativity & Art" },
-    { id: 9,  code: "basic_islamic_studies", icon: "🌙", title: "Basic Islamic Studies" },
-    { id: 10, code: "life_skills_discovery", icon: "🌱", title: "Life Skills & Discovery" },
-    { id: 11, code: "science_nature", icon: "🔬", title: "Science & Nature" },
-    { id: 12, code: "digital_world_technology", icon: "💻", title: "Digital World & Technology" },
-    { id: 13, code: "everyday_math_money", icon: "💰", title: "Everyday Mathematics & Money Skills" },
-  ];
+    { id: 1,  code: "numbers_math", title: "Numbers & Math", description: "Explore number sense, counting, and growing math skills for ages 2–8." },
+    { id: 2,  code: "english_literacy", title: "English Language & Literacy" },
+    { id: 3,  code: "urdu_literacy", title: "Urdu Language & Literacy" },
+    { id: 4,  code: "world_around_us", title: "World Around Us" },
+    { id: 5,  code: "colors_shapes_patterns", title: "Colors, Shapes & Patterns" },
+    { id: 6,  code: "music_rhymes_movement", title: "Music, Rhymes & Movement" },
+    { id: 7,  code: "games_brain_play", title: "Games & Brain Play" },
+    { id: 8,  code: "creativity_art", title: "Creativity & Art" },
+    { id: 9,  code: "basic_islamic_studies", title: "Basic Islamic Studies" },
+    { id: 10, code: "life_skills_discovery", title: "Life Skills & Discovery" },
+    { id: 11, code: "science_nature", title: "Science & Nature" },
+    { id: 12, code: "digital_world_technology", title: "Digital World & Technology" },
+    { id: 13, code: "everyday_math_money", title: "Everyday Mathematics & Money Skills" },
+  ].map(s => Object.assign({}, s, {
+    illustration_uri: "assets/segments/illustrations/" + s.code + ".svg",
+    icon_uri: "assets/segments/icons/" + s.code + ".svg",
+    icon: null,
+  }));
 
   const FALLBACK_MATH_CATEGORIES = [
     { id: 101, code: "number_recognition_number_sense", title: "Number Recognition & Number Sense", description: "Spot, name, and understand numbers", accent_color: "#FFD8C2", age_label: "Ages 2–8" },
@@ -164,12 +170,27 @@
     }
   }
 
+  function normalizeSegment(seg) {
+    const s = Object.assign({}, seg);
+    if (!s.illustration_uri && s.code) {
+      s.illustration_uri = "assets/segments/illustrations/" + s.code + ".svg";
+    }
+    if (!s.icon_uri && s.code) {
+      s.icon_uri = "assets/segments/icons/" + s.code + ".svg";
+    }
+    // Never keep corrupted emoji placeholders like ????
+    if (s.icon && (/^\?+$/.test(String(s.icon)) || /[\uFFFD]/.test(String(s.icon)))) {
+      s.icon = null;
+    }
+    return s;
+  }
+
   async function loadCatalogSegments() {
     if (catalogSegments && catalogSegments.length) return catalogSegments;
     if (platformMode) {
       const data = await platformCall("/segments?lang=" + encodeURIComponent(CATALOG_LANG));
       if (data && data.ok && Array.isArray(data.segments) && data.segments.length) {
-        catalogSegments = data.segments;
+        catalogSegments = data.segments.map(normalizeSegment);
         return catalogSegments;
       }
     }
@@ -567,7 +588,9 @@
     try { if ("speechSynthesis" in window) speechSynthesis.cancel(); } catch (e) {}
     current = name;
     screenRoot.innerHTML = "";
-    backBtn.classList.toggle("hidden", name === "home" || name === "auth" || name === "forgot" || name === "reset");
+    const hideBack = name === "home" || name === "auth" || name === "forgot" || name === "reset"
+      || name === "childPicker" || name === "ageDashboard";
+    backBtn.classList.toggle("hidden", hideBack);
     VIEWS[name](arg);
     window.scrollTo(0, 0);
   }
@@ -578,8 +601,12 @@
     snd.pop();
     if (current === "poemReader") go("poems");
     else if (current === "mathCategory" && segmentReturn) go("segment", segmentReturn);
-    else if (current === "segment") go("home");
+    else if (current === "segment") {
+      if (parentSession && parentSession.childId) go("ageDashboard");
+      else go("home");
+    }
     else if (current === "auth") go("home");
+    else if (parentSession && parentSession.childId && current !== "ageDashboard") go("ageDashboard");
     else go("home");
   });
 
@@ -598,159 +625,152 @@
     return path.replace(/^\//, "");
   }
 
+  const MATH_ILLUSTRATION_FALLBACK = "assets/segments/numbers-math/illustrations/_fallback.svg";
+
+  function mathIllustrationHtml(cat) {
+    const accent = cat.accent_color || "#E8D5F5";
+    const ill = assetUrl(cat.illustration_uri) || MATH_ILLUSTRATION_FALLBACK;
+    const title = escapeHtml(cat.title || cat.code || "Category");
+    return `<span class="math-card-art" style="background:${escapeHtml(accent)}33">
+      <img class="math-card-illustration" src="${escapeHtml(ill)}" alt="${title}"
+        width="480" height="360" loading="eager" decoding="async"
+        onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${MATH_ILLUSTRATION_FALLBACK}';}">
+    </span>`;
+  }
+
+  function segmentIllustrationUri(seg) {
+    if (seg && seg.illustration_uri) return assetUrl(seg.illustration_uri);
+    if (seg && seg.code) return "assets/segments/illustrations/" + seg.code + ".svg";
+    return SEGMENT_ART_FALLBACK;
+  }
+
+  function segmentCardArtHtml(seg) {
+    const title = escapeHtml((seg && (seg.title || seg.code)) || "Learning path");
+    const src = escapeHtml(segmentIllustrationUri(seg));
+    return `<span class="segment-art">
+      <img class="segment-illustration" src="${src}" alt="${title}"
+        width="480" height="360" loading="eager" decoding="async"
+        onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${SEGMENT_ART_FALLBACK}';}">
+    </span>`;
+  }
+
   /* ------------------------------ views ------------------------------ */
 
   const VIEWS = {};
 
-  /* -------- home -------- */
+  /* -------- home (Phase 1: three age sections) -------- */
+
+  const HOME_AGE_SECTIONS = [
+    {
+      id: "little_explorers",
+      slug: "little-explorers",
+      name: "Little Explorers",
+      ages: "2–4 Years",
+      description: "Soft first steps — colors, sounds, counting play, and gentle discovery.",
+      illustration: "assets/home/age-groups/little-explorers.svg",
+      tone: "peach",
+    },
+    {
+      id: "curious_learners",
+      slug: "curious-learners",
+      name: "Curious Learners",
+      ages: "4–6 Years",
+      description: "Letters, numbers, stories, and playful puzzles for growing minds.",
+      illustration: "assets/home/age-groups/curious-learners.svg",
+      tone: "mint",
+    },
+    {
+      id: "smart_achievers",
+      slug: "smart-achievers",
+      name: "Smart Achievers",
+      ages: "6–8 Years",
+      description: "Bigger challenges, sharper thinking, and proud learning moments.",
+      illustration: "assets/home/age-groups/smart-achievers.svg",
+      tone: "sun",
+    },
+  ];
+
+  function selectHomeAgeSection(section) {
+    if (!section) return;
+    LS.set("selectedHomeAge", {
+      id: section.id,
+      slug: section.slug,
+      name: section.name,
+      ages: section.ages,
+      selectedAt: Date.now(),
+    });
+    // Navigation-ready hook for Phase 2 age spaces (no new dashboard in Phase 1).
+    try {
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState({ ageSection: section.slug }, "", "#age/" + section.slug);
+      } else {
+        window.location.hash = "age/" + section.slug;
+      }
+    } catch (e) {}
+  }
 
   VIEWS.home = function () {
     titleEl.textContent = "LumaCubs";
 
-    // --- hero: cub mascot + greeting + Start Learning CTA ---
-    const count = stickerCount();
-    const pct = Math.round((count / 26) * 100);
     const greeting = activeProfile
-      ? "Hi " + escapeHtml(activeProfile.name) + "! Soft lessons, big smiles, and playful discovery await."
-      : "Gentle lessons for little learners — letters, numbers, and everyday wonder.";
+      ? "Hi " + escapeHtml(activeProfile.name) + "! Pick an age path to begin."
+      : "Choose the learning path that fits your little cub.";
 
-    const hero = el("section", "hero", `
-      <div class="hero-stage" aria-hidden="true">
-        <span class="hero-blob hero-blob-a"></span>
-        <span class="hero-blob hero-blob-b"></span>
-        <span class="hero-blob hero-blob-c"></span>
-      </div>
-      <div class="mascot-wrap">
-        <svg class="mascot-svg" viewBox="0 0 200 200" role="img" aria-label="Luma the friendly cub">
-          <defs>
-            <linearGradient id="cubFur" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#FFE0C2"/>
-              <stop offset="1" stop-color="#FFC9A3"/>
-            </linearGradient>
-            <linearGradient id="cubCheek" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#FFB4C8"/>
-              <stop offset="1" stop-color="#FF9EB5"/>
-            </linearGradient>
-            <radialGradient id="cubGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0" stop-color="#E8D5F5" stop-opacity="0.85"/>
-              <stop offset="1" stop-color="#E8D5F5" stop-opacity="0"/>
-            </radialGradient>
-          </defs>
-          <circle cx="100" cy="108" r="78" fill="url(#cubGlow)"/>
-          <ellipse cx="58" cy="58" rx="28" ry="26" fill="url(#cubFur)"/>
-          <ellipse cx="142" cy="58" rx="28" ry="26" fill="url(#cubFur)"/>
-          <ellipse cx="58" cy="60" rx="14" ry="13" fill="#FFF6EC"/>
-          <ellipse cx="142" cy="60" rx="14" ry="13" fill="#FFF6EC"/>
-          <ellipse cx="100" cy="112" rx="62" ry="58" fill="url(#cubFur)"/>
-          <ellipse cx="100" cy="128" rx="38" ry="30" fill="#FFF6EC"/>
-          <circle cx="78" cy="104" r="7" fill="#5C4F6E"/>
-          <circle cx="122" cy="104" r="7" fill="#5C4F6E"/>
-          <circle cx="80.5" cy="102" r="2.2" fill="#fff"/>
-          <circle cx="124.5" cy="102" r="2.2" fill="#fff"/>
-          <ellipse cx="72" cy="118" rx="10" ry="7" fill="url(#cubCheek)" opacity="0.75"/>
-          <ellipse cx="128" cy="118" rx="10" ry="7" fill="url(#cubCheek)" opacity="0.75"/>
-          <ellipse cx="100" cy="120" rx="9" ry="7" fill="#F4A261"/>
-          <path d="M88 136 Q100 148 112 136" stroke="#5C4F6E" stroke-width="4" fill="none" stroke-linecap="round"/>
-          <g class="mascot-sparkles">
-            <circle cx="36" cy="88" r="3.5" fill="#C9B1E8"/>
-            <circle cx="168" cy="82" r="3" fill="#A8E6CF"/>
-            <circle cx="156" cy="148" r="2.5" fill="#FFD8C2"/>
-          </g>
-        </svg>
-      </div>
-      <div class="hero-text">
-        <p class="hero-brand">LumaCubs</p>
-        <h2 class="hero-title">Little Learners, Big Discoveries!</h2>
-        <p class="hero-sub">${greeting}</p>
-        <button type="button" class="start-learning-btn" id="startLearningBtn">
-          <span class="start-learning-icon" aria-hidden="true">✦</span>
-          Start Learning
-        </button>
-      </div>`);
+    const saved = LS.get("selectedHomeAge", null);
 
-    const progress = el("div", "mini-progress", `
-      <div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div>
-      <span class="mini-label">⭐ ${count}/26 stickers</span>`);
+    const wrap = el("div", "home-age-page");
+    wrap.innerHTML = `
+      <section class="home-age-intro" aria-label="LumaCubs welcome">
+        <p class="home-age-brand">LumaCubs</p>
+        <h2 class="home-age-headline">Little Learners, Big Discoveries</h2>
+        <p class="home-age-sub">${greeting}</p>
+      </section>
+      <section class="home-age-grid" aria-label="Age learning sections"></section>
+      <p class="home-age-note">Grown-up tip: open the menu for stickers, poems, and classic activities.</p>
+    `;
 
-    const pathsLabel = el("div", "home-section-label", `
-      <h3>Learning paths</h3>
-      <p>13 segments for ages 2–8 · powered by LumaCubs catalog</p>`);
-    const pathsGrid = el("div", "segment-grid");
-    pathsGrid.id = "homeSegments";
-    pathsGrid.innerHTML = `<div class="segment-loading">Loading learning paths…</div>`;
-
-    const sectionLabel = el("div", "home-section-label", `
-      <h3>Quick activities</h3>
-      <p>Tap a card to begin</p>`);
-
-    const grid = el("div", "mode-grid");
-    grid.id = "homeModes";
-
-    const modes = [
-      { id: "learn",     emoji: "📖", label: "Learn Letters" },
-      { id: "learnCount", emoji: "🔢", label: "Learn Numbers" },
-      { id: "count",     emoji: "🧮", label: "Counting Fun" },
-      { id: "countQuiz", emoji: "🎯", label: "Count the Objects" },
-      { id: "countTrace", emoji: "✏️", label: "Number Trace" },
-      { id: "countTogether", emoji: "👩‍🏫", label: "Count Together" },
-      { id: "find",      emoji: "🔊", label: "Find It" },
-      { id: "matchPic",  emoji: "🍎", label: "Picture Match" },
-      { id: "matchCase", emoji: "🔤", label: "Letter Match" },
-      { id: "memory",    emoji: "🃏", label: "Memory Fun" },
-      { id: "fruits",     emoji: "🍎", label: "Fruits" },
-      { id: "vegetables", emoji: "🥕", label: "Vegetables" },
-      { id: "colors",     emoji: "🎨", label: "Colors" },
-      { id: "coloring",  emoji: "🎨", label: "Coloring Fun" },
-      { id: "stickers",  emoji: "⭐", label: "Sticker Book", badge: count + " / 26" },
-      { id: "poems",     emoji: "📝", label: "Poems" },
-    ];
-
-    modes.forEach((m, i) => {
-      const b = el(
-        "button",
-        "mode-btn tone-" + (i % 4),
-        `<span class="m-emoji">${m.emoji}</span><span class="m-label">${m.label}</span>` +
-        (m.badge ? `<span class="badge">⭐ ${m.badge}</span>` : "")
-      );
-      b.addEventListener("click", () => {
+    const grid = wrap.querySelector(".home-age-grid");
+    HOME_AGE_SECTIONS.forEach((section, index) => {
+      const isSelected = saved && saved.id === section.id;
+      const card = document.createElement("a");
+      card.className = "age-home-card tone-" + section.tone + (isSelected ? " is-selected" : "");
+      card.href = "#age/" + section.slug;
+      card.setAttribute("data-age-section", section.id);
+      card.setAttribute("aria-label", section.name + ", " + section.ages);
+      card.style.setProperty("--age-card-delay", (index * 70) + "ms");
+      card.innerHTML = `
+        <span class="age-home-art">
+          <img
+            src="${escapeHtml(section.illustration)}"
+            alt=""
+            width="640"
+            height="480"
+            loading="eager"
+            decoding="async"
+            draggable="false"
+          >
+        </span>
+        <span class="age-home-body">
+          <span class="age-home-ages">${escapeHtml(section.ages)}</span>
+          <span class="age-home-name">${escapeHtml(section.name)}</span>
+          <span class="age-home-desc">${escapeHtml(section.description)}</span>
+          <span class="age-home-cta">Explore path</span>
+        </span>
+      `;
+      card.addEventListener("click", (e) => {
+        e.preventDefault();
         snd.pop();
-        trackPlatformProgress("activity." + m.id, "started");
-        go(m.id);
+        selectHomeAgeSection(section);
+        grid.querySelectorAll(".age-home-card").forEach(c => c.classList.remove("is-selected"));
+        card.classList.add("is-selected");
+        speak(section.name);
+        toast(section.name + " · " + section.ages);
+        trackPlatformProgress("home.age." + section.id, "started");
       });
-      grid.appendChild(b);
+      grid.appendChild(card);
     });
 
-    const tip = el("div", "parent-tip", "LumaCubs · Grown-up tip: press and hold ⚙️ for settings");
-    screenRoot.append(hero, progress, pathsLabel, pathsGrid, sectionLabel, grid, tip);
-
-    const startBtn = hero.querySelector("#startLearningBtn");
-    if (startBtn) {
-      startBtn.addEventListener("click", () => {
-        snd.pop();
-        const first = (catalogSegments && catalogSegments[0]) || FALLBACK_SEGMENTS[0];
-        go("segment", first);
-      });
-    }
-
-    loadCatalogSegments().then(segments => {
-      if (current !== "home") return;
-      pathsGrid.innerHTML = "";
-      segments.forEach((s, i) => {
-        const b = el(
-          "button",
-          "segment-card tone-" + (i % 4),
-          `<span class="segment-icon">${s.icon || "📘"}</span>
-           <span class="segment-title">${escapeHtml(s.title || s.code)}</span>
-           <span class="segment-meta">Explore</span>`
-        );
-        b.addEventListener("click", () => {
-          snd.pop();
-          trackPlatformProgress("segment." + s.code, "started");
-          go("segment", s);
-        });
-        pathsGrid.appendChild(b);
-      });
-    });
+    screenRoot.appendChild(wrap);
   };
 
   /* -------- learning segment hub -------- */
@@ -765,7 +785,7 @@
     const wrap = el("div", "segment-hub" + (isMath ? " math-hub" : ""));
     if (rtl) wrap.setAttribute("dir", "rtl");
     wrap.appendChild(el("div", "segment-hub-hero", `
-      <div class="segment-hub-icon">${seg.icon || "📘"}</div>
+      <div class="segment-hub-art">${segmentCardArtHtml(seg)}</div>
       <h2>${escapeHtml(seg.title || seg.code)}</h2>
       <p>${escapeHtml(seg.description || (isMath
         ? "Explore number sense, counting, and growing math skills for ages 2–8."
@@ -818,19 +838,10 @@
         const grid = el("div", "math-category-grid");
         list.forEach(cat => {
           const accent = cat.accent_color || "#E8D5F5";
-          const ill = assetUrl(cat.illustration_uri);
-          const icon = assetUrl(cat.icon_uri);
           const card = el("button", "math-category-card", `
-            <span class="math-card-art" style="background:${escapeHtml(accent)}22">
-              <img src="${escapeHtml(ill)}" alt="${escapeHtml(cat.title || cat.code)}" loading="lazy" width="240" height="180"
-                onerror="this.style.display='none'">
-            </span>
+            ${mathIllustrationHtml(cat)}
             <span class="math-card-body">
-              <span class="math-card-top">
-                <img class="math-card-icon" src="${escapeHtml(icon)}" alt="" width="36" height="36" loading="lazy"
-                  onerror="this.style.display='none'">
-                <strong class="math-card-title">${escapeHtml(cat.title || cat.code)}</strong>
-              </span>
+              <strong class="math-card-title">${escapeHtml(cat.title || cat.code)}</strong>
               <span class="math-card-desc">${escapeHtml(cat.description || "")}</span>
               <span class="math-card-meta">
                 <span>${escapeHtml(cat.age_label || ageGroupsShort(cat.metadata))}</span>
@@ -870,9 +881,11 @@
     }
 
     if (platformMode && seg.id) {
-      const endpoint = isMath
+      let endpoint = isMath
         ? "/segments/" + encodeURIComponent(seg.id) + "/categories?lang=" + encodeURIComponent(CATALOG_LANG)
         : "/segments/" + encodeURIComponent(seg.id) + "/subcategories?lang=" + encodeURIComponent(CATALOG_LANG);
+      const ageId = activeProfile && activeProfile.ageGroupId;
+      if (ageId) endpoint += "&age_group_id=" + encodeURIComponent(ageId);
       platformCall(endpoint).then(data => {
         if (current !== "segment") return;
         let list = (data && data.ok) ? (data.categories || data.subcategories || []) : [];
@@ -897,21 +910,17 @@
     const wrap = el("div", "math-category-page");
     if (rtl) wrap.setAttribute("dir", "rtl");
 
-    const ill = assetUrl(cat.illustration_uri);
-    const icon = assetUrl(cat.icon_uri);
     const accent = cat.accent_color || "#E8D5F5";
+    const heroIll = assetUrl(cat.illustration_uri) || MATH_ILLUSTRATION_FALLBACK;
 
     wrap.appendChild(el("div", "math-category-hero", `
       <div class="math-category-hero-art" style="background:${escapeHtml(accent)}33">
-        <img src="${escapeHtml(ill)}" alt="${escapeHtml(cat.title || "")}" width="320" height="240" loading="lazy"
-          onerror="this.style.display='none'">
+        <img class="math-card-illustration" src="${escapeHtml(heroIll)}" alt="${escapeHtml(cat.title || "Category")}"
+          width="480" height="360" loading="eager" decoding="async"
+          onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${MATH_ILLUSTRATION_FALLBACK}';}">
       </div>
       <div class="math-category-hero-text">
-        <div class="math-card-top">
-          <img class="math-card-icon" src="${escapeHtml(icon)}" alt="" width="40" height="40" loading="lazy"
-            onerror="this.style.display='none'">
-          <h2>${escapeHtml(cat.title || cat.code || "Category")}</h2>
-        </div>
+        <h2>${escapeHtml(cat.title || cat.code || "Category")}</h2>
         <p>${escapeHtml(cat.description || "")}</p>
         <div class="math-card-meta">
           <span>${escapeHtml(cat.age_label || ageGroupsShort(cat.metadata))}</span>
@@ -1074,10 +1083,14 @@
         <input class="auth-input" type="email" id="signupEmail" placeholder="Email" autocomplete="email">
         <input class="auth-input" type="password" id="signupPass" placeholder="Password (min 8 chars)" autocomplete="new-password">
         <input class="auth-input" type="text" id="signupChild" placeholder="Child's name (optional)" maxlength="60">
+        <label class="auth-field-label" for="signupDob">Child's birthday (optional)</label>
+        <input class="auth-input" type="date" id="signupDob" max="">
         <div class="avatar-picker" id="signupAvatarPicker"></div>
         <button class="p-btn auth-submit" id="signupBtn">✨ Create Account</button>
         <p class="auth-switch">Already have account? <a href="#" id="switchToLogin">Login here</a></p>
       `);
+      const dobInput = box.querySelector("#signupDob");
+      if (dobInput) dobInput.max = new Date().toISOString().slice(0, 10);
       wrap.appendChild(box);
       screenRoot.appendChild(wrap);
 
@@ -1114,6 +1127,7 @@
         }
 
         if (platformMode) {
+          const childDob = (box.querySelector("#signupDob") || {}).value || "";
           const data = await platformCall("/auth/register", {
             method: "POST",
             body: {
@@ -1123,6 +1137,7 @@
               child_name: childName || name.split(/\s+/)[0],
               avatar: chosen,
               preferred_language: CATALOG_LANG,
+              date_of_birth: childDob || undefined,
             },
           });
           if (!data || !data.ok) {
@@ -1168,6 +1183,259 @@
     speak(mode === "login" ? "Login to play!" : "Create your account!");
   };
 
+  /* -------- child picker (platform) -------- */
+
+  VIEWS.childPicker = function (opts) {
+    opts = opts || {};
+    titleEl.textContent = "Who is learning?";
+    const wrap = el("div", "child-picker-wrap");
+    wrap.innerHTML = `<div class="child-picker-loading">Loading profiles…</div>`;
+    screenRoot.appendChild(wrap);
+
+    async function render() {
+      const kidsRes = await platformCall("/children");
+      const children = (kidsRes && kidsRes.ok && kidsRes.children) ? kidsRes.children : [];
+      if (opts.seedChild && opts.seedChild.id && !children.find(c => c.id === opts.seedChild.id)) {
+        children.unshift(opts.seedChild);
+      }
+      opts.seedChild = null;
+
+      wrap.innerHTML = "";
+      const head = el("div", "child-picker-head", `
+        <h2>Who is learning today?</h2>
+        <p>Pick a child profile — we'll open their age-ready learning space.</p>`);
+      wrap.appendChild(head);
+
+      const list = el("div", "child-picker-grid");
+      if (!children.length) {
+        list.innerHTML = `<p class="child-picker-empty">No child profiles yet. Add one below to get started.</p>`;
+      } else {
+        children.forEach((c, i) => {
+          const ageBit = c.age_group_label
+            ? escapeHtml(c.age_group_label)
+            : (c.age_years != null ? ("Age " + c.age_years) : "Add birthday");
+          const card = el("button", "child-pick-card tone-" + (i % 4), `
+            <span class="child-pick-avatar">${escapeHtml(c.avatar || "🧸")}</span>
+            <span class="child-pick-name">${escapeHtml(c.display_name || "Learner")}</span>
+            <span class="child-pick-meta">${ageBit}</span>`);
+          card.type = "button";
+          card.addEventListener("click", async () => {
+            snd.pop();
+            if (!c.date_of_birth) {
+              showDobPrompt(c);
+              return;
+            }
+            await selectChildAndEnter(c);
+          });
+          list.appendChild(card);
+        });
+      }
+      wrap.appendChild(list);
+
+      const form = el("div", "child-create-box", `
+        <h3>Add a child</h3>
+        <input class="auth-input" type="text" id="newChildName" placeholder="Child's name" maxlength="60">
+        <label class="auth-field-label" for="newChildDob">Birthday</label>
+        <input class="auth-input" type="date" id="newChildDob" max="">
+        <button type="button" class="p-btn auth-submit" id="newChildBtn">Add & continue</button>
+        <button type="button" class="p-btn plain" id="pickerGuestHome">Browse all activities (guest-style)</button>`);
+      wrap.appendChild(form);
+      const dobEl = form.querySelector("#newChildDob");
+      dobEl.max = new Date().toISOString().slice(0, 10);
+
+      form.querySelector("#newChildBtn").addEventListener("click", async () => {
+        const name = form.querySelector("#newChildName").value.trim();
+        const dob = dobEl.value;
+        if (!name) { toast("⚠️ Enter a name"); snd.wrong(); return; }
+        if (!dob) { toast("⚠️ Birthday helps us pick the right age group"); snd.wrong(); return; }
+        const created = await platformCall("/children", {
+          method: "POST",
+          body: {
+            display_name: name,
+            date_of_birth: dob,
+            avatar: "🧸",
+            preferred_language: CATALOG_LANG,
+          },
+        });
+        if (!created || !created.ok || !created.child) {
+          toast("❌ Could not create profile");
+          snd.wrong();
+          return;
+        }
+        snd.correct();
+        await selectChildAndEnter(created.child);
+      });
+
+      form.querySelector("#pickerGuestHome").addEventListener("click", () => {
+        snd.pop();
+        go("home");
+      });
+    }
+
+    function showDobPrompt(child) {
+      const overlay = el("div", "dob-overlay");
+      overlay.innerHTML = `
+        <div class="dob-card">
+          <h3>Add ${escapeHtml(child.display_name || "child")}'s birthday</h3>
+          <p>We use birthday only to choose the right learning stage.</p>
+          <input class="auth-input" type="date" id="fixDob" max="">
+          <button type="button" class="p-btn" id="saveDobBtn">Save & continue</button>
+          <button type="button" class="p-btn plain" id="skipDobBtn">Continue without birthday</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      const input = overlay.querySelector("#fixDob");
+      input.max = new Date().toISOString().slice(0, 10);
+      overlay.querySelector("#saveDobBtn").addEventListener("click", async () => {
+        const dob = input.value;
+        if (!dob) { toast("⚠️ Pick a birthday"); return; }
+        const upd = await platformCall("/children/" + encodeURIComponent(child.id), {
+          method: "PATCH",
+          body: { date_of_birth: dob },
+        });
+        overlay.remove();
+        if (upd && upd.ok && upd.child) {
+          await selectChildAndEnter(upd.child);
+        } else {
+          child.date_of_birth = dob;
+          await selectChildAndEnter(child);
+        }
+      });
+      overlay.querySelector("#skipDobBtn").addEventListener("click", async () => {
+        overlay.remove();
+        await selectChildAndEnter(child);
+      });
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) overlay.remove();
+      });
+    }
+
+    render();
+    speak("Who is learning today?");
+  };
+
+  /* -------- age dashboard (platform child) -------- */
+
+  VIEWS.ageDashboard = function () {
+    titleEl.textContent = "Your learning space";
+    const wrap = el("div", "age-dash-wrap");
+    wrap.innerHTML = `<div class="segment-loading">Opening learning space…</div>`;
+    screenRoot.appendChild(wrap);
+
+    const childId = parentSession && parentSession.childId;
+    if (!childId) {
+      go("childPicker");
+      return;
+    }
+
+    platformCall(
+      "/dashboard/child?child_id=" + encodeURIComponent(childId)
+      + "&lang=" + encodeURIComponent(CATALOG_LANG)
+    ).then(data => {
+      if (!data || !data.ok) {
+        wrap.innerHTML = `<p class="segment-subs-note">Could not load dashboard. <button type="button" class="p-btn" id="dashRetry">Try again</button></p>`;
+        const retry = wrap.querySelector("#dashRetry");
+        if (retry) retry.addEventListener("click", () => go("ageDashboard"));
+        return;
+      }
+
+      if (data.child) applySelectedChild(data.child, parentSession.parent);
+      updateSidebarUI();
+
+      const welcome = data.welcome || {};
+      const progress = data.progress || {};
+      const recommended = (data.recommended_segments || []).map(normalizeSegment);
+      const explore = (data.explore_segments || []).map(normalizeSegment);
+      const mathRec = data.recommended_math_categories || [];
+      const mathExplore = data.explore_math_categories || [];
+
+      wrap.innerHTML = "";
+      wrap.appendChild(el("section", "age-dash-hero", `
+        <p class="age-dash-kicker">${escapeHtml(data.child && data.child.age_group_label ? data.child.age_group_label : "Learning stage")}</p>
+        <h2>${escapeHtml(welcome.title || ("Hi " + (activeProfile && activeProfile.name) + "!"))}</h2>
+        <p>${escapeHtml(welcome.subtitle || "Age-ready paths for today")}</p>
+        <div class="age-dash-stats">
+          <span>${progress.completed || 0} completed</span>
+          <span>${progress.mastered || 0} mastered</span>
+          <span>${progress.started || 0} started</span>
+        </div>
+        <div class="age-dash-actions">
+          <button type="button" class="p-btn" id="dashExploreAll">Explore all paths</button>
+          <button type="button" class="p-btn plain" id="dashSwitchChild">Switch child</button>
+        </div>`));
+
+      function appendSegmentSection(title, subtitle, items, placementClass) {
+        const section = el("section", "age-dash-section");
+        section.appendChild(el("div", "home-section-label", `<h3>${title}</h3><p>${subtitle}</p>`));
+        const grid = el("div", "segment-grid " + (placementClass || ""));
+        if (!items.length) {
+          grid.innerHTML = `<p class="segment-subs-note">Nothing here yet for this stage.</p>`;
+        } else {
+          items.forEach((seg, i) => {
+            const card = el("button", "segment-card tone-" + (i % 4), `
+              ${segmentCardArtHtml(seg)}
+              <span class="segment-title">${escapeHtml(seg.title || seg.code)}</span>
+              <span class="segment-meta">${placementClass === "is-explore" ? "Explore" : "Recommended"}</span>`);
+            card.type = "button";
+            card.addEventListener("click", () => {
+              snd.pop();
+              trackPlatformProgress("segment." + (seg.code || seg.id), "started");
+              go("segment", seg);
+            });
+            grid.appendChild(card);
+          });
+        }
+        section.appendChild(grid);
+        wrap.appendChild(section);
+      }
+
+      appendSegmentSection("Recommended for you", "Matched to this age stage", recommended, "is-recommended");
+      appendSegmentSection("Explore more", "Optional paths you can try anytime", explore, "is-explore");
+
+      if (mathRec.length || mathExplore.length) {
+        const mathSec = el("section", "age-dash-section");
+        mathSec.appendChild(el("div", "home-section-label", `
+          <h3>Numbers & Math picks</h3>
+          <p>Category starters for this age</p>`));
+        const mathGrid = el("div", "math-category-grid");
+        const mathSeg = recommended.find(s => Number(s.id) === 1)
+          || explore.find(s => Number(s.id) === 1)
+          || { id: 1, code: "numbers_math", title: "Numbers & Math" };
+        mathRec.concat(mathExplore).slice(0, 8).forEach((cat) => {
+          const accent = cat.accent_color || "#E8D5F5";
+          const card = el("button", "math-category-card", `
+            ${mathIllustrationHtml(cat)}
+            <span class="math-card-body">
+              <strong class="math-card-title">${escapeHtml(cat.title || cat.code)}</strong>
+              <span class="math-card-meta">
+                <span>${cat.placement === "explore" ? "Explore" : "Recommended"}</span>
+              </span>
+            </span>`);
+          card.type = "button";
+          card.style.setProperty("--math-accent", accent);
+          card.addEventListener("click", () => {
+            snd.pop();
+            trackPlatformProgress("category." + (cat.code || cat.id), "started");
+            go("mathCategory", { segment: mathSeg, category: cat });
+          });
+          mathGrid.appendChild(card);
+        });
+        mathSec.appendChild(mathGrid);
+        wrap.appendChild(mathSec);
+      }
+
+      wrap.querySelector("#dashExploreAll").addEventListener("click", () => {
+        snd.pop();
+        go("home");
+      });
+      wrap.querySelector("#dashSwitchChild").addEventListener("click", () => {
+        snd.pop();
+        go("childPicker");
+      });
+
+      speak(welcome.title || ("Hi " + (activeProfile && activeProfile.name)));
+    });
+  };
+
   async function loadProfileById(id, name, avatar) {
     const t = token;
     const data = await apiCall("load", { id });
@@ -1187,40 +1455,51 @@
     go("home");
   }
 
+  function applySelectedChild(child, parent) {
+    const p = parent || (parentSession && parentSession.parent) || {};
+    if (!parentSession) {
+      parentSession = { token: null, parent: p, childId: null };
+    }
+    parentSession.parent = p;
+    parentSession.childId = child ? child.id : null;
+    persistParentSession();
+    activeProfile = {
+      id: child ? ("child:" + child.id) : ("parent:" + (p.id || "parent")),
+      name: (child && child.display_name) || p.display_name || "Learner",
+      avatar: (child && child.avatar) || "🧸",
+      parentId: p.id,
+      childId: child ? child.id : null,
+      ageGroupId: child ? (child.resolved_age_group_id || child.age_group_id) : null,
+      ageYears: child ? child.age_years : null,
+      ageGroupLabel: child ? child.age_group_label : null,
+      dateOfBirth: child ? child.date_of_birth : null,
+      platform: true,
+    };
+  }
+
   async function activateParentSession(authData) {
     const parent = authData.parent || {};
-    let child = authData.child || null;
     parentSession = {
       token: authData.token,
       parent: parent,
-      childId: child ? child.id : null,
+      childId: null,
     };
-
-    if (!child && authData.token) {
-      const kids = await platformCall("/children");
-      if (kids && kids.ok && kids.children && kids.children.length) {
-        child = kids.children[0];
-        parentSession.childId = child.id;
-      }
-    }
-
     persistParentSession();
-    activeProfile = {
-      id: child ? ("child:" + child.id) : ("parent:" + parent.id),
-      name: (child && child.display_name) || parent.display_name || "Learner",
-      avatar: (child && child.avatar) || "🧸",
-      parentId: parent.id,
-      childId: child ? child.id : null,
-      platform: true,
-    };
     stickers = LS.get("stickers", {});
     levels = LS.get("levels", {});
+    activeProfile = {
+      id: "parent:" + parent.id,
+      name: parent.display_name || "Parent",
+      avatar: "🧸",
+      parentId: parent.id,
+      childId: null,
+      platform: true,
+    };
     updateParentUI();
     updateSidebarUI();
     snd.correct();
-    speak("Hi " + activeProfile.name + "! Let's play!");
-    toast("🎉 Welcome, " + activeProfile.name + "!");
-    go("home");
+    toast("🎉 Welcome, " + (parent.display_name || "friend") + "!");
+    go("childPicker", { seedChild: authData.child || null });
   }
 
   async function restoreParentSession() {
@@ -1236,20 +1515,39 @@
     parentSession.parent = me.parent;
     const kids = await platformCall("/children");
     let child = null;
-    if (kids && kids.ok && kids.children && kids.children.length) {
-      child = kids.children.find(c => c.id === saved.childId) || kids.children[0];
-      parentSession.childId = child.id;
+    if (kids && kids.ok && kids.children && kids.children.length && saved.childId) {
+      child = kids.children.find(c => c.id === saved.childId) || null;
     }
-    persistParentSession();
-    activeProfile = {
-      id: child ? ("child:" + child.id) : ("parent:" + me.parent.id),
-      name: (child && child.display_name) || me.parent.display_name || "Learner",
-      avatar: (child && child.avatar) || "🧸",
-      parentId: me.parent.id,
-      childId: child ? child.id : null,
-      platform: true,
-    };
+    if (child) {
+      applySelectedChild(child, me.parent);
+    } else {
+      parentSession.childId = null;
+      persistParentSession();
+      activeProfile = {
+        id: "parent:" + me.parent.id,
+        name: me.parent.display_name || "Parent",
+        avatar: "🧸",
+        parentId: me.parent.id,
+        childId: null,
+        platform: true,
+      };
+    }
     return true;
+  }
+
+  async function selectChildAndEnter(child) {
+    if (!child || !child.id) return;
+    const res = await platformCall("/children/" + encodeURIComponent(child.id) + "/select", {
+      method: "POST",
+      body: { child_id: child.id },
+    });
+    const full = (res && res.ok && res.child) ? res.child : child;
+    applySelectedChild(full, parentSession && parentSession.parent);
+    updateParentUI();
+    updateSidebarUI();
+    speak("Hi " + activeProfile.name + "!");
+    toast("Hi " + activeProfile.name + "!");
+    go("ageDashboard");
   }
 
   /* -------- forgot password -------- */
@@ -3781,6 +4079,10 @@
   switchBtn.addEventListener("click", async () => {
     closeParentModal();
     await saveNow();
+    if (platformMode && parentSession && parentSession.token) {
+      go("childPicker");
+      return;
+    }
     go("auth", "login");
   });
 
@@ -3864,9 +4166,14 @@
     if (activeProfile) {
       sidebarAvatar.textContent = activeProfile.avatar;
       sidebarName.textContent = activeProfile.name;
-      sidebarStatus.textContent = activeProfile.platform
-        ? "Parent account"
-        : (serverMode ? "Logged in" : "Guest mode");
+      if (activeProfile.platform && activeProfile.childId) {
+        sidebarStatus.textContent = activeProfile.ageGroupLabel
+          || (activeProfile.ageYears != null ? ("Age " + activeProfile.ageYears) : "Child profile");
+      } else if (activeProfile.platform) {
+        sidebarStatus.textContent = "Parent account";
+      } else {
+        sidebarStatus.textContent = serverMode ? "Logged in" : "Guest mode";
+      }
       sidebarLogin.classList.add("hidden");
       sidebarLogout.classList.remove("hidden");
     } else {
@@ -3973,14 +4280,15 @@
     platformMode = !!(foundationPing && foundationPing.ok);
     await loadCatalogSegments();
 
-    // Prefer home so Learning paths are always visible.
-    // Login remains available from the sidebar / parent menu.
+    // Prefer home so Learning paths are always visible for guests.
+    // Restored parent+child opens the age dashboard; parent-only opens picker.
     if (platformMode) {
       const restored = await restoreParentSession();
       if (restored) {
         updateParentUI();
         updateSidebarUI();
-        go("home");
+        if (parentSession && parentSession.childId) go("ageDashboard");
+        else go("childPicker");
         return;
       }
     }

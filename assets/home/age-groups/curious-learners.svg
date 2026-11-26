@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" fill="none" role="img" aria-label="Curious Learners illustration">
+  <defs>
+    <linearGradient id="clBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E3F6F1"/>
+      <stop offset="50%" stop-color="#D4F0F8"/>
+      <stop offset="100%" stop-color="#C5E8F5"/>
+    </linearGradient>
+    <linearGradient id="clFur" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE4C8"/>
+      <stop offset="100%" stop-color="#FFC59A"/>
+    </linearGradient>
+    <linearGradient id="clBook" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7EC8E8"/>
+      <stop offset="100%" stop-color="#4FA8D0"/>
+    </linearGradient>
+    <linearGradient id="clLens" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E8FBFF"/>
+      <stop offset="100%" stop-color="#B7E4F5"/>
+    </linearGradient>
+    <filter id="clSoft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#5A8A98" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+  <rect width="640" height="480" rx="48" fill="url(#clBg)"/>
+  <circle cx="70" cy="90" r="58" fill="#FFFFFF" opacity="0.45"/>
+  <circle cx="560" cy="80" r="76" fill="#8ED9BE" opacity="0.22"/>
+  <circle cx="120" cy="400" r="80" fill="#A8D4F0" opacity="0.25"/>
+  <ellipse cx="330" cy="418" rx="220" ry="26" fill="#7BB8C8" opacity="0.18"/>
+
+  <!-- open book -->
+  <g filter="url(#clSoft)">
+    <path d="M120 250 C170 220 230 220 280 250 L280 360 C230 340 170 340 120 360 Z" fill="#FFFCF8"/>
+    <path d="M280 250 C330 220 390 220 440 250 L440 360 C390 340 330 340 280 360 Z" fill="#FFF8F0"/>
+    <path d="M280 250 L280 360" stroke="#D7C8B8" stroke-width="3"/>
+    <rect x="140" y="270" width="100" height="10" rx="5" fill="#C8F0E0"/>
+    <rect x="140" y="292" width="86" height="8" rx="4" fill="#E8D5F5" opacity="0.8"/>
+    <rect x="140" y="310" width="94" height="8" rx="4" fill="#FFD8C2" opacity="0.85"/>
+    <rect x="300" y="270" width="100" height="10" rx="5" fill="#A8D4F0"/>
+    <rect x="300" y="292" width="88" height="8" rx="4" fill="#FFE29A" opacity="0.9"/>
+    <rect x="300" y="310" width="76" height="8" rx="4" fill="#C8F0E0"/>
+    <path d="M120 250 C170 220 230 220 280 250 C330 220 390 220 440 250" stroke="url(#clBook)" stroke-width="14" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- cub with magnifier -->
+  <g filter="url(#clSoft)">
+    <ellipse cx="470" cy="250" rx="24" ry="22" fill="url(#clFur)"/>
+    <ellipse cx="550" cy="250" rx="24" ry="22" fill="url(#clFur)"/>
+    <ellipse cx="470" cy="252" rx="11" ry="10" fill="#FFF6EC"/>
+    <ellipse cx="550" cy="252" rx="11" ry="10" fill="#FFF6EC"/>
+    <ellipse cx="510" cy="300" rx="70" ry="66" fill="url(#clFur)"/>
+    <ellipse cx="510" cy="316" rx="42" ry="34" fill="#FFF6EC"/>
+    <circle cx="488" cy="290" r="6.5" fill="#4A4458"/>
+    <circle cx="532" cy="290" r="6.5" fill="#4A4458"/>
+    <circle cx="490" cy="288" r="2" fill="#fff"/>
+    <circle cx="534" cy="288" r="2" fill="#fff"/>
+    <ellipse cx="480" cy="306" rx="10" ry="7" fill="#FFB4C8" opacity="0.75"/>
+    <ellipse cx="540" cy="306" rx="10" ry="7" fill="#FFB4C8" opacity="0.75"/>
+    <ellipse cx="510" cy="308" rx="9" ry="7" fill="#F4A261"/>
+    <path d="M496 326 Q510 338 524 326" stroke="#4A4458" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <!-- magnifying glass -->
+    <circle cx="430" cy="340" r="38" fill="url(#clLens)" stroke="#5C8FA8" stroke-width="10"/>
+    <circle cx="418" cy="328" r="10" fill="#FFFFFF" opacity="0.45"/>
+    <rect x="452" y="362" width="14" height="54" rx="7" transform="rotate(40 452 362)" fill="#5C8FA8"/>
+  </g>
+
+  <circle cx="210" cy="120" r="5" fill="#FFFFFF"/>
+  <circle cx="360" cy="100" r="7" fill="#FFE29A"/>
+  <circle cx="500" cy="140" r="4" fill="#8ED9BE"/>
+</svg>

@@ -29,8 +29,45 @@ final class CatalogController
     public static function segments(Request $req): void
     {
         $lang = self::lang($req);
+        $ageGroupId = (int)$req->query('age_group_id', 0);
+        $placement = strtolower((string)$req->query('placement', ''));
+        if (!in_array($placement, ['recommended', 'explore', 'hidden', ''], true)) {
+            $placement = '';
+        }
+
+        if ($ageGroupId > 0) {
+            $sql = 'SELECT s.id, s.code, s.sort_order, s.icon, s.illustration_uri, s.icon_uri,
+                           sam.placement, sam.sort_order AS age_sort,
+                           COALESCE(t.title, te.title) AS title,
+                           COALESCE(t.description, te.description) AS description
+                    FROM segment_age_map sam
+                    INNER JOIN learning_segments s ON s.id = sam.segment_id AND s.is_active = 1
+                    LEFT JOIN learning_segment_translations t
+                      ON t.segment_id = s.id AND t.lang_code = ?
+                    LEFT JOIN learning_segment_translations te
+                      ON te.segment_id = s.id AND te.lang_code = \'en\'
+                    WHERE sam.age_group_id = ?';
+            $params = [$lang, $ageGroupId];
+            if ($placement !== '') {
+                $sql .= ' AND sam.placement = ?';
+                $params[] = $placement;
+            } else {
+                $sql .= ' AND sam.placement <> \'hidden\'';
+            }
+            $sql .= ' ORDER BY sam.sort_order, s.sort_order';
+            $stmt = Db::pdo()->prepare($sql);
+            $stmt->execute($params);
+            Response::ok([
+                'lang' => $lang,
+                'age_group_id' => $ageGroupId,
+                'placement' => $placement !== '' ? $placement : null,
+                'segments' => $stmt->fetchAll(PDO::FETCH_ASSOC),
+            ]);
+            return;
+        }
+
         $stmt = Db::pdo()->prepare(
-            'SELECT s.id, s.code, s.sort_order, s.icon,
+            'SELECT s.id, s.code, s.sort_order, s.icon, s.illustration_uri, s.icon_uri,
                     COALESCE(t.title, te.title) AS title,
                     COALESCE(t.description, te.description) AS description
              FROM learning_segments s
@@ -50,10 +87,17 @@ final class CatalogController
     {
         $segmentId = (int)$req->param('id');
         $lang = self::lang($req);
-        $rows = self::fetchCategories($segmentId, $lang);
+        $ageGroupId = (int)$req->query('age_group_id', 0);
+        $placement = strtolower((string)$req->query('placement', ''));
+        if (!in_array($placement, ['recommended', 'explore', 'hidden', ''], true)) {
+            $placement = '';
+        }
+        $rows = self::fetchCategories($segmentId, $lang, $ageGroupId, $placement);
         Response::ok([
             'segment_id' => $segmentId,
             'lang' => $lang,
+            'age_group_id' => $ageGroupId ?: null,
+            'placement' => $placement !== '' ? $placement : null,
             'categories' => $rows,
             // backward-compatible alias
             'subcategories' => $rows,
@@ -154,21 +198,49 @@ final class CatalogController
     }
 
     /** @return list<array<string,mixed>> */
-    private static function fetchCategories(int $segmentId, string $lang): array
-    {
-        $stmt = Db::pdo()->prepare(
-            'SELECT sc.id, sc.code, sc.sort_order, sc.illustration_uri, sc.icon_uri, sc.accent_color, sc.metadata_json,
-                    COALESCE(t.title, te.title) AS title,
-                    COALESCE(t.description, te.description) AS description
-             FROM subcategories sc
-             LEFT JOIN subcategory_translations t
-               ON t.subcategory_id = sc.id AND t.lang_code = ?
-             LEFT JOIN subcategory_translations te
-               ON te.subcategory_id = sc.id AND te.lang_code = \'en\'
-             WHERE sc.segment_id = ? AND sc.is_active = 1
-             ORDER BY sc.sort_order, sc.id'
-        );
-        $stmt->execute([$lang, $segmentId]);
+    private static function fetchCategories(
+        int $segmentId,
+        string $lang,
+        int $ageGroupId = 0,
+        string $placement = ''
+    ): array {
+        if ($ageGroupId > 0) {
+            $sql = 'SELECT sc.id, sc.code, sc.sort_order, sc.illustration_uri, sc.icon_uri, sc.accent_color, sc.metadata_json,
+                           cam.placement, cam.sort_order AS age_sort,
+                           COALESCE(t.title, te.title) AS title,
+                           COALESCE(t.description, te.description) AS description
+                    FROM category_age_map cam
+                    INNER JOIN subcategories sc ON sc.id = cam.subcategory_id AND sc.is_active = 1
+                    LEFT JOIN subcategory_translations t
+                      ON t.subcategory_id = sc.id AND t.lang_code = ?
+                    LEFT JOIN subcategory_translations te
+                      ON te.subcategory_id = sc.id AND te.lang_code = \'en\'
+                    WHERE sc.segment_id = ? AND cam.age_group_id = ?';
+            $params = [$lang, $segmentId, $ageGroupId];
+            if ($placement !== '') {
+                $sql .= ' AND cam.placement = ?';
+                $params[] = $placement;
+            } else {
+                $sql .= ' AND cam.placement <> \'hidden\'';
+            }
+            $sql .= ' ORDER BY cam.sort_order, sc.sort_order, sc.id';
+            $stmt = Db::pdo()->prepare($sql);
+            $stmt->execute($params);
+        } else {
+            $stmt = Db::pdo()->prepare(
+                'SELECT sc.id, sc.code, sc.sort_order, sc.illustration_uri, sc.icon_uri, sc.accent_color, sc.metadata_json,
+                        COALESCE(t.title, te.title) AS title,
+                        COALESCE(t.description, te.description) AS description
+                 FROM subcategories sc
+                 LEFT JOIN subcategory_translations t
+                   ON t.subcategory_id = sc.id AND t.lang_code = ?
+                 LEFT JOIN subcategory_translations te
+                   ON te.subcategory_id = sc.id AND te.lang_code = \'en\'
+                 WHERE sc.segment_id = ? AND sc.is_active = 1
+                 ORDER BY sc.sort_order, sc.id'
+            );
+            $stmt->execute([$lang, $segmentId]);
+        }
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($rows as &$row) {
             $meta = [];

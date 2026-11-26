@@ -4,6 +4,7 @@ declare(strict_types=1);
 use LumaCubs\Controllers\AuthController;
 use LumaCubs\Controllers\CatalogController;
 use LumaCubs\Controllers\ChildrenController;
+use LumaCubs\Controllers\DashboardController;
 use LumaCubs\Controllers\HealthController;
 use LumaCubs\Controllers\ProgressController;
 use LumaCubs\Controllers\SettingsController;
@@ -24,6 +25,11 @@ $router->get('/children', [ChildrenController::class, 'list']);
 $router->post('/children', [ChildrenController::class, 'create']);
 $router->patch('/children/{id}', [ChildrenController::class, 'update']);
 $router->delete('/children/{id}', [ChildrenController::class, 'deactivate']);
+$router->post('/children/{id}/select', [ChildrenController::class, 'select']);
+$router->post('/children/select', [ChildrenController::class, 'select']);
+
+$router->get('/dashboard/child', [DashboardController::class, 'childDashboard']);
+$router->get('/dashboard/parent', [DashboardController::class, 'parentOverview']);
 
 $router->get('/age-groups', [CatalogController::class, 'ageGroups']);
 $router->get('/languages', [CatalogController::class, 'languages']);
