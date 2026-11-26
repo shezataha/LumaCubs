@@ -1,5 +1,8 @@
 <?php
-/* Lumacubs — user management & auth API (MariaDB) */
+/* Lumacubs — legacy user management & auth API (MariaDB)
+   Kept for current frontend compatibility.
+   New platform API lives in backend/public (see backend/docs).
+*/
 
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
@@ -8,10 +11,22 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
-const DB_HOST = '127.0.0.1';
-const DB_NAME = 'alphabet_game';
-const DB_USER = 'alphabet';
-const DB_PASS = 'Alphabet2026!';
+// Prefer backend/.env when present; fall back to local defaults for offline/dev.
+$__env = [];
+$__envFile = __DIR__ . DIRECTORY_SEPARATOR . 'backend' . DIRECTORY_SEPARATOR . '.env';
+if (is_file($__envFile)) {
+    foreach (file($__envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $__line) {
+        $__line = trim($__line);
+        if ($__line === '' || str_starts_with($__line, '#') || !str_contains($__line, '=')) continue;
+        [$__k, $__v] = array_map('trim', explode('=', $__line, 2));
+        $__env[$__k] = $__v;
+    }
+}
+define('DB_HOST', $__env['DB_HOST'] ?? '127.0.0.1');
+define('DB_NAME', $__env['DB_NAME'] ?? 'alphabet_game');
+define('DB_USER', $__env['DB_USER'] ?? 'alphabet');
+define('DB_PASS', $__env['DB_PASS'] ?? 'Alphabet2026!');
+unset($__env, $__envFile, $__line, $__k, $__v);
 
 function out(array $data, int $code = 200): never {
     http_response_code($code);

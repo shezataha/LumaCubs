@@ -22,10 +22,95 @@
 
   /* ------------------------- server API (MariaDB) ------------------------- */
 
-  const API_URL = "api.php";
-  let serverMode = false;
+  const CFG = window.LUMACUBS_CONFIG || {};
+  const API_URL = CFG.legacyApi || "api.php";
+  const FOUNDATION_API = String(CFG.foundationApi || "http://127.0.0.1:8081").replace(/\/$/, "");
+  const CATALOG_LANG = CFG.catalogLang || "en";
+
+  let serverMode = false;      // legacy api.php available
+  let platformMode = false;    // new foundation API available
   let activeProfile = null;
+  let parentSession = null;    // { token, parent, childId }
+  let catalogSegments = null;
   let saveTimer = null;
+
+  const FALLBACK_SEGMENTS = [
+    { id: 1,  code: "numbers_math", icon: "🔢", title: "Numbers & Math", description: "Explore number sense, counting, and growing math skills for ages 2–8." },
+    { id: 2,  code: "english_literacy", icon: "🔤", title: "English Language & Literacy" },
+    { id: 3,  code: "urdu_literacy", icon: "📝", title: "Urdu Language & Literacy" },
+    { id: 4,  code: "world_around_us", icon: "🌍", title: "World Around Us" },
+    { id: 5,  code: "colors_shapes_patterns", icon: "🎨", title: "Colors, Shapes & Patterns" },
+    { id: 6,  code: "music_rhymes_movement", icon: "🎵", title: "Music, Rhymes & Movement" },
+    { id: 7,  code: "games_brain_play", icon: "🧠", title: "Games & Brain Play" },
+    { id: 8,  code: "creativity_art", icon: "✏️", title: "Creativity & Art" },
+    { id: 9,  code: "basic_islamic_studies", icon: "🌙", title: "Basic Islamic Studies" },
+    { id: 10, code: "life_skills_discovery", icon: "🌱", title: "Life Skills & Discovery" },
+    { id: 11, code: "science_nature", icon: "🔬", title: "Science & Nature" },
+    { id: 12, code: "digital_world_technology", icon: "💻", title: "Digital World & Technology" },
+    { id: 13, code: "everyday_math_money", icon: "💰", title: "Everyday Mathematics & Money Skills" },
+  ];
+
+  const FALLBACK_MATH_CATEGORIES = [
+    { id: 101, code: "number_recognition_number_sense", title: "Number Recognition & Number Sense", description: "Spot, name, and understand numbers", accent_color: "#FFD8C2", age_label: "Ages 2–8" },
+    { id: 102, code: "counting_quantity", title: "Counting & Quantity", description: "Count objects and build quantity sense", accent_color: "#C8F0E0", age_label: "Ages 2–8" },
+    { id: 103, code: "number_tracing_writing", title: "Number Tracing & Writing", description: "Trace and write numbers with care", accent_color: "#E8D5F5", age_label: "Ages 2–8" },
+    { id: 104, code: "number_comparison", title: "Number Comparison", description: "Compare numbers: more, less, and equal", accent_color: "#A8D4F0", age_label: "Ages 4–8" },
+    { id: 105, code: "addition", title: "Addition", description: "Put groups together to make more", accent_color: "#FFB4C8", age_label: "Ages 4–8" },
+    { id: 106, code: "subtraction", title: "Subtraction", description: "Take away and find what is left", accent_color: "#F0A98A", age_label: "Ages 4–8" },
+    { id: 107, code: "multiplication", title: "Multiplication", description: "Make equal groups again and again", accent_color: "#B89AD9", age_label: "Ages 6–8" },
+    { id: 108, code: "division", title: "Division", description: "Share equally into fair groups", accent_color: "#7ECDB5", age_label: "Ages 6–8" },
+    { id: 109, code: "skip_counting", title: "Skip Counting", description: "Count in steps like 2s, 5s, and 10s", accent_color: "#FFE29A", age_label: "Ages 4–8" },
+    { id: 110, code: "number_patterns_sequences", title: "Number Patterns & Sequences", description: "Find what comes next in a number path", accent_color: "#C9B1E8", age_label: "Ages 4–8" },
+    { id: 111, code: "fractions", title: "Fractions", description: "Explore parts of a whole", accent_color: "#FFC9A8", age_label: "Ages 6–8" },
+    { id: 112, code: "math_patterns_relationships", title: "Mathematical Patterns & Relationships", description: "See how numbers connect and relate", accent_color: "#A8E6CF", age_label: "Ages 6–8" },
+    { id: 113, code: "basic_mathematical_logic", title: "Basic Mathematical Logic", description: "Solve gentle number puzzles and reason", accent_color: "#D4C4F0", age_label: "Ages 6–8" },
+    { id: 114, code: "intro_multiples_factors", title: "Introduction to Multiples & Factors", description: "Discover multiples and factors", accent_color: "#F6D6AE", age_label: "Age 8" },
+    { id: 115, code: "intro_decimals", title: "Introduction to Decimals", description: "Meet numbers with a decimal point", accent_color: "#F0D5E8", age_label: "Age 8" },
+    { id: 116, code: "place_value_number_system", title: "Place Value & Number System", description: "Ones, tens, hundreds, and number value", accent_color: "#B8E0D2", age_label: "Ages 6–8" },
+  ].map(c => Object.assign({}, c, {
+    illustration_uri: "assets/segments/numbers-math/illustrations/" + c.code + ".svg",
+    icon_uri: "assets/segments/numbers-math/icons/" + c.code + ".svg",
+    activity_count: 0,
+    metadata: {},
+  }));
+
+  const SEGMENT_ACTIVITIES = {
+    numbers_math: [
+      { id: "learnCount", emoji: "🔢", label: "Learn Numbers" },
+      { id: "count", emoji: "🧮", label: "Counting Fun" },
+      { id: "countQuiz", emoji: "🎯", label: "Count the Objects" },
+      { id: "countTrace", emoji: "✏️", label: "Number Trace" },
+      { id: "countTogether", emoji: "👩‍🏫", label: "Count Together" },
+    ],
+    english_literacy: [
+      { id: "learn", emoji: "📖", label: "Learn Letters" },
+      { id: "find", emoji: "🔊", label: "Find It" },
+      { id: "matchPic", emoji: "🍎", label: "Picture Match" },
+      { id: "matchCase", emoji: "🔤", label: "Letter Match" },
+    ],
+    colors_shapes_patterns: [
+      { id: "colors", emoji: "🎨", label: "Colors" },
+    ],
+    music_rhymes_movement: [
+      { id: "poems", emoji: "📝", label: "Poems" },
+    ],
+    games_brain_play: [
+      { id: "memory", emoji: "🃏", label: "Memory Fun" },
+      { id: "find", emoji: "🔊", label: "Find It" },
+    ],
+    creativity_art: [
+      { id: "coloring", emoji: "🎨", label: "Coloring Fun" },
+    ],
+    world_around_us: [
+      { id: "fruits", emoji: "🍎", label: "Fruits" },
+      { id: "vegetables", emoji: "🥕", label: "Vegetables" },
+    ],
+    life_skills_discovery: [
+      { id: "fruits", emoji: "🍎", label: "Fruits" },
+      { id: "vegetables", emoji: "🥕", label: "Vegetables" },
+      { id: "stickers", emoji: "⭐", label: "Sticker Book" },
+    ],
+  };
 
   async function apiCall(action, params, method) {
     let url = API_URL + "?action=" + encodeURIComponent(action);
@@ -50,6 +135,65 @@
     }
   }
 
+  async function platformCall(path, options) {
+    options = options || {};
+    const method = options.method || "GET";
+    const headers = Object.assign({ "Accept": "application/json" }, options.headers || {});
+    if (parentSession && parentSession.token) {
+      headers.Authorization = "Bearer " + parentSession.token;
+    }
+    let url = FOUNDATION_API + path;
+    const opts = { method, headers };
+    if (options.body != null) {
+      headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(options.body);
+    }
+    const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    if (ctrl) {
+      opts.signal = ctrl.signal;
+      setTimeout(() => ctrl.abort(), 5000);
+    }
+    try {
+      const res = await fetch(url, opts);
+      const data = await res.json().catch(() => null);
+      if (!data) return null;
+      data._status = res.status;
+      return data;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function loadCatalogSegments() {
+    if (catalogSegments && catalogSegments.length) return catalogSegments;
+    if (platformMode) {
+      const data = await platformCall("/segments?lang=" + encodeURIComponent(CATALOG_LANG));
+      if (data && data.ok && Array.isArray(data.segments) && data.segments.length) {
+        catalogSegments = data.segments;
+        return catalogSegments;
+      }
+    }
+    catalogSegments = FALLBACK_SEGMENTS.slice();
+    return catalogSegments;
+  }
+
+  function persistParentSession() {
+    if (parentSession) LS.set("parentSession", parentSession);
+    else LS.del("parentSession");
+  }
+
+  async function trackPlatformProgress(activityCode, status) {
+    if (!platformMode || !parentSession || !parentSession.token || !parentSession.childId) return;
+    await platformCall("/progress", {
+      method: "POST",
+      body: {
+        child_id: parentSession.childId,
+        activity_code: activityCode,
+        status: status || "started",
+      },
+    });
+  }
+
   function scheduleSave() {
     if (!serverMode || !activeProfile) return;
     if (saveTimer) clearTimeout(saveTimer);
@@ -59,6 +203,8 @@
   async function saveNow() {
     if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
     if (!serverMode || !activeProfile) return;
+    // Platform parent/child ids are not legacy user ids
+    if (activeProfile.platform || typeof activeProfile.id === "string") return;
     await apiCall("save", {
       id: activeProfile.id,
       stickers: JSON.stringify(stickers),
@@ -426,12 +572,31 @@
     window.scrollTo(0, 0);
   }
 
+  let segmentReturn = null;
+
   backBtn.addEventListener("click", () => {
     snd.pop();
     if (current === "poemReader") go("poems");
-    else if (current === "auth") go(serverMode ? "home" : "home");
+    else if (current === "mathCategory" && segmentReturn) go("segment", segmentReturn);
+    else if (current === "segment") go("home");
+    else if (current === "auth") go("home");
     else go("home");
   });
+
+  function ageGroupsShort(meta) {
+    const ids = (meta && meta.suitable_age_group_ids) || [];
+    const map = { 1: "2–3", 2: "4–5", 3: "6–7", 4: "8" };
+    const parts = ids.map(id => map[id]).filter(Boolean);
+    if (!parts.length) return "Ages 2–8";
+    if (parts.length === 1) return "Ages " + parts[0];
+    return "Ages " + parts[0] + " · " + parts[parts.length - 1];
+  }
+
+  function assetUrl(path) {
+    if (!path) return "";
+    if (/^https?:\/\//i.test(path)) return path;
+    return path.replace(/^\//, "");
+  }
 
   /* ------------------------------ views ------------------------------ */
 
@@ -507,8 +672,15 @@
       <div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div>
       <span class="mini-label">⭐ ${count}/26 stickers</span>`);
 
+    const pathsLabel = el("div", "home-section-label", `
+      <h3>Learning paths</h3>
+      <p>13 segments for ages 2–8 · powered by LumaCubs catalog</p>`);
+    const pathsGrid = el("div", "segment-grid");
+    pathsGrid.id = "homeSegments";
+    pathsGrid.innerHTML = `<div class="segment-loading">Loading learning paths…</div>`;
+
     const sectionLabel = el("div", "home-section-label", `
-      <h3>Choose an activity</h3>
+      <h3>Quick activities</h3>
       <p>Tap a card to begin</p>`);
 
     const grid = el("div", "mode-grid");
@@ -540,19 +712,276 @@
         `<span class="m-emoji">${m.emoji}</span><span class="m-label">${m.label}</span>` +
         (m.badge ? `<span class="badge">⭐ ${m.badge}</span>` : "")
       );
-      b.addEventListener("click", () => { snd.pop(); go(m.id); });
+      b.addEventListener("click", () => {
+        snd.pop();
+        trackPlatformProgress("activity." + m.id, "started");
+        go(m.id);
+      });
       grid.appendChild(b);
     });
 
     const tip = el("div", "parent-tip", "LumaCubs · Grown-up tip: press and hold ⚙️ for settings");
-    screenRoot.append(hero, progress, sectionLabel, grid, tip);
+    screenRoot.append(hero, progress, pathsLabel, pathsGrid, sectionLabel, grid, tip);
 
     const startBtn = hero.querySelector("#startLearningBtn");
     if (startBtn) {
       startBtn.addEventListener("click", () => {
         snd.pop();
-        go("learn");
+        const first = (catalogSegments && catalogSegments[0]) || FALLBACK_SEGMENTS[0];
+        go("segment", first);
       });
+    }
+
+    loadCatalogSegments().then(segments => {
+      if (current !== "home") return;
+      pathsGrid.innerHTML = "";
+      segments.forEach((s, i) => {
+        const b = el(
+          "button",
+          "segment-card tone-" + (i % 4),
+          `<span class="segment-icon">${s.icon || "📘"}</span>
+           <span class="segment-title">${escapeHtml(s.title || s.code)}</span>
+           <span class="segment-meta">Explore</span>`
+        );
+        b.addEventListener("click", () => {
+          snd.pop();
+          trackPlatformProgress("segment." + s.code, "started");
+          go("segment", s);
+        });
+        pathsGrid.appendChild(b);
+      });
+    });
+  };
+
+  /* -------- learning segment hub -------- */
+
+  VIEWS.segment = function (segment) {
+    const seg = segment || FALLBACK_SEGMENTS[0];
+    segmentReturn = seg;
+    titleEl.textContent = seg.title || "Learning Path";
+    const isMath = seg.code === "numbers_math";
+    const rtl = CATALOG_LANG === "ur" || CATALOG_LANG === "ar";
+
+    const wrap = el("div", "segment-hub" + (isMath ? " math-hub" : ""));
+    if (rtl) wrap.setAttribute("dir", "rtl");
+    wrap.appendChild(el("div", "segment-hub-hero", `
+      <div class="segment-hub-icon">${seg.icon || "📘"}</div>
+      <h2>${escapeHtml(seg.title || seg.code)}</h2>
+      <p>${escapeHtml(seg.description || (isMath
+        ? "Explore number sense, counting, and growing math skills for ages 2–8."
+        : "Age-ready activities for this learning path. More lessons will appear here as content is published."))}</p>
+    `));
+
+    const activities = SEGMENT_ACTIVITIES[seg.code] || [];
+    if (activities.length) {
+      wrap.appendChild(el("div", "home-section-label", `
+        <h3>Available now</h3>
+        <p>Play these activities in this path</p>`));
+      const grid = el("div", "mode-grid");
+      activities.forEach((m, i) => {
+        const b = el(
+          "button",
+          "mode-btn tone-" + (i % 4),
+          `<span class="m-emoji">${m.emoji}</span><span class="m-label">${m.label}</span>`
+        );
+        b.addEventListener("click", () => {
+          snd.pop();
+          trackPlatformProgress("activity." + m.id, "started");
+          go(m.id);
+        });
+        grid.appendChild(b);
+      });
+      wrap.appendChild(grid);
+    } else if (!isMath) {
+      wrap.appendChild(el("div", "segment-empty", `
+        <h3>Coming soon</h3>
+        <p>This path is ready in the catalog. Lessons and games will be added next.</p>
+      `));
+    }
+
+    const subWrap = el("div", "segment-subs");
+    subWrap.innerHTML = `<p class="segment-subs-note">Loading ${isMath ? "categories" : "topics"}…</p>`;
+    wrap.appendChild(subWrap);
+    screenRoot.appendChild(wrap);
+
+    function renderCategoryList(list) {
+      if (!list.length) {
+        subWrap.innerHTML = `<p class="segment-subs-note">Categories will appear here when published.</p>`;
+        return;
+      }
+      subWrap.innerHTML = "";
+      subWrap.appendChild(el("div", "home-section-label", `
+        <h3>${isMath ? "Math categories" : "Learning topics"}</h3>
+        <p>${list.length} ${isMath ? "learning paths" : "topics"} ready to explore</p>`));
+
+      if (isMath) {
+        const grid = el("div", "math-category-grid");
+        list.forEach(cat => {
+          const accent = cat.accent_color || "#E8D5F5";
+          const ill = assetUrl(cat.illustration_uri);
+          const icon = assetUrl(cat.icon_uri);
+          const card = el("button", "math-category-card", `
+            <span class="math-card-art" style="background:${escapeHtml(accent)}22">
+              <img src="${escapeHtml(ill)}" alt="${escapeHtml(cat.title || cat.code)}" loading="lazy" width="240" height="180"
+                onerror="this.style.display='none'">
+            </span>
+            <span class="math-card-body">
+              <span class="math-card-top">
+                <img class="math-card-icon" src="${escapeHtml(icon)}" alt="" width="36" height="36" loading="lazy"
+                  onerror="this.style.display='none'">
+                <strong class="math-card-title">${escapeHtml(cat.title || cat.code)}</strong>
+              </span>
+              <span class="math-card-desc">${escapeHtml(cat.description || "")}</span>
+              <span class="math-card-meta">
+                <span>${escapeHtml(cat.age_label || ageGroupsShort(cat.metadata))}</span>
+                <span>${Number(cat.activity_count || 0)} activities</span>
+              </span>
+            </span>
+          `);
+          card.type = "button";
+          card.style.setProperty("--math-accent", accent);
+          card.addEventListener("click", () => {
+            snd.pop();
+            trackPlatformProgress("category." + (cat.code || cat.id), "started");
+            go("mathCategory", { segment: seg, category: cat });
+          });
+          grid.appendChild(card);
+        });
+        subWrap.appendChild(grid);
+        return;
+      }
+
+      const ul = el("div", "subcat-list");
+      list.forEach((sc, i) => {
+        const item = el("button", "subcat-item tone-" + (i % 4), `
+          <strong>${escapeHtml(sc.title || sc.code)}</strong>
+          <span>${escapeHtml(sc.description || "Coming soon")}</span>
+          <em class="subcat-soon">Lessons coming soon</em>
+        `);
+        item.type = "button";
+        item.addEventListener("click", () => {
+          snd.pop();
+          trackPlatformProgress("subcategory." + (sc.code || sc.id), "started");
+          toast("🌱 " + (sc.title || "Topic") + " — lessons coming soon");
+        });
+        ul.appendChild(item);
+      });
+      subWrap.appendChild(ul);
+    }
+
+    if (platformMode && seg.id) {
+      const endpoint = isMath
+        ? "/segments/" + encodeURIComponent(seg.id) + "/categories?lang=" + encodeURIComponent(CATALOG_LANG)
+        : "/segments/" + encodeURIComponent(seg.id) + "/subcategories?lang=" + encodeURIComponent(CATALOG_LANG);
+      platformCall(endpoint).then(data => {
+        if (current !== "segment") return;
+        let list = (data && data.ok) ? (data.categories || data.subcategories || []) : [];
+        if (isMath && !list.length) list = FALLBACK_MATH_CATEGORIES.slice();
+        renderCategoryList(list);
+      });
+    } else if (isMath) {
+      renderCategoryList(FALLBACK_MATH_CATEGORIES.slice());
+    } else {
+      subWrap.innerHTML = `<p class="segment-subs-note">Connect the API to load learning categories for this path.</p>`;
+    }
+  };
+
+  /* -------- Numbers & Math category shell -------- */
+
+  VIEWS.mathCategory = function (payload) {
+    const seg = (payload && payload.segment) || segmentReturn || FALLBACK_SEGMENTS[0];
+    const cat = (payload && payload.category) || {};
+    segmentReturn = seg;
+    titleEl.textContent = cat.title || "Category";
+    const rtl = CATALOG_LANG === "ur" || CATALOG_LANG === "ar";
+    const wrap = el("div", "math-category-page");
+    if (rtl) wrap.setAttribute("dir", "rtl");
+
+    const ill = assetUrl(cat.illustration_uri);
+    const icon = assetUrl(cat.icon_uri);
+    const accent = cat.accent_color || "#E8D5F5";
+
+    wrap.appendChild(el("div", "math-category-hero", `
+      <div class="math-category-hero-art" style="background:${escapeHtml(accent)}33">
+        <img src="${escapeHtml(ill)}" alt="${escapeHtml(cat.title || "")}" width="320" height="240" loading="lazy"
+          onerror="this.style.display='none'">
+      </div>
+      <div class="math-category-hero-text">
+        <div class="math-card-top">
+          <img class="math-card-icon" src="${escapeHtml(icon)}" alt="" width="40" height="40" loading="lazy"
+            onerror="this.style.display='none'">
+          <h2>${escapeHtml(cat.title || cat.code || "Category")}</h2>
+        </div>
+        <p>${escapeHtml(cat.description || "")}</p>
+        <div class="math-card-meta">
+          <span>${escapeHtml(cat.age_label || ageGroupsShort(cat.metadata))}</span>
+          <span>Progress ready</span>
+        </div>
+      </div>
+    `));
+
+    const linked = SEGMENT_ACTIVITIES.numbers_math || [];
+    if (linked.length) {
+      wrap.appendChild(el("div", "home-section-label", `
+        <h3>Try related play</h3>
+        <p>Existing LumaCubs activities while lessons are prepared</p>`));
+      const grid = el("div", "mode-grid");
+      linked.slice(0, 4).forEach((m, i) => {
+        const b = el(
+          "button",
+          "mode-btn tone-" + (i % 4),
+          `<span class="m-emoji">${m.emoji}</span><span class="m-label">${m.label}</span>`
+        );
+        b.addEventListener("click", () => {
+          snd.pop();
+          trackPlatformProgress("activity." + m.id, "started");
+          go(m.id);
+        });
+        grid.appendChild(b);
+      });
+      wrap.appendChild(grid);
+    }
+
+    const topicsWrap = el("div", "segment-subs");
+    topicsWrap.innerHTML = `<p class="segment-subs-note">Loading subcategories…</p>`;
+    wrap.appendChild(topicsWrap);
+    screenRoot.appendChild(wrap);
+
+    if (platformMode && cat.id) {
+      platformCall("/categories/" + encodeURIComponent(cat.id) + "/topics?lang=" + encodeURIComponent(CATALOG_LANG))
+        .then(data => {
+          if (current !== "mathCategory") return;
+          const topics = (data && data.ok && data.topics) ? data.topics : [];
+          topicsWrap.innerHTML = "";
+          topicsWrap.appendChild(el("div", "home-section-label", `
+            <h3>Subcategories</h3>
+            <p>${topics.length ? topics.length + " topics" : "Approved subcategory list will appear here next"}</p>`));
+          if (!topics.length) {
+            topicsWrap.appendChild(el("div", "segment-empty", `
+              <h3>Coming soon</h3>
+              <p>Subcategory hierarchy for this category will be added from the approved list. No invented lessons are shown.</p>
+            `));
+            return;
+          }
+          const ul = el("div", "subcat-list");
+          topics.forEach((tp, i) => {
+            const item = el("button", "subcat-item tone-" + (i % 4), `
+              <strong>${escapeHtml(tp.title || tp.code)}</strong>
+              <span>${escapeHtml(tp.description || "Coming soon")}</span>
+              <em class="subcat-soon">Activities coming soon</em>
+            `);
+            item.type = "button";
+            item.addEventListener("click", () => {
+              snd.pop();
+              trackPlatformProgress("topic." + (tp.code || tp.id), "started");
+              toast("🌱 " + (tp.title || "Topic") + " — activities coming soon");
+            });
+            ul.appendChild(item);
+          });
+          topicsWrap.appendChild(ul);
+        });
+    } else {
+      topicsWrap.innerHTML = `<p class="segment-subs-note">Connect the API to load subcategories.</p>`;
     }
   };
 
@@ -594,6 +1023,16 @@
           snd.wrong();
           return;
         }
+        if (platformMode) {
+          const data = await platformCall("/auth/login", { method: "POST", body: { email, password } });
+          if (!data || !data.ok) {
+            toast("❌ " + (data && data.error === "invalid_credentials" ? "Wrong email or password" : "Login failed"));
+            snd.wrong();
+            return;
+          }
+          await activateParentSession(data);
+          return;
+        }
         const data = await apiCall("login", { email, password }, "POST");
         if (!data || !data.ok) {
           toast("❌ " + (data && data.error === "invalid_credentials" ? "Wrong email or password" : "Login failed"));
@@ -633,7 +1072,8 @@
         <h2>Create Account ✨</h2>
         <input class="auth-input" type="text" id="signupName" placeholder="Your name" maxlength="50" autocomplete="name">
         <input class="auth-input" type="email" id="signupEmail" placeholder="Email" autocomplete="email">
-        <input class="auth-input" type="password" id="signupPass" placeholder="Password (min 4 chars)" autocomplete="new-password">
+        <input class="auth-input" type="password" id="signupPass" placeholder="Password (min 8 chars)" autocomplete="new-password">
+        <input class="auth-input" type="text" id="signupChild" placeholder="Child's name (optional)" maxlength="60">
         <div class="avatar-picker" id="signupAvatarPicker"></div>
         <button class="p-btn auth-submit" id="signupBtn">✨ Create Account</button>
         <p class="auth-switch">Already have account? <a href="#" id="switchToLogin">Login here</a></p>
@@ -661,9 +1101,44 @@
         const name = nameInput.value.trim();
         const email = emailInput.value.trim();
         const password = passInput.value;
+        const childName = (box.querySelector("#signupChild") || {}).value
+          ? box.querySelector("#signupChild").value.trim()
+          : "";
         if (!name) { toast("⚠️ Enter your name"); snd.wrong(); nameInput.focus(); return; }
         if (!email) { toast("⚠️ Enter your email"); snd.wrong(); emailInput.focus(); return; }
-        if (password.length < 4) { toast("⚠️ Password must be 4+ chars"); snd.wrong(); passInput.focus(); return; }
+        if (password.length < (platformMode ? 8 : 4)) {
+          toast("⚠️ Password must be " + (platformMode ? "8" : "4") + "+ chars");
+          snd.wrong();
+          passInput.focus();
+          return;
+        }
+
+        if (platformMode) {
+          const data = await platformCall("/auth/register", {
+            method: "POST",
+            body: {
+              display_name: name,
+              email,
+              password,
+              child_name: childName || name.split(/\s+/)[0],
+              avatar: chosen,
+              preferred_language: CATALOG_LANG,
+            },
+          });
+          if (!data || !data.ok) {
+            const err = data && data.error;
+            const msg = err === "email_taken" ? "Email already registered" :
+                        err === "bad_email" ? "Invalid email" :
+                        err === "bad_password" ? "Password too short" : "Signup failed";
+            toast("❌ " + msg);
+            snd.wrong();
+            return;
+          }
+          snd.fanfare();
+          confetti(20);
+          await activateParentSession(data);
+          return;
+        }
 
         const data = await apiCall("register", { name, email, password, avatar: chosen }, "POST");
         if (!data || !data.ok) {
@@ -710,6 +1185,71 @@
     snd.correct();
     speak(`Hi ${data.profile.name}! Let's play!`);
     go("home");
+  }
+
+  async function activateParentSession(authData) {
+    const parent = authData.parent || {};
+    let child = authData.child || null;
+    parentSession = {
+      token: authData.token,
+      parent: parent,
+      childId: child ? child.id : null,
+    };
+
+    if (!child && authData.token) {
+      const kids = await platformCall("/children");
+      if (kids && kids.ok && kids.children && kids.children.length) {
+        child = kids.children[0];
+        parentSession.childId = child.id;
+      }
+    }
+
+    persistParentSession();
+    activeProfile = {
+      id: child ? ("child:" + child.id) : ("parent:" + parent.id),
+      name: (child && child.display_name) || parent.display_name || "Learner",
+      avatar: (child && child.avatar) || "🧸",
+      parentId: parent.id,
+      childId: child ? child.id : null,
+      platform: true,
+    };
+    stickers = LS.get("stickers", {});
+    levels = LS.get("levels", {});
+    updateParentUI();
+    updateSidebarUI();
+    snd.correct();
+    speak("Hi " + activeProfile.name + "! Let's play!");
+    toast("🎉 Welcome, " + activeProfile.name + "!");
+    go("home");
+  }
+
+  async function restoreParentSession() {
+    const saved = LS.get("parentSession", null);
+    if (!saved || !saved.token) return false;
+    parentSession = saved;
+    const me = await platformCall("/auth/me");
+    if (!me || !me.ok) {
+      parentSession = null;
+      persistParentSession();
+      return false;
+    }
+    parentSession.parent = me.parent;
+    const kids = await platformCall("/children");
+    let child = null;
+    if (kids && kids.ok && kids.children && kids.children.length) {
+      child = kids.children.find(c => c.id === saved.childId) || kids.children[0];
+      parentSession.childId = child.id;
+    }
+    persistParentSession();
+    activeProfile = {
+      id: child ? ("child:" + child.id) : ("parent:" + me.parent.id),
+      name: (child && child.display_name) || me.parent.display_name || "Learner",
+      avatar: (child && child.avatar) || "🧸",
+      parentId: me.parent.id,
+      childId: child ? child.id : null,
+      platform: true,
+    };
+    return true;
   }
 
   /* -------- forgot password -------- */
@@ -3324,13 +3864,15 @@
     if (activeProfile) {
       sidebarAvatar.textContent = activeProfile.avatar;
       sidebarName.textContent = activeProfile.name;
-      sidebarStatus.textContent = serverMode ? "Logged in" : "Guest mode";
+      sidebarStatus.textContent = activeProfile.platform
+        ? "Parent account"
+        : (serverMode ? "Logged in" : "Guest mode");
       sidebarLogin.classList.add("hidden");
       sidebarLogout.classList.remove("hidden");
     } else {
       sidebarAvatar.textContent = "👤";
       sidebarName.textContent = "Guest";
-      sidebarStatus.textContent = serverMode ? "Not logged in" : "Offline mode";
+      sidebarStatus.textContent = (platformMode || serverMode) ? "Not logged in" : "Offline mode";
       sidebarLogin.classList.remove("hidden");
       sidebarLogout.classList.add("hidden");
     }
@@ -3343,7 +3885,7 @@
 
   sidebarLogin.addEventListener("click", () => {
     closeSidebar();
-    if (serverMode) {
+    if (platformMode || serverMode) {
       saveNow();
       go("auth", "login");
     } else {
@@ -3354,7 +3896,12 @@
   sidebarLogout.addEventListener("click", async () => {
     closeSidebar();
     await saveNow();
+    if (parentSession && parentSession.token) {
+      await platformCall("/auth/logout", { method: "POST" });
+    }
     activeProfile = null;
+    parentSession = null;
+    persistParentSession();
     LS.del("authProfile");
     stickers = LS.get("stickers", {});
     levels = LS.get("levels", {});
@@ -3362,7 +3909,7 @@
     updateParentUI();
     updateSidebarUI();
     toast("🚪 Logged out");
-    go(serverMode ? "auth" : "home");
+    go((platformMode || serverMode) ? "auth" : "home");
   });
 
   sidebarSpeech.addEventListener("click", () => {
@@ -3418,10 +3965,27 @@
 
   async function boot() {
     initBg();
-    const ping = await apiCall("ping");
-    serverMode = !!(ping && ping.ok);
+    const [legacyPing, foundationPing] = await Promise.all([
+      apiCall("ping"),
+      platformCall("/health"),
+    ]);
+    serverMode = !!(legacyPing && legacyPing.ok);
+    platformMode = !!(foundationPing && foundationPing.ok);
+    await loadCatalogSegments();
+
+    // Prefer home so Learning paths are always visible.
+    // Login remains available from the sidebar / parent menu.
+    if (platformMode) {
+      const restored = await restoreParentSession();
+      if (restored) {
+        updateParentUI();
+        updateSidebarUI();
+        go("home");
+        return;
+      }
+    }
+
     if (serverMode) {
-      // Check if user was previously logged in
       const savedId = LS.get("authProfile", null);
       if (savedId) {
         const data = await apiCall("load", { id: savedId });
@@ -3430,16 +3994,13 @@
           stickers = data.profile.stickers || {};
           levels = data.profile.levels || {};
           speechOn = data.profile.speech_on !== false;
-          updateParentUI();
-          updateSidebarUI();
-          go("home");
-          return;
         }
       }
-      go("auth", "login");
-    } else {
-      go("home");
     }
+
+    updateParentUI();
+    updateSidebarUI();
+    go("home");
   }
 
   // flush pending progress right before the page is hidden or closed
