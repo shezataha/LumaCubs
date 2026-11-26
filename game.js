@@ -603,11 +603,18 @@
   }
 
   let segmentReturn = null;
+  let leMathCatReturn = null;
 
   backBtn.addEventListener("click", () => {
     snd.pop();
     if (current === "poemReader") go("poems");
     else if (current === "mathCategory" && segmentReturn) go("segment", segmentReturn);
+    else if (current === "leMathPlay" || current === "leMathResult") {
+      if (leMathCatReturn) go("leMathCat", leMathCatReturn);
+      else go("leNumbersMath");
+    }
+    else if (current === "leMathCat") go("leNumbersMath");
+    else if (current === "leNumbersMath") go("littleExplorers");
     else if (current === "segment") {
       if (ageHubReturn) go(ageHubReturn);
       else if (parentSession && parentSession.childId) go("ageDashboard");
@@ -621,11 +628,20 @@
 
   function ageGroupsShort(meta) {
     const ids = (meta && meta.suitable_age_group_ids) || [];
-    const map = { 1: "2–3", 2: "4–5", 3: "6–7", 4: "8" };
-    const parts = ids.map(id => map[id]).filter(Boolean);
+    const map = { 1: "2–4", 2: "4–6", 3: "6–8" };
+    // Legacy id 4 (retired) → Smart Achievers band
+    const normalized = ids.map(id => (Number(id) === 4 ? 3 : Number(id)));
+    const parts = normalized.map(id => map[id]).filter(Boolean);
     if (!parts.length) return "Ages 2–8";
     if (parts.length === 1) return "Ages " + parts[0];
     return "Ages " + parts[0] + " · " + parts[parts.length - 1];
+  }
+
+  function masterAgeGroupForYears(ageYears) {
+    if (ageYears == null || ageYears < 0) return null;
+    if (ageYears < 4) return MASTER_AGE_GROUPS[0];
+    if (ageYears < 6) return MASTER_AGE_GROUPS[1];
+    return MASTER_AGE_GROUPS[2];
   }
 
   function assetUrl(path) {
@@ -667,7 +683,41 @@
 
   const VIEWS = {};
 
-  /* -------- home (Phase 1: three age sections) -------- */
+  /* -------- MASTER age groups (FINAL — do not rename/split/add) --------
+     1) Little Explorers  — 2 to under 4
+     2) Curious Learners  — 4 to under 6
+     3) Smart Achievers   — 6 to 8
+     Only learning content inside each group may evolve after approval. */
+
+  const MASTER_AGE_GROUPS = Object.freeze([
+    Object.freeze({
+      id: 1,
+      code: "little_explorers",
+      slug: "little-explorers",
+      name: "Little Explorers",
+      ages: "2–4 Years",
+      ageMinInclusive: 2,
+      ageMaxExclusive: 4,
+    }),
+    Object.freeze({
+      id: 2,
+      code: "curious_learners",
+      slug: "curious-learners",
+      name: "Curious Learners",
+      ages: "4–6 Years",
+      ageMinInclusive: 4,
+      ageMaxExclusive: 6,
+    }),
+    Object.freeze({
+      id: 3,
+      code: "smart_achievers",
+      slug: "smart-achievers",
+      name: "Smart Achievers",
+      ages: "6–8 Years",
+      ageMinInclusive: 6,
+      ageMaxExclusive: 9,
+    }),
+  ]);
 
   const HOME_AGE_SECTIONS = [
     {
@@ -811,6 +861,12 @@
 
   function openLittleExplorersSegment(leSeg) {
     ageHubReturn = "littleExplorers";
+    trackPlatformProgress("little_explorers.segment." + (leSeg && leSeg.code), "started");
+    // Dedicated Little Explorers Numbers & Math experience
+    if (leSeg && leSeg.code === "numbers_math") {
+      go("leNumbersMath");
+      return;
+    }
     const catalog = (catalogSegments || []).find(s => Number(s.id) === Number(leSeg.id) || s.code === leSeg.code);
     const payload = Object.assign({}, catalog || {}, {
       id: leSeg.id,
@@ -821,7 +877,6 @@
       icon_uri: leSeg.icon_uri || (catalog && catalog.icon_uri),
       fromAgeHub: "littleExplorers",
     });
-    trackPlatformProgress("little_explorers.segment." + leSeg.code, "started");
     go("segment", payload);
   }
 
@@ -4427,6 +4482,28 @@
     const overlay = document.querySelector(".overlay");
     if (overlay) overlay.remove();
   });
+
+  /* -------- Little Explorers Numbers & Math extension -------- */
+  if (typeof window.LUMACUBS_REGISTER_LE_MATH === "function") {
+    window.LUMACUBS_REGISTER_LE_MATH({
+      VIEWS,
+      go,
+      el,
+      snd,
+      speak,
+      toast,
+      confetti,
+      LS,
+      escapeHtml,
+      trackPlatformProgress,
+      titleEl,
+      screenRoot,
+      setAgeHubReturn: (v) => { ageHubReturn = v; },
+      getAgeHubReturn: () => ageHubReturn,
+      getCurrent: () => current,
+      setLeMathCatReturn: (cat) => { leMathCatReturn = cat; },
+    });
+  }
 
   /* ------------------------------ start ------------------------------ */
 

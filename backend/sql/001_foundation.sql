@@ -272,11 +272,11 @@ CREATE TABLE IF NOT EXISTS child_settings (
 
 -- ---------- seeds ----------
 
+-- MASTER age groups (FINAL): see sql/006_master_age_groups.sql
 INSERT IGNORE INTO age_groups (id, code, label, age_min, age_max, sort_order) VALUES
   (1, 'little_explorers',  'Little Explorers',  2, 3, 1),
   (2, 'curious_learners',  'Curious Learners',  4, 5, 2),
-  (3, 'smart_learners',    'Smart Learners',    6, 7, 3),
-  (4, 'young_achievers',   'Young Achievers',   8, 8, 4);
+  (3, 'smart_achievers',   'Smart Achievers',   6, 8, 3);
 
 INSERT IGNORE INTO languages (code, label, direction, is_active) VALUES
   ('en', 'English', 'ltr', 1),

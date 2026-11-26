@@ -48,7 +48,7 @@ final class DashboardController
             $explore = [];
         }
         // Advanced unlock: include next age-group explore items labeled carefully later
-        if ((int)$controls['allow_advanced'] && $ageGroupId < 4) {
+        if ((int)$controls['allow_advanced'] && $ageGroupId < \LumaCubs\AgeService::GROUP_SMART_ACHIEVERS) {
             $extra = self::segmentsFor($ageGroupId + 1, $lang, 'recommended');
             foreach ($extra as &$row) {
                 $row['placement'] = 'explore';

@@ -18,6 +18,10 @@ Authenticated routes require:
 ## Auth (parents only)
 
 - `POST /auth/register` — `{ email, password, display_name, child_name?, avatar?, age_group_id?, preferred_language?, date_of_birth? }`
+
+### Master age groups (FINAL)
+
+See `MASTER_AGE_GROUPS.md`. Only three groups: Little Explorers (2–under 4), Curious Learners (4–under 6), Smart Achievers (6–8). DOB assignment uses completed years; never add/rename/split groups without approval.
 - `POST /auth/login` — `{ email, password }`
 - `POST /auth/logout`
 - `GET /auth/me`

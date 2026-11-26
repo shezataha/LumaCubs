@@ -266,7 +266,10 @@ final class CatalogController
         $ids = [];
         foreach ($ageIds as $id) {
             $id = (int)$id;
-            if ($id >= 1 && $id <= 4) {
+            if ($id === 4) {
+                $id = 3; // legacy Young Achievers → Smart Achievers
+            }
+            if ($id >= 1 && $id <= 3) {
                 $ids[$id] = true;
             }
         }
@@ -275,11 +278,11 @@ final class CatalogController
         if (!$ids) {
             return 'Ages 2–8';
         }
+        // Display bands match master structure (not exclusive bounds)
         $bounds = [
-            1 => ['2', '3'],
-            2 => ['4', '5'],
-            3 => ['6', '7'],
-            4 => ['8', '8'],
+            1 => ['2', '4'],
+            2 => ['4', '6'],
+            3 => ['6', '8'],
         ];
         $low = $bounds[$ids[0]][0];
         $high = $bounds[$ids[count($ids) - 1]][1];

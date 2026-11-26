@@ -6,8 +6,45 @@ namespace LumaCubs;
 use DateTimeImmutable;
 use PDO;
 
+/**
+ * Master age-group structure (FINAL — do not change without explicit approval):
+ * 1) Little Explorers  — 2 to under 4 years
+ * 2) Curious Learners  — 4 to under 6 years
+ * 3) Smart Achievers   — 6 to 8 years
+ */
 final class AgeService
 {
+    public const GROUP_LITTLE_EXPLORERS = 1;
+    public const GROUP_CURIOUS_LEARNERS = 2;
+    public const GROUP_SMART_ACHIEVERS = 3;
+
+    public const MASTER_GROUPS = [
+        self::GROUP_LITTLE_EXPLORERS => [
+            'id' => self::GROUP_LITTLE_EXPLORERS,
+            'code' => 'little_explorers',
+            'label' => 'Little Explorers',
+            'display_ages' => '2–4 Years',
+            'age_min_inclusive' => 2,
+            'age_max_exclusive' => 4,
+        ],
+        self::GROUP_CURIOUS_LEARNERS => [
+            'id' => self::GROUP_CURIOUS_LEARNERS,
+            'code' => 'curious_learners',
+            'label' => 'Curious Learners',
+            'display_ages' => '4–6 Years',
+            'age_min_inclusive' => 4,
+            'age_max_exclusive' => 6,
+        ],
+        self::GROUP_SMART_ACHIEVERS => [
+            'id' => self::GROUP_SMART_ACHIEVERS,
+            'code' => 'smart_achievers',
+            'label' => 'Smart Achievers',
+            'display_ages' => '6–8 Years',
+            'age_min_inclusive' => 6,
+            'age_max_exclusive' => 9, // inclusive through age 8
+        ],
+    ];
+
     public static function ageFromDob(?string $dob): ?int
     {
         if ($dob === null || $dob === '') {
@@ -25,35 +62,44 @@ final class AgeService
         return (int)$birth->diff($now)->y;
     }
 
+    /**
+     * Non-overlapping assignment by completed years of age:
+     * - under 4 → Little Explorers (also maps 0–1 safely to earliest stage)
+     * - 4–5 → Curious Learners
+     * - 6–8 (+ older capped) → Smart Achievers
+     */
     public static function ageGroupIdForAge(?int $age): ?int
     {
         if ($age === null || $age < 0) {
             return null;
         }
-        if ($age <= 3) {
-            return 1; // Little Explorers 2–3 (also maps age 0–1 safely to earliest stage)
+        if ($age < 4) {
+            return self::GROUP_LITTLE_EXPLORERS;
         }
-        if ($age <= 5) {
-            return 2;
+        if ($age < 6) {
+            return self::GROUP_CURIOUS_LEARNERS;
         }
-        if ($age <= 7) {
-            return 3;
-        }
-        return 4; // 8+
+        return self::GROUP_SMART_ACHIEVERS;
     }
 
     public static function resolveAgeGroupId(?string $dob, ?int $explicitAgeGroupId, ?int $overrideLevel = null): ?int
     {
         $fromDob = self::ageGroupIdForAge(self::ageFromDob($dob));
-        $base = $explicitAgeGroupId ?: $fromDob;
+        // DOB is source of truth when present; otherwise use stored/explicit id.
+        $base = $fromDob ?? $explicitAgeGroupId;
         if ($base === null) {
             return null;
         }
+        // Legacy id 4 (retired Young Achievers) maps into Smart Achievers.
+        if ($base === 4) {
+            $base = self::GROUP_SMART_ACHIEVERS;
+        }
+        $base = max(self::GROUP_LITTLE_EXPLORERS, min(self::GROUP_SMART_ACHIEVERS, $base));
         if ($overrideLevel === null || $overrideLevel === 0) {
             return $base;
         }
         $shifted = $base + (int)$overrideLevel;
-        return max(1, min(4, $shifted));
+        return max(self::GROUP_LITTLE_EXPLORERS, min(self::GROUP_SMART_ACHIEVERS, $shifted));
     }
 
     /** @return array<string,mixed> */
@@ -72,6 +118,12 @@ final class AgeService
         );
         $row['age_years'] = $age;
         $row['resolved_age_group_id'] = $resolved;
+        if ($resolved !== null && isset(self::MASTER_GROUPS[$resolved])) {
+            $meta = self::MASTER_GROUPS[$resolved];
+            $row['age_group_code'] = $meta['code'];
+            $row['age_group_label'] = $meta['label'];
+            $row['age_group_display_ages'] = $meta['display_ages'];
+        }
         return $row;
     }
 
