@@ -56,6 +56,26 @@
     icon: null,
   }));
 
+  const ENGLISH_LITERACY_ART_BASE = "assets/home/little-explorers/english-literacy/subcategories/";
+  const ENGLISH_LITERACY_ART = {
+    alphabet_letters: ENGLISH_LITERACY_ART_BASE + "alphabet_letters.jpg",
+    phonics_sounds: ENGLISH_LITERACY_ART_BASE + "phonics_sounds.jpg",
+    sight_words: ENGLISH_LITERACY_ART_BASE + "sight_words.jpg",
+    listening_speaking: ENGLISH_LITERACY_ART_BASE + "listening_speaking.jpg",
+    early_reading: ENGLISH_LITERACY_ART_BASE + "early_reading.jpg",
+  };
+
+  const FALLBACK_ENGLISH_SUBCATEGORIES = [
+    { id: 6, code: "alphabet_letters", title: "Alphabet Letters", description: "Meet A to Z", accent_color: "#A8D4F0" },
+    { id: 7, code: "phonics_sounds", title: "Phonics Sounds", description: "Hear letter sounds", accent_color: "#C8F0E0" },
+    { id: 8, code: "sight_words", title: "Sight Words", description: "Read common little words", accent_color: "#FFD8C2" },
+    { id: 9, code: "listening_speaking", title: "Listening & Speaking", description: "Talk and listen with joy", accent_color: "#FFE29A" },
+    { id: 10, code: "early_reading", title: "Early Reading", description: "First reading steps", accent_color: "#E8D5F5" },
+  ].map(sc => Object.assign({}, sc, {
+    illustration_uri: ENGLISH_LITERACY_ART[sc.code],
+    icon_uri: ENGLISH_LITERACY_ART[sc.code],
+  }));
+
   const FALLBACK_MATH_CATEGORIES = [
     { id: 101, code: "number_recognition_number_sense", title: "Number Recognition & Number Sense", description: "Spot, name, and understand numbers", accent_color: "#FFD8C2", age_label: "Ages 2–8" },
     { id: 102, code: "counting_quantity", title: "Counting & Quantity", description: "Count objects and build quantity sense", accent_color: "#C8F0E0", age_label: "Ages 2–8" },
@@ -89,10 +109,10 @@
       { id: "countTogether", emoji: "👩‍🏫", label: "Count Together" },
     ],
     english_literacy: [
-      { id: "learn", emoji: "📖", label: "Learn Letters" },
-      { id: "find", emoji: "🔊", label: "Find It" },
-      { id: "matchPic", emoji: "🍎", label: "Picture Match" },
-      { id: "matchCase", emoji: "🔤", label: "Letter Match" },
+      { id: "learn", label: "Learn Letters", art: ENGLISH_LITERACY_ART_BASE + "alphabet_letters.jpg" },
+      { id: "find", label: "Find It", art: ENGLISH_LITERACY_ART_BASE + "phonics_sounds.jpg" },
+      { id: "matchPic", label: "Picture Match", art: ENGLISH_LITERACY_ART_BASE + "sight_words.jpg" },
+      { id: "matchCase", label: "Letter Match", art: ENGLISH_LITERACY_ART_BASE + "early_reading.jpg" },
     ],
     colors_shapes_patterns: [
       { id: "colors", emoji: "🎨", label: "Colors" },
@@ -663,6 +683,27 @@
     </span>`;
   }
 
+  function subcategoryIllustrationUri(sc, segmentCode) {
+    if (sc && sc.illustration_uri) return assetUrl(sc.illustration_uri);
+    if (sc && sc.icon_uri) return assetUrl(sc.icon_uri);
+    const code = sc && sc.code;
+    if (segmentCode === "english_literacy" && code && ENGLISH_LITERACY_ART[code]) {
+      return ENGLISH_LITERACY_ART[code];
+    }
+    if (code && ENGLISH_LITERACY_ART[code]) return ENGLISH_LITERACY_ART[code];
+    return SEGMENT_ART_FALLBACK;
+  }
+
+  function subcategoryArtHtml(sc, segmentCode) {
+    const title = escapeHtml((sc && (sc.title || sc.code)) || "Topic");
+    const src = escapeHtml(subcategoryIllustrationUri(sc, segmentCode));
+    return `<span class="subcat-art" aria-hidden="true">
+      <img class="subcat-illustration" src="${src}" alt=""
+        width="96" height="96" loading="lazy" decoding="async"
+        onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${SEGMENT_ART_FALLBACK}';}">
+    </span>`;
+  }
+
   function segmentIllustrationUri(seg) {
     if (seg && seg.illustration_uri) return assetUrl(seg.illustration_uri);
     if (seg && seg.code) return "assets/segments/illustrations/" + seg.code + ".svg";
@@ -1014,10 +1055,13 @@
         <p>Play these activities in this path</p>`));
       const grid = el("div", "mode-grid");
       activities.forEach((m, i) => {
+        const art = m.art
+          ? `<span class="m-art"><img src="${escapeHtml(m.art)}" alt="" width="72" height="72" loading="lazy" decoding="async" onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${SEGMENT_ART_FALLBACK}';}"></span>`
+          : `<span class="m-emoji">${m.emoji || ""}</span>`;
         const b = el(
           "button",
-          "mode-btn tone-" + (i % 4),
-          `<span class="m-emoji">${m.emoji}</span><span class="m-label">${m.label}</span>`
+          "mode-btn" + (m.art ? " has-art" : "") + " tone-" + (i % 4),
+          `${art}<span class="m-label">${escapeHtml(m.label)}</span>`
         );
         b.addEventListener("click", () => {
           snd.pop();
@@ -1077,18 +1121,27 @@
         return;
       }
 
-      const ul = el("div", "subcat-list");
+      const isEnglish = seg.code === "english_literacy";
+      const ul = el("div", "subcat-list" + (isEnglish ? " illustrated-subcat-list" : ""));
       list.forEach((sc, i) => {
-        const item = el("button", "subcat-item tone-" + (i % 4), `
-          <strong>${escapeHtml(sc.title || sc.code)}</strong>
-          <span>${escapeHtml(sc.description || "Coming soon")}</span>
-          <em class="subcat-soon">Lessons coming soon</em>
-        `);
+        if (isEnglish && sc && sc.code && !sc.illustration_uri && ENGLISH_LITERACY_ART[sc.code]) {
+          sc.illustration_uri = ENGLISH_LITERACY_ART[sc.code];
+        }
+        const item = el(
+          "button",
+          "subcat-item" + (isEnglish ? " illustrated-subcat-item" : "") + " tone-" + (i % 4),
+          (isEnglish ? subcategoryArtHtml(sc, seg.code) : "") +
+          `<span class="subcat-copy">
+            <strong>${escapeHtml(sc.title || sc.code)}</strong>
+            <span>${escapeHtml(sc.description || "Coming soon")}</span>
+            <em class="subcat-soon">Lessons coming soon</em>
+          </span>`
+        );
         item.type = "button";
         item.addEventListener("click", () => {
           snd.pop();
           trackPlatformProgress("subcategory." + (sc.code || sc.id), "started");
-          toast("🌱 " + (sc.title || "Topic") + " — lessons coming soon");
+          toast((sc.title || "Topic") + " — lessons coming soon");
         });
         ul.appendChild(item);
       });
@@ -1105,10 +1158,15 @@
         if (current !== "segment") return;
         let list = (data && data.ok) ? (data.categories || data.subcategories || []) : [];
         if (isMath && !list.length) list = FALLBACK_MATH_CATEGORIES.slice();
+        if (!isMath && seg.code === "english_literacy" && !list.length) {
+          list = FALLBACK_ENGLISH_SUBCATEGORIES.slice();
+        }
         renderCategoryList(list);
       });
     } else if (isMath) {
       renderCategoryList(FALLBACK_MATH_CATEGORIES.slice());
+    } else if (seg.code === "english_literacy") {
+      renderCategoryList(FALLBACK_ENGLISH_SUBCATEGORIES.slice());
     } else {
       subWrap.innerHTML = `<p class="segment-subs-note">Connect the API to load learning categories for this path.</p>`;
     }
