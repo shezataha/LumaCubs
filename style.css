@@ -4198,6 +4198,284 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
 .le-nm-sub-title { font-weight: 800; font-size: 15px; }
 .le-nm-sub-stars { font-weight: 900; font-size: 13px; color: #7B6B9A; }
 
+.le-nm-play-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.le-nm-replay {
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  background: rgba(255, 252, 248, 0.95);
+  color: #7E5FB0;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+
+.le-nm-replay-inline {
+  margin-top: 8px;
+}
+
+.le-nm-choice.is-correct {
+  background: linear-gradient(180deg, #EAF8F3, #C8F0E0);
+  border-color: #8ED9BE;
+}
+
+.le-nm-choice.is-wrong {
+  animation: leNmShake 0.35s ease;
+}
+
+@keyframes leNmShake {
+  0%, 100% { transform: translateX(0); }
+  30% { transform: translateX(-5px); }
+  60% { transform: translateX(5px); }
+}
+
+.le-nm-token-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.le-nm-token {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: inline-block;
+  box-shadow: 0 4px 10px rgba(74, 68, 88, 0.14);
+  position: relative;
+}
+
+.le-nm-token-apple {
+  background: radial-gradient(circle at 30% 30%, #FF9B9B, #FF5D5D 55%, #E24444);
+  border-radius: 50%;
+}
+.le-nm-token-apple::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 48%;
+  width: 4px;
+  height: 10px;
+  border-radius: 2px;
+  background: #8B5A2B;
+}
+.le-nm-token-star {
+  background: linear-gradient(145deg, #FFE29A, #FFD166);
+  clip-path: polygon(50% 4%, 61% 35%, 95% 35%, 68% 55%, 78% 88%, 50% 70%, 22% 88%, 32% 55%, 5% 35%, 39% 35%);
+  border-radius: 0;
+}
+.le-nm-token-ball {
+  background: radial-gradient(circle at 30% 28%, #BFE9FF, #5BB8F0 60%, #3A9AD8);
+  border-radius: 50%;
+}
+.le-nm-token-berry {
+  background: radial-gradient(circle at 30% 30%, #FFB4D0, #FF6B9D 55%, #E24B7A);
+  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+}
+.le-nm-token-block {
+  background: linear-gradient(145deg, #C9A0FF, #9B6FE0);
+  border-radius: 12px;
+}
+
+.le-nm-explore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.le-nm-big-num-soft {
+  background: linear-gradient(180deg, #FFF8F2, #FFE4D2);
+  border-radius: 28px;
+  padding: 8px 28px;
+  box-shadow: var(--shadow-soft);
+}
+
+.le-nm-name-tag {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: #7E5FB0;
+}
+
+.le-nm-num-pad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.le-nm-pad-btn {
+  min-width: 64px;
+  min-height: 64px;
+  font-size: 28px;
+}
+
+.le-nm-pad-btn.is-seen {
+  background: linear-gradient(180deg, #EAF8F3, #C8F0E0);
+}
+
+.le-nm-listen-card,
+.le-nm-target-chip {
+  background: rgba(255, 252, 248, 0.95);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+
+.le-nm-target-chip {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.le-nm-prompt-soft {
+  margin: 0;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.le-nm-picture-find {
+  position: relative;
+  width: min(100%, 340px);
+  height: 220px;
+  margin: 0 auto;
+  border-radius: 24px;
+  background: linear-gradient(160deg, #FFF6E8, #EAF8F3 45%, #F3EEFF);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8);
+}
+
+.le-nm-float-num {
+  position: absolute;
+  left: var(--fx, 40%);
+  top: var(--fy, 40%);
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 18px;
+  background: #FFFCF8;
+  box-shadow: var(--shadow-soft);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.le-nm-float-num.is-correct { background: #C8F0E0; }
+.le-nm-float-num.is-wrong { background: #FFD0DC; }
+
+.le-nm-memory {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: 10px;
+  width: min(100%, 360px);
+  margin: 0 auto;
+}
+
+.le-nm-mem-card {
+  position: relative;
+  height: 78px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #C9A0FF, #A8D4F0);
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+  perspective: 600px;
+}
+
+.le-nm-mem-back,
+.le-nm-mem-front {
+  position: absolute;
+  inset: 6px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  backface-visibility: hidden;
+}
+
+.le-nm-mem-back {
+  background: rgba(255, 252, 248, 0.35);
+}
+
+.le-nm-mem-front {
+  background: #FFFCF8;
+  color: #7E5FB0;
+  opacity: 0;
+}
+
+.le-nm-mem-card.is-open .le-nm-mem-front,
+.le-nm-mem-card.is-matched .le-nm-mem-front {
+  opacity: 1;
+}
+
+.le-nm-mem-card.is-open .le-nm-mem-back,
+.le-nm-mem-card.is-matched .le-nm-mem-back {
+  opacity: 0;
+}
+
+.le-nm-mem-card.is-matched {
+  background: linear-gradient(160deg, #C8F0E0, #A8D4F0);
+}
+
+.le-nm-drag-board {
+  display: grid;
+  gap: 14px;
+  width: min(100%, 420px);
+  margin: 0 auto;
+}
+
+.le-nm-drag-sources,
+.le-nm-drag-targets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.le-nm-drag-item.is-dragging { opacity: 0.55; }
+.le-nm-drag-item.is-selected {
+  outline: 3px solid #7E5FB0;
+  outline-offset: 2px;
+}
+.le-nm-drag-item.is-matched,
+.le-nm-drag-target.is-matched {
+  opacity: 0.45;
+  pointer-events: none;
+  background: linear-gradient(180deg, #EAF8F3, #C8F0E0);
+}
+
+.le-nm-drag-target {
+  min-width: 64px;
+  min-height: 64px;
+  border: 2px dashed rgba(126, 95, 176, 0.45);
+  border-radius: 18px;
+  background: rgba(255, 252, 248, 0.85);
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.le-nm-drag-target.is-over {
+  border-style: solid;
+  background: #F3EEFF;
+}
+
 .le-nm-play {
   max-width: 720px;
   margin: 0 auto;
