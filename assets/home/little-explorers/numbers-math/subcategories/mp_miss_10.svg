@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+
+<defs>
+  <linearGradient id="bgmpm10" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#FFF0E8"/>
+    <stop offset="100%" stop-color="#FFDCC8"/>
+  </linearGradient>
+  <filter id="shmpm10" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="3" stdDeviation="2.2" flood-color="#5B4A7A" flood-opacity="0.18"/>
+  </filter>
+</defs>
+<rect width="256" height="256" rx="56" fill="url(#bgmpm10)"/>
+<circle cx="48" cy="52" r="10" fill="#fff" opacity="0.35"/>
+<circle cx="210" cy="40" r="7" fill="#fff" opacity="0.28"/>
+<circle cx="222" cy="78" r="5" fill="#fff" opacity="0.22"/>
+<g filter="url(#shmpm10)"><g transform="translate(20,95)">
+    <ellipse cx="20" cy="46" rx="14.399999999999999" ry="6" fill="#5B4A7A" opacity="0.14"/>
+    <rect width="40" height="40" rx="11.200000000000001" fill="#FFD166"/>
+    <rect x="6" y="5" width="22" height="11.200000000000001" rx="10" fill="#fff" opacity="0.28"/>
+    <text x="20" y="28" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="21" font-weight="700" fill="#fff">6</text>
+  </g><g transform="translate(68,95)">
+    <ellipse cx="20" cy="46" rx="14.399999999999999" ry="6" fill="#5B4A7A" opacity="0.14"/>
+    <rect width="40" height="40" rx="11.200000000000001" fill="#FF8FAB"/>
+    <rect x="6" y="5" width="22" height="11.200000000000001" rx="10" fill="#fff" opacity="0.28"/>
+    <text x="20" y="28" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="21" font-weight="700" fill="#fff">7</text>
+  </g><g transform="translate(116,95)">
+    <ellipse cx="20" cy="46" rx="14.399999999999999" ry="6" fill="#5B4A7A" opacity="0.14"/>
+    <rect width="40" height="40" rx="11.200000000000001" fill="#C9A0FF"/>
+    <rect x="6" y="5" width="22" height="11.200000000000001" rx="10" fill="#fff" opacity="0.28"/>
+    <text x="20" y="28" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="21" font-weight="700" fill="#fff">?</text>
+  </g><g transform="translate(164,95)">
+    <ellipse cx="20" cy="46" rx="14.399999999999999" ry="6" fill="#5B4A7A" opacity="0.14"/>
+    <rect width="40" height="40" rx="11.200000000000001" fill="#7ECDB5"/>
+    <rect x="6" y="5" width="22" height="11.200000000000001" rx="10" fill="#fff" opacity="0.28"/>
+    <text x="20" y="28" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="21" font-weight="700" fill="#fff">9</text>
+  </g><g transform="translate(205,110)">
+    <ellipse cx="18" cy="42" rx="12.959999999999999" ry="6" fill="#5B4A7A" opacity="0.14"/>
+    <rect width="36" height="36" rx="10.080000000000002" fill="#A8D4F0"/>
+    <rect x="6" y="5" width="19.8" height="10.080000000000002" rx="10" fill="#fff" opacity="0.28"/>
+    <text x="18" y="25.2" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="19" font-weight="700" fill="#fff">10</text>
+  </g></g>
+</svg>

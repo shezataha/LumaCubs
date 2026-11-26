@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+
+<defs>
+  <linearGradient id="bgbmcpw" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#F3EEFF"/>
+    <stop offset="100%" stop-color="#E0D4FF"/>
+  </linearGradient>
+  <filter id="shbmcpw" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="3" stdDeviation="2.2" flood-color="#5B4A7A" flood-opacity="0.18"/>
+  </filter>
+</defs>
+<rect width="256" height="256" rx="56" fill="url(#bgbmcpw)"/>
+<circle cx="48" cy="52" r="10" fill="#fff" opacity="0.35"/>
+<circle cx="210" cy="40" r="7" fill="#fff" opacity="0.28"/>
+<circle cx="222" cy="78" r="5" fill="#fff" opacity="0.22"/>
+<g filter="url(#shbmcpw)"><circle cx="128" cy="120" r="70" fill="#C9A0FF" opacity="0.35"/><path d="M128 50 A70 70 0 0 1 128 190 Z" fill="#FF8FAB" opacity="0.75"/><path d="M128 50 A70 70 0 0 0 128 190 Z" fill="#A8D4F0" opacity="0.75"/><text x="95" y="125" font-family="Verdana" font-size="16" font-weight="700" fill="#fff">part</text><text x="140" y="125" font-family="Verdana" font-size="16" font-weight="700" fill="#fff">part</text></g>
+</svg>

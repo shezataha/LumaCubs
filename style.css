@@ -3904,6 +3904,63 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   background: linear-gradient(180deg, #FFFCF8, #EAF8F3);
 }
 
+.le-nm-subcat-list {
+  max-width: 720px;
+  gap: 12px;
+}
+
+.le-nm-subcat-item {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px 12px 12px;
+}
+
+.le-nm-subcat-item .subcat-art {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(255, 252, 248, 0.85);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.9);
+  display: grid;
+  place-items: center;
+}
+
+.le-nm-subcat-item .subcat-illustration {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.le-nm-subcat-item .subcat-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.le-nm-subcat-item .subcat-copy strong {
+  line-height: 1.25;
+}
+
+@media (max-width: 520px) {
+  .le-nm-subcat-item .subcat-art {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+  }
+
+  .le-nm-subcat-item {
+    gap: 12px;
+    padding: 10px 12px 10px 10px;
+  }
+}
+
 .le-nm-page {
   max-width: 1080px;
   margin: 0 auto;

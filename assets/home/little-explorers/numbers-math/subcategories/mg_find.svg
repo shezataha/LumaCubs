@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+
+<defs>
+  <linearGradient id="bgmgfind" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#EAF4FF"/>
+    <stop offset="100%" stop-color="#C8E0F8"/>
+  </linearGradient>
+  <filter id="shmgfind" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="3" stdDeviation="2.2" flood-color="#5B4A7A" flood-opacity="0.18"/>
+  </filter>
+</defs>
+<rect width="256" height="256" rx="56" fill="url(#bgmgfind)"/>
+<circle cx="48" cy="52" r="10" fill="#fff" opacity="0.35"/>
+<circle cx="210" cy="40" r="7" fill="#fff" opacity="0.28"/>
+<circle cx="222" cy="78" r="5" fill="#fff" opacity="0.22"/>
+<g filter="url(#shmgfind)"><g transform="translate(40,50)">
+    <circle cx="38" cy="38" r="28" fill="#EAF8F2" stroke="#7ECDB5" stroke-width="10"/>
+    <circle cx="30" cy="30" r="10" fill="#fff" opacity="0.45"/>
+    <rect x="54" y="54" width="14" height="40" rx="7" fill="#8B5A2B" transform="rotate(45 54 54)"/>
+  </g><g transform="translate(140,100)">
+    <ellipse cx="29" cy="64" rx="20.88" ry="6" fill="#5B4A7A" opacity="0.14"/>
+    <rect width="58" height="58" rx="16.240000000000002" fill="#A8D4F0"/>
+    <rect x="6" y="5" width="31.900000000000002" height="16.240000000000002" rx="10" fill="#fff" opacity="0.28"/>
+    <text x="29" y="40.599999999999994" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="30" font-weight="700" fill="#fff">7</text>
+  </g><g transform="translate(200,60)">
+    <path d="M9 2 L11.16 6.84 L16 7.2 L12.24 11.16 L14.040000000000001 16 L9 13.32 L3.96 16 L5.76 11.16 L2 7.2 L6.84 6.84 Z" fill="#FFD166"/>
+    <circle cx="7.2" cy="6.3" r="1.8" fill="#fff" opacity="0.35"/>
+  </g></g>
+</svg>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+
+<defs>
+  <linearGradient id="bgbmc0" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#F0F7FF"/>
+    <stop offset="100%" stop-color="#D6E8FF"/>
+  </linearGradient>
+  <filter id="shbmc0" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="3" stdDeviation="2.2" flood-color="#5B4A7A" flood-opacity="0.18"/>
+  </filter>
+</defs>
+<rect width="256" height="256" rx="56" fill="url(#bgbmc0)"/>
+<circle cx="48" cy="52" r="10" fill="#fff" opacity="0.35"/>
+<circle cx="210" cy="40" r="7" fill="#fff" opacity="0.28"/>
+<circle cx="222" cy="78" r="5" fill="#fff" opacity="0.22"/>
+<g filter="url(#shbmc0)"><g transform="translate(88,70)">
+    <ellipse cx="35" cy="76" rx="25.2" ry="6" fill="#5B4A7A" opacity="0.14"/>
+    <rect width="70" height="70" rx="19.6" fill="#A8D4F0"/>
+    <rect x="6" y="5" width="38.5" height="19.6" rx="10" fill="#fff" opacity="0.28"/>
+    <text x="35" y="49" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="36" font-weight="700" fill="#fff">0</text>
+  </g><rect x="60" y="160" width="130" height="40" rx="14" fill="#fff" opacity="0.5" stroke="#C9A0FF" stroke-width="3" stroke-dasharray="8 6"/><text x="125" y="186" text-anchor="middle" font-family="Verdana" font-size="16" font-weight="700" fill="#8A7AA8">none</text></g>
+</svg>

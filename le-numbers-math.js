@@ -6,6 +6,7 @@
   "use strict";
 
   const ART = "assets/home/little-explorers/numbers-math/categories/";
+  const SUB_ART = "assets/home/little-explorers/numbers-math/subcategories/";
   const FALLBACK = "assets/segments/numbers-math/illustrations/_fallback.svg";
 
   const OBJECTS = ["🍎", "⭐", "🔵", "🟡", "🟢", "🧸", "🎈", "🍓", "🍊", "🍩"];
@@ -309,13 +310,21 @@
         <h3>Subcategories</h3>
         <p>Level A (2–3) and Level B (3–4) · tap to play</p>`));
 
-      const ul = el("div", "subcat-list");
+      const ul = el("div", "subcat-list le-nm-subcat-list");
       cat.subs.forEach((sub, i) => {
         const done = starsFor(sub.id);
-        const item = el("button", "subcat-item tone-" + (i % 4) + (done ? " is-done" : ""), `
-          <strong>${escapeHtml(sub.title)}</strong>
-          <span>${sub.level === "A" ? "Level A · Early Explorers" : "Level B · Growing Explorers"}</span>
-          <em class="subcat-soon">${done ? ("⭐".repeat(Math.min(3, done)) + " done") : "Tap to play"}</em>
+        const iconSrc = SUB_ART + encodeURIComponent(sub.id) + ".svg";
+        const item = el("button", "subcat-item le-nm-subcat-item tone-" + (i % 4) + (done ? " is-done" : ""), `
+          <span class="subcat-art" aria-hidden="true">
+            <img class="subcat-illustration" src="${iconSrc}" alt=""
+              width="96" height="96" loading="lazy"
+              onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${FALLBACK}';}">
+          </span>
+          <span class="subcat-copy">
+            <strong>${escapeHtml(sub.title)}</strong>
+            <span>${sub.level === "A" ? "Level A · Early Explorers" : "Level B · Growing Explorers"}</span>
+            <em class="subcat-soon">${done ? ("★".repeat(Math.min(3, done)) + " done") : "Tap to play"}</em>
+          </span>
         `);
         item.type = "button";
         item.addEventListener("click", () => {
