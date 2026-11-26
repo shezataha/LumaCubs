@@ -801,12 +801,12 @@
     { id: 10, code: "life_skills_discovery", title: "Life Skills & Discovery", description: "Learn everyday skills through play!", tone: "coral" },
     { id: 11, code: "science_nature", title: "Science & Nature", description: "Explore animals, plants and nature!", tone: "leaf" },
   ].map(s => Object.assign({}, s, {
-    illustration: "assets/home/little-explorers/segments/" + s.code + ".svg",
-    illustration_uri: "assets/home/little-explorers/segments/" + s.code + ".svg",
+    illustration: "assets/home/little-explorers/segments/" + s.code + ".jpg",
+    illustration_uri: "assets/home/little-explorers/segments/" + s.code + ".jpg",
     icon_uri: "assets/segments/icons/" + s.code + ".svg",
   }));
 
-  const LITTLE_EXPLORERS_HERO = "assets/home/little-explorers/hero.svg";
+  const LITTLE_EXPLORERS_HERO = "assets/home/little-explorers/hero.jpg";
   const LE_ILLUSTRATION_FALLBACK = "assets/segments/illustrations/_fallback.svg";
 
   function openLittleExplorersSegment(leSeg) {
