@@ -1,0 +1,45 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" fill="none" role="img" aria-label="World Around Us">
+  <defs>
+    <linearGradient id="bg_world_around_us" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAF8F2"/>
+      <stop offset="100%" stop-color="#B8E8D4"/>
+    </linearGradient>
+    <linearGradient id="fur_world_around_us" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE4C8"/><stop offset="100%" stop-color="#FFC59A"/>
+    </linearGradient>
+    <filter id="soft_world_around_us" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#4A4458" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+  <rect width="640" height="480" rx="48" fill="url(#bg_world_around_us)"/>
+  <circle cx="70" cy="70" r="54" fill="#FFFFFF" opacity="0.35"/>
+  <circle cx="560" cy="70" r="70" fill="#FFFFFF" opacity="0.18"/>
+  <ellipse cx="320" cy="420" rx="210" ry="24" fill="#4A4458" opacity="0.08"/>
+  
+    <g filter="url(#soft_world_around_us)">
+      <circle cx="210" cy="240" r="88" fill="#7EC8E8"/>
+      <ellipse cx="180" cy="220" rx="34" ry="22" fill="#8ED9BE"/>
+      <ellipse cx="240" cy="260" rx="40" ry="24" fill="#8ED9BE"/>
+      <path d="M210 152 Q230 200 210 328 Q190 200 210 152" fill="#6FCFB0" opacity="0.45"/>
+      <rect x="320" y="250" width="70" height="70" rx="10" fill="#FFB894"/>
+      <polygon points="355,210 400,250 310,250" fill="#F08A5A"/>
+      <rect x="340" y="275" width="18" height="28" rx="4" fill="#FFF6EC"/>
+      <circle cx="120" cy="300" r="18" fill="#FFE29A"/>
+    </g>
+  <g filter="url(#soft_world_around_us)">
+    <ellipse cx="470" cy="230" rx="22" ry="20" fill="url(#fur_world_around_us)"/>
+    <ellipse cx="540" cy="230" rx="22" ry="20" fill="url(#fur_world_around_us)"/>
+    <ellipse cx="470" cy="232" rx="10" ry="9" fill="#FFF6EC"/>
+    <ellipse cx="540" cy="232" rx="10" ry="9" fill="#FFF6EC"/>
+    <ellipse cx="505" cy="280" rx="62" ry="58" fill="url(#fur_world_around_us)"/>
+    <ellipse cx="505" cy="295" rx="38" ry="30" fill="#FFF6EC"/>
+    <circle cx="485" cy="270" r="6" fill="#4A4458"/>
+    <circle cx="525" cy="270" r="6" fill="#4A4458"/>
+    <circle cx="487" cy="268" r="2" fill="#fff"/>
+    <circle cx="527" cy="268" r="2" fill="#fff"/>
+    <ellipse cx="478" cy="286" rx="9" ry="7" fill="#FFB4C8" opacity="0.8"/>
+    <ellipse cx="532" cy="286" rx="9" ry="7" fill="#FFB4C8" opacity="0.8"/>
+    <ellipse cx="505" cy="288" rx="8" ry="6" fill="#F4A261"/>
+    <path d="M490 306 Q505 318 520 306" stroke="#4A4458" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

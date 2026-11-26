@@ -1,0 +1,41 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" fill="none" role="img" aria-label="Little Explorers learning world">
+  <defs>
+    <linearGradient id="bg_hero" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFE8D6"/>
+      <stop offset="100%" stop-color="#FFD4BC"/>
+    </linearGradient>
+    <linearGradient id="fur_hero" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE4C8"/><stop offset="100%" stop-color="#FFC59A"/>
+    </linearGradient>
+    <filter id="soft_hero" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#4A4458" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+  <rect width="640" height="480" rx="48" fill="url(#bg_hero)"/>
+  <circle cx="70" cy="70" r="54" fill="#FFFFFF" opacity="0.35"/>
+  <circle cx="560" cy="70" r="70" fill="#FFFFFF" opacity="0.18"/>
+  <ellipse cx="320" cy="420" rx="210" ry="24" fill="#4A4458" opacity="0.08"/>
+      <g filter="url(#soft_hero)">
+      <rect x="70" y="250" width="70" height="70" rx="14" fill="#A8E6CF"/><text x="105" y="297" text-anchor="middle" font-family="Nunito,Arial" font-size="30" font-weight="800" fill="#3F6F5E">A</text>
+      <rect x="130" y="210" width="64" height="64" rx="14" fill="#A8D4F0"/><text x="162" y="252" text-anchor="middle" font-family="Nunito,Arial" font-size="28" font-weight="800" fill="#3D5F78">1</text>
+      <circle cx="220" cy="300" r="30" fill="#FFE29A"/>
+      <circle cx="280" cy="250" r="24" fill="#FFB4C8"/>
+      <polygon points="250,170 280,220 220,220" fill="#C9B1E8"/>
+    </g>
+  <g filter="url(#soft_hero)">
+    <ellipse cx="470" cy="230" rx="22" ry="20" fill="url(#fur_hero)"/>
+    <ellipse cx="540" cy="230" rx="22" ry="20" fill="url(#fur_hero)"/>
+    <ellipse cx="470" cy="232" rx="10" ry="9" fill="#FFF6EC"/>
+    <ellipse cx="540" cy="232" rx="10" ry="9" fill="#FFF6EC"/>
+    <ellipse cx="505" cy="280" rx="62" ry="58" fill="url(#fur_hero)"/>
+    <ellipse cx="505" cy="295" rx="38" ry="30" fill="#FFF6EC"/>
+    <circle cx="485" cy="270" r="6" fill="#4A4458"/>
+    <circle cx="525" cy="270" r="6" fill="#4A4458"/>
+    <circle cx="487" cy="268" r="2" fill="#fff"/>
+    <circle cx="527" cy="268" r="2" fill="#fff"/>
+    <ellipse cx="478" cy="286" rx="9" ry="7" fill="#FFB4C8" opacity="0.8"/>
+    <ellipse cx="532" cy="286" rx="9" ry="7" fill="#FFB4C8" opacity="0.8"/>
+    <ellipse cx="505" cy="288" rx="8" ry="6" fill="#F4A261"/>
+    <path d="M490 306 Q505 318 520 306" stroke="#4A4458" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

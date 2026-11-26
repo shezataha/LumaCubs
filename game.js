@@ -579,6 +579,7 @@
   const backBtn = $("#backBtn");
 
   let current = "home";
+  let ageHubReturn = null; // e.g. "littleExplorers" when browsing from an age dashboard
 
   function go(name, arg) {
     token++;
@@ -587,10 +588,16 @@
     stopPoemAudio();
     try { if ("speechSynthesis" in window) speechSynthesis.cancel(); } catch (e) {}
     current = name;
+    if (name === "home" || name === "auth") ageHubReturn = null;
     screenRoot.innerHTML = "";
     const hideBack = name === "home" || name === "auth" || name === "forgot" || name === "reset"
       || name === "childPicker" || name === "ageDashboard";
     backBtn.classList.toggle("hidden", hideBack);
+    if (typeof VIEWS[name] !== "function") {
+      console.warn("Unknown view:", name);
+      VIEWS.home();
+      return;
+    }
     VIEWS[name](arg);
     window.scrollTo(0, 0);
   }
@@ -602,9 +609,11 @@
     if (current === "poemReader") go("poems");
     else if (current === "mathCategory" && segmentReturn) go("segment", segmentReturn);
     else if (current === "segment") {
-      if (parentSession && parentSession.childId) go("ageDashboard");
+      if (ageHubReturn) go(ageHubReturn);
+      else if (parentSession && parentSession.childId) go("ageDashboard");
       else go("home");
     }
+    else if (current === "littleExplorers") go("home");
     else if (current === "auth") go("home");
     else if (parentSession && parentSession.childId && current !== "ageDashboard") go("ageDashboard");
     else go("home");
@@ -763,14 +772,165 @@
         selectHomeAgeSection(section);
         grid.querySelectorAll(".age-home-card").forEach(c => c.classList.remove("is-selected"));
         card.classList.add("is-selected");
-        speak(section.name);
-        toast(section.name + " · " + section.ages);
         trackPlatformProgress("home.age." + section.id, "started");
+        if (section.id === "little_explorers") {
+          go("littleExplorers");
+          return;
+        }
+        speak(section.name);
+        toast(section.name + " · coming next");
       });
       grid.appendChild(card);
     });
 
     screenRoot.appendChild(wrap);
+  };
+
+  /* -------- Little Explorers (2–4) dashboard -------- */
+
+  const LITTLE_EXPLORERS_SEGMENTS = [
+    { id: 1,  code: "numbers_math", title: "Numbers & Math", description: "Let's count and play with numbers!", tone: "peach" },
+    { id: 2,  code: "english_literacy", title: "English Language & Literacy", description: "Discover letters, words and sounds!", tone: "sky" },
+    { id: 3,  code: "urdu_literacy", title: "Urdu Language & Literacy", description: "Explore Urdu letters and words!", tone: "lilac" },
+    { id: 4,  code: "world_around_us", title: "World Around Us", description: "Discover people, places and things!", tone: "mint" },
+    { id: 5,  code: "colors_shapes_patterns", title: "Colors, Shapes & Patterns", description: "Explore colors, shapes and patterns!", tone: "rose" },
+    { id: 6,  code: "music_rhymes_movement", title: "Music, Rhymes & Movement", description: "Sing, dance and have fun!", tone: "violet" },
+    { id: 7,  code: "games_brain_play", title: "Games & Brain Play", description: "Play fun thinking games!", tone: "aqua" },
+    { id: 8,  code: "creativity_art", title: "Creativity & Art", description: "Draw, color and create!", tone: "sun" },
+    { id: 9,  code: "basic_islamic_studies", title: "Basic Islamic Studies", description: "Discover simple Islamic learning!", tone: "sage" },
+    { id: 10, code: "life_skills_discovery", title: "Life Skills & Discovery", description: "Learn everyday skills through play!", tone: "coral" },
+    { id: 11, code: "science_nature", title: "Science & Nature", description: "Explore animals, plants and nature!", tone: "leaf" },
+  ].map(s => Object.assign({}, s, {
+    illustration: "assets/home/little-explorers/segments/" + s.code + ".svg",
+    illustration_uri: "assets/home/little-explorers/segments/" + s.code + ".svg",
+    icon_uri: "assets/segments/icons/" + s.code + ".svg",
+  }));
+
+  const LITTLE_EXPLORERS_HERO = "assets/home/little-explorers/hero.svg";
+  const LE_ILLUSTRATION_FALLBACK = "assets/segments/illustrations/_fallback.svg";
+
+  function openLittleExplorersSegment(leSeg) {
+    ageHubReturn = "littleExplorers";
+    const catalog = (catalogSegments || []).find(s => Number(s.id) === Number(leSeg.id) || s.code === leSeg.code);
+    const payload = Object.assign({}, catalog || {}, {
+      id: leSeg.id,
+      code: leSeg.code,
+      title: leSeg.title,
+      description: leSeg.description,
+      illustration_uri: leSeg.illustration_uri || (catalog && catalog.illustration_uri),
+      icon_uri: leSeg.icon_uri || (catalog && catalog.icon_uri),
+      fromAgeHub: "littleExplorers",
+    });
+    trackPlatformProgress("little_explorers.segment." + leSeg.code, "started");
+    go("segment", payload);
+  }
+
+  VIEWS.littleExplorers = function () {
+    ageHubReturn = "littleExplorers";
+    titleEl.textContent = "Little Explorers";
+
+    const childName = (activeProfile && activeProfile.childId && activeProfile.name)
+      ? activeProfile.name
+      : null;
+    const avatar = (activeProfile && activeProfile.avatar) ? activeProfile.avatar : "🧸";
+    const welcomeTitle = childName
+      ? ("Hello, " + childName + "!")
+      : "Hello, Little Explorer!";
+
+    const page = el("div", "le-dash");
+    page.innerHTML = `
+      <header class="le-dash-header">
+        <div class="le-dash-header-deco" aria-hidden="true">
+          <span class="le-deco le-deco-a"></span>
+          <span class="le-deco le-deco-b"></span>
+          <span class="le-deco le-deco-c"></span>
+        </div>
+        <div class="le-dash-brand-row">
+          <div class="le-dash-brand-text">
+            <p class="le-dash-brand">LumaCubs</p>
+            <p class="le-dash-ages">Little Explorers · 2–4 Years</p>
+          </div>
+          <div class="le-dash-profile" aria-label="Child profile">
+            <span class="le-dash-avatar">${escapeHtml(avatar)}</span>
+          </div>
+        </div>
+        <h2 class="le-dash-welcome">${escapeHtml(welcomeTitle)}</h2>
+        <p class="le-dash-subtitle">Let's discover something fun today!</p>
+      </header>
+
+      <section class="le-hero" aria-label="Welcome hero">
+        <div class="le-hero-art">
+          <img
+            src="${LITTLE_EXPLORERS_HERO}"
+            alt="Friendly Luma cub ready to explore with toys and colors"
+            width="640"
+            height="480"
+            loading="eager"
+            decoding="async"
+            onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${LE_ILLUSTRATION_FALLBACK}';}"
+          >
+        </div>
+        <div class="le-hero-copy">
+          <h3>Your learning world is ready</h3>
+          <p>Tap a colorful path and start exploring.</p>
+          <button type="button" class="le-hero-cta" id="leLetsExplore">Let's Explore</button>
+        </div>
+      </section>
+
+      <section class="le-segments" aria-label="Learning segments">
+        <div class="le-section-label">
+          <h3>Explore Your Learning World</h3>
+          <p>11 playful paths for little explorers</p>
+        </div>
+        <div class="le-segment-grid" id="leSegmentGrid"></div>
+      </section>
+    `;
+
+    const grid = page.querySelector("#leSegmentGrid");
+    LITTLE_EXPLORERS_SEGMENTS.forEach((seg, i) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "le-segment-card tone-" + seg.tone;
+      card.setAttribute("aria-label", seg.title);
+      card.style.setProperty("--le-delay", (i * 45) + "ms");
+      card.innerHTML = `
+        <span class="le-segment-art">
+          <img
+            src="${escapeHtml(seg.illustration)}"
+            alt="${escapeHtml(seg.title)}"
+            width="640"
+            height="480"
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+            onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${LE_ILLUSTRATION_FALLBACK}';}"
+          >
+        </span>
+        <span class="le-segment-body">
+          <span class="le-segment-name">${escapeHtml(seg.title)}</span>
+          <span class="le-segment-desc">${escapeHtml(seg.description)}</span>
+        </span>
+      `;
+      card.addEventListener("click", () => {
+        snd.pop();
+        speak(seg.title);
+        openLittleExplorersSegment(seg);
+      });
+      grid.appendChild(card);
+    });
+
+    page.querySelector("#leLetsExplore").addEventListener("click", () => {
+      snd.pop();
+      const first = grid.querySelector(".le-segment-card");
+      if (first) {
+        first.focus();
+        first.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      speak("Explore your learning world");
+    });
+
+    screenRoot.appendChild(page);
+    speak(welcomeTitle);
   };
 
   /* -------- learning segment hub -------- */
@@ -4309,6 +4469,9 @@
     updateParentUI();
     updateSidebarUI();
     go("home");
+    if (/#age\/little-explorers/i.test(String(location.hash || ""))) {
+      go("littleExplorers");
+    }
   }
 
   // flush pending progress right before the page is hidden or closed
