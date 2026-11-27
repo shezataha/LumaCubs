@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 270" role="img" aria-label="Purple bunny">
+  <defs>
+    <radialGradient id="bunnyFur" cx="40%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#D4B8F5"/>
+      <stop offset="50%" stop-color="#B894E8"/>
+      <stop offset="100%" stop-color="#9470D0"/>
+    </radialGradient>
+    <radialGradient id="bunnyBelly" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#F3E8FF"/>
+      <stop offset="100%" stop-color="#DCC8F5"/>
+    </radialGradient>
+    <radialGradient id="bunnyInner" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#FFB8D0"/>
+      <stop offset="100%" stop-color="#F090B0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="110" cy="258" rx="48" ry="9" fill="rgba(74,68,88,0.12)"/>
+  <!-- ears -->
+  <g class="bunny-ear-l">
+    <ellipse cx="72" cy="48" rx="22" ry="52" fill="url(#bunnyFur)" transform="rotate(-12 72 48)"/>
+    <ellipse cx="72" cy="48" rx="10" ry="34" fill="url(#bunnyInner)" transform="rotate(-12 72 48)"/>
+  </g>
+  <g class="bunny-ear-r">
+    <ellipse cx="148" cy="48" rx="22" ry="52" fill="url(#bunnyFur)" transform="rotate(14 148 48)"/>
+    <ellipse cx="148" cy="48" rx="10" ry="34" fill="url(#bunnyInner)" transform="rotate(14 148 48)"/>
+  </g>
+  <!-- feet -->
+  <ellipse cx="82" cy="220" rx="26" ry="18" fill="url(#bunnyFur)"/>
+  <ellipse cx="138" cy="220" rx="26" ry="18" fill="url(#bunnyFur)"/>
+  <ellipse cx="82" cy="226" rx="14" ry="8" fill="#E8C8F0" opacity="0.7"/>
+  <ellipse cx="138" cy="226" rx="14" ry="8" fill="#E8C8F0" opacity="0.7"/>
+  <!-- arms -->
+  <ellipse cx="48" cy="155" rx="18" ry="14" fill="url(#bunnyFur)" transform="rotate(-20 48 155)"/>
+  <ellipse cx="172" cy="155" rx="18" ry="14" fill="url(#bunnyFur)" transform="rotate(20 172 155)"/>
+  <!-- body -->
+  <ellipse cx="110" cy="168" rx="48" ry="46" fill="url(#bunnyFur)"/>
+  <ellipse cx="110" cy="175" rx="28" ry="26" fill="url(#bunnyBelly)"/>
+  <!-- head -->
+  <circle cx="110" cy="100" r="48" fill="url(#bunnyFur)"/>
+  <ellipse cx="110" cy="118" rx="22" ry="16" fill="url(#bunnyBelly)"/>
+  <!-- face -->
+  <circle cx="92" cy="96" r="5.5" fill="#3A2F45"/>
+  <circle cx="128" cy="96" r="5.5" fill="#3A2F45"/>
+  <circle cx="93.5" cy="94.5" r="1.8" fill="#fff" opacity="0.9"/>
+  <circle cx="129.5" cy="94.5" r="1.8" fill="#fff" opacity="0.9"/>
+  <ellipse cx="110" cy="110" rx="7" ry="5.5" fill="#E87898"/>
+  <path d="M104 118c4 5 8 5 12 0" fill="none" stroke="#C06080" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="86" cy="112" r="7" fill="#E8A0C0" opacity="0.35"/>
+  <circle cx="134" cy="112" r="7" fill="#E8A0C0" opacity="0.35"/>
+  <!-- whiskers -->
+  <path d="M78 112h-18M78 118h-16M142 112h18M142 118h16" stroke="#8A70B0" stroke-width="1.6" stroke-linecap="round" opacity="0.55"/>
+</svg>

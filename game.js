@@ -769,7 +769,7 @@
       slug: "little-explorers",
       name: "Little Explorers",
       ages: "2–4 Years",
-      description: "Soft first steps — colors, sounds, counting play, and gentle discovery.",
+      description: "A playful first step into colours, numbers, words and everyday discoveries.",
       illustration: "assets/home/age-groups/little-explorers.svg",
       tone: "peach",
     },
@@ -778,7 +778,7 @@
       slug: "curious-learners",
       name: "Curious Learners",
       ages: "4–6 Years",
-      description: "Letters, numbers, stories, and playful puzzles for growing minds.",
+      description: "Explore new ideas, discover patterns and enjoy exciting learning adventures.",
       illustration: "assets/home/age-groups/curious-learners.svg",
       tone: "mint",
     },
@@ -787,11 +787,213 @@
       slug: "smart-achievers",
       name: "Smart Achievers",
       ages: "6–8 Years",
-      description: "Bigger challenges, sharper thinking, and proud learning moments.",
+      description: "Build knowledge, develop thinking skills and take on new learning challenges.",
       illustration: "assets/home/age-groups/smart-achievers.svg",
       tone: "sun",
     },
   ];
+
+  const HOME_WELCOME_VIDEO = "assets/home/welcome/lumacubs-welcome.mp4";
+  const HOME_WELCOME_POSTER = "assets/home/welcome/welcome-poster.jpg";
+  const HOME_TEDDY = "assets/home/characters/golden-teddy.svg";
+  const HOME_BUNNY = "assets/home/characters/purple-bunny.svg";
+
+  let lastHomeCharSpeak = 0;
+
+  function scrollHomeTo(selector) {
+    const node = screenRoot.querySelector(selector);
+    if (!node) return;
+    node.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function bindHomeWelcomeVideo(root) {
+    const video = root.querySelector("#homeWelcomeVideo");
+    if (!video) return;
+
+    const playBtn = root.querySelector("#homeVidPlay");
+    const muteBtn = root.querySelector("#homeVidMute");
+    const replayBtn = root.querySelector("#homeVidReplay");
+    const statusEl = root.querySelector("#homeVidStatus");
+    const stage = root.querySelector(".home-video-stage");
+
+    let userUnmuted = false;
+
+    function setStatus(text) {
+      if (statusEl) statusEl.textContent = text || "";
+    }
+
+    function syncPlayUi() {
+      const playing = !video.paused && !video.ended;
+      if (playBtn) {
+        playBtn.setAttribute("aria-label", playing ? "Pause welcome video" : "Play welcome video");
+        playBtn.setAttribute("aria-pressed", playing ? "true" : "false");
+        playBtn.innerHTML = playing
+          ? '<span aria-hidden="true">❚❚</span><span class="home-vid-label">Pause</span>'
+          : '<span aria-hidden="true">▶</span><span class="home-vid-label">Play</span>';
+      }
+      if (stage) stage.classList.toggle("is-playing", playing);
+      if (stage) stage.classList.toggle("is-ended", video.ended);
+    }
+
+    function syncMuteUi() {
+      if (!muteBtn) return;
+      muteBtn.setAttribute("aria-label", video.muted ? "Unmute welcome video" : "Mute welcome video");
+      muteBtn.setAttribute("aria-pressed", video.muted ? "true" : "false");
+      muteBtn.innerHTML = video.muted
+        ? '<span aria-hidden="true">🔇</span><span class="home-vid-label">Unmute</span>'
+        : '<span aria-hidden="true">🔊</span><span class="home-vid-label">Mute</span>';
+    }
+
+    video.muted = true;
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    syncPlayUi();
+    syncMuteUi();
+    setStatus("Loading magical welcome…");
+
+    video.addEventListener("loadeddata", () => {
+      setStatus("");
+      if (stage) stage.classList.remove("is-loading", "is-error");
+    });
+    video.addEventListener("waiting", () => setStatus("Loading…"));
+    video.addEventListener("playing", () => {
+      setStatus("");
+      syncPlayUi();
+    });
+    video.addEventListener("pause", syncPlayUi);
+    video.addEventListener("ended", () => {
+      syncPlayUi();
+      setStatus("Tap Replay to watch again");
+    });
+    video.addEventListener("error", () => {
+      if (stage) {
+        stage.classList.add("is-error");
+        stage.classList.remove("is-loading");
+      }
+      setStatus("Video could not load — showing welcome art");
+    });
+
+    // Soft muted autoplay attempt (never with sound)
+    const tryMutedAutoplay = () => {
+      const p = video.play();
+      if (p && typeof p.then === "function") {
+        p.then(syncPlayUi).catch(() => {
+          video.pause();
+          syncPlayUi();
+          setStatus("Tap Play to begin");
+        });
+      }
+    };
+    if (stage) stage.classList.add("is-loading");
+    if (video.readyState >= 2) tryMutedAutoplay();
+    else video.addEventListener("canplay", tryMutedAutoplay, { once: true });
+
+    if (playBtn) {
+      playBtn.addEventListener("click", () => {
+        snd.pop();
+        if (video.paused || video.ended) {
+          if (video.ended) video.currentTime = 0;
+          const p = video.play();
+          if (p && typeof p.catch === "function") p.catch(() => setStatus("Tap again to play"));
+        } else {
+          video.pause();
+        }
+        syncPlayUi();
+      });
+    }
+
+    if (muteBtn) {
+      muteBtn.addEventListener("click", () => {
+        snd.pop();
+        if (video.muted) {
+          video.muted = false;
+          userUnmuted = true;
+          if (video.paused) {
+            const p = video.play();
+            if (p && typeof p.catch === "function") p.catch(() => {});
+          }
+        } else {
+          video.muted = true;
+        }
+        syncMuteUi();
+        syncPlayUi();
+      });
+    }
+
+    if (replayBtn) {
+      replayBtn.addEventListener("click", () => {
+        snd.pop();
+        video.currentTime = 0;
+        if (!userUnmuted) video.muted = true;
+        syncMuteUi();
+        const p = video.play();
+        if (p && typeof p.catch === "function") {
+          p.then(() => {
+            setStatus("");
+            syncPlayUi();
+          }).catch(() => setStatus("Tap Play to replay"));
+        }
+        syncPlayUi();
+      });
+    }
+
+    // Capture a true first-frame poster when possible (keeps layout stable)
+    video.addEventListener("loadeddata", () => {
+      try {
+        if (video.videoWidth < 16) return;
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(video, 0, 0);
+        const url = canvas.toDataURL("image/jpeg", 0.82);
+        if (url && url.length > 64) video.setAttribute("poster", url);
+      } catch (e) {}
+    }, { once: true });
+  }
+
+  function bindHomeCharacters(root) {
+    const greetings = {
+      teddy: [
+        "Hi friend! I'm the LumaCubs teddy!",
+        "Hello little cub! Ready to explore?",
+        "Wave wave! Let's learn together!",
+      ],
+      bunny: [
+        "Hop hop! I'm the purple bunny!",
+        "Hello! Want to discover something fun?",
+        "Boing! Let's play and learn!",
+      ],
+    };
+    let teddyIdx = 0;
+    let bunnyIdx = 0;
+
+    root.querySelectorAll("[data-home-char]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const who = btn.getAttribute("data-home-char");
+        btn.classList.remove("is-reacting");
+        void btn.offsetWidth;
+        btn.classList.add("is-reacting");
+        const bubble = root.querySelector('[data-char-bubble="' + who + '"]');
+        const lines = greetings[who] || ["Hello!"];
+        const idx = who === "bunny" ? (bunnyIdx++ % lines.length) : (teddyIdx++ % lines.length);
+        const line = lines[idx];
+        if (bubble) {
+          bubble.textContent = line;
+          bubble.classList.add("is-visible");
+          clearTimeout(bubble._hideTimer);
+          bubble._hideTimer = setTimeout(() => bubble.classList.remove("is-visible"), 2800);
+        }
+        const now = Date.now();
+        if (now - lastHomeCharSpeak > 2200) {
+          lastHomeCharSpeak = now;
+          speak(line);
+        }
+        snd.pop();
+      });
+    });
+  }
 
   function selectHomeAgeSection(section) {
     if (!section) return;
@@ -815,23 +1017,183 @@
   VIEWS.home = function () {
     titleEl.textContent = "LumaCubs";
 
-    const greeting = activeProfile
-      ? "Hi " + escapeHtml(activeProfile.name) + "! Pick an age path to begin."
-      : "Choose the learning path that fits your little cub.";
+    const childName = activeProfile && activeProfile.name ? activeProfile.name : null;
+    const greeting = childName
+      ? ("Hi " + escapeHtml(childName) + "! A magical world of learning is waiting for you.")
+      : "A magical world where little minds explore, play, discover and grow through fun interactive learning adventures.";
 
     const saved = LS.get("selectedHomeAge", null);
 
-    const wrap = el("div", "home-age-page");
+    const wrap = el("div", "home-age-page home-premium");
     wrap.innerHTML = `
-      <section class="home-age-intro" aria-label="LumaCubs welcome">
-        <p class="home-age-brand">LumaCubs</p>
-        <h2 class="home-age-headline">Little Learners, Big Discoveries</h2>
-        <p class="home-age-sub">${greeting}</p>
+      <section class="home-hero" aria-label="Welcome to LumaCubs">
+        <div class="home-hero-magic" aria-hidden="true">
+          <span class="home-spark s1"></span>
+          <span class="home-spark s2"></span>
+          <span class="home-spark s3"></span>
+          <span class="home-cloud c1"></span>
+          <span class="home-cloud c2"></span>
+          <span class="home-butterfly b1"></span>
+          <span class="home-butterfly b2"></span>
+          <span class="home-flower f1"></span>
+          <span class="home-flower f2"></span>
+        </div>
+        <div class="home-hero-copy">
+          <p class="home-hero-brand">LumaCubs</p>
+          <h2 class="home-hero-title">Welcome to LumaCubs</h2>
+          <p class="home-hero-tagline">Explore, Play, Discover &amp; Grow!</p>
+          <p class="home-hero-desc">${greeting}</p>
+          <div class="home-hero-cta">
+            <button type="button" class="home-btn home-btn-primary" id="homeExploreLearning">Explore Learning</button>
+            <button type="button" class="home-btn home-btn-secondary" id="homeMeetFriends">Meet Our Friends</button>
+          </div>
+        </div>
+        <div class="home-hero-stage">
+          <button type="button" class="home-char home-char-teddy" data-home-char="teddy" aria-label="Golden teddy bear says hello">
+            <img src="${HOME_TEDDY}" alt="" width="180" height="200" draggable="false" decoding="async">
+            <span class="home-char-bubble" data-char-bubble="teddy" role="status"></span>
+          </button>
+          <div class="home-video-shell">
+            <div class="home-video-stage is-loading">
+              <div class="home-video-frame">
+                <video
+                  id="homeWelcomeVideo"
+                  class="home-welcome-video"
+                  poster="${HOME_WELCOME_POSTER}"
+                  preload="metadata"
+                  playsinline
+                  webkit-playsinline
+                  muted
+                  loop="false"
+                  aria-label="LumaCubs welcome video"
+                >
+                  <source src="${HOME_WELCOME_VIDEO}" type="video/mp4">
+                </video>
+                <div class="home-video-fallback" aria-hidden="true">
+                  <img src="${HOME_WELCOME_POSTER}" alt="" width="640" height="360" decoding="async">
+                </div>
+              </div>
+              <p class="home-video-status" id="homeVidStatus" role="status"></p>
+              <div class="home-video-controls" role="group" aria-label="Welcome video controls">
+                <button type="button" class="home-vid-btn" id="homeVidPlay" aria-label="Play welcome video">
+                  <span aria-hidden="true">▶</span><span class="home-vid-label">Play</span>
+                </button>
+                <button type="button" class="home-vid-btn" id="homeVidMute" aria-label="Unmute welcome video" aria-pressed="true">
+                  <span aria-hidden="true">🔇</span><span class="home-vid-label">Unmute</span>
+                </button>
+                <button type="button" class="home-vid-btn" id="homeVidReplay" aria-label="Replay welcome video">
+                  <span aria-hidden="true">↻</span><span class="home-vid-label">Replay</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="home-char home-char-bunny" data-home-char="bunny" aria-label="Purple bunny says hello">
+            <img src="${HOME_BUNNY}" alt="" width="160" height="190" draggable="false" decoding="async">
+            <span class="home-char-bubble" data-char-bubble="bunny" role="status"></span>
+          </button>
+        </div>
       </section>
-      <section class="home-age-grid" aria-label="Age learning sections"></section>
-      <p class="home-age-note">Grown-up tip: open the menu for stickers, poems, and classic activities.</p>
+
+      <section class="home-friends" id="home-friends" aria-label="Meet our friends">
+        <div class="home-section-head">
+          <h3>Meet Our Friends</h3>
+          <p>Tap the golden teddy and purple bunny — they love to say hello!</p>
+        </div>
+        <div class="home-friends-row">
+          <button type="button" class="home-friend-card" data-home-char="teddy" aria-label="Say hi to golden teddy">
+            <span class="home-friend-art">
+              <img src="${HOME_TEDDY}" alt="Golden teddy bear waving" width="200" height="220" loading="lazy" decoding="async" draggable="false">
+            </span>
+            <span class="home-friend-name">Golden Teddy</span>
+            <span class="home-friend-hint">Tap me to wave!</span>
+          </button>
+          <button type="button" class="home-friend-card" data-home-char="bunny" aria-label="Say hi to purple bunny">
+            <span class="home-friend-art">
+              <img src="${HOME_BUNNY}" alt="Purple bunny hopping" width="180" height="220" loading="lazy" decoding="async" draggable="false">
+            </span>
+            <span class="home-friend-name">Purple Bunny</span>
+            <span class="home-friend-hint">Tap me to hop!</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="home-learn" id="home-learn" aria-label="Discover a world of learning">
+        <div class="home-section-head">
+          <h3>Discover a World of Learning</h3>
+          <p>Every little adventure brings a new discovery!</p>
+        </div>
+        <div class="home-learn-grid" id="homeLearnGrid"></div>
+      </section>
+
+      <section class="home-ages" id="home-ages" aria-label="Choose your learning adventure">
+        <div class="home-section-head">
+          <h3>Choose Your Learning Adventure</h3>
+          <p>Every child has a magical journey of discovery!</p>
+        </div>
+        <div class="home-age-grid" aria-label="Age learning sections"></div>
+      </section>
+
+      <section class="home-parent" id="home-about" aria-label="Learning made magical">
+        <div class="home-parent-art" aria-hidden="true">
+          <img src="assets/home/little-explorers/hero.jpg" alt="" width="320" height="240" loading="lazy" decoding="async">
+        </div>
+        <div class="home-parent-copy">
+          <h3>Learning Made Magical</h3>
+          <p>Fun-filled interactive adventures designed to help little minds explore, learn and grow.</p>
+          <button type="button" class="home-btn home-btn-secondary" id="homeAboutExplore">Start Exploring</button>
+        </div>
+      </section>
+
+      <footer class="home-footer">
+        <div class="home-footer-brand">
+          <strong>LumaCubs</strong>
+          <p>Little learners, big discoveries — a magical place to explore, play and grow.</p>
+        </div>
+        <nav class="home-footer-nav" aria-label="Footer">
+          <button type="button" class="home-footer-link" data-home-nav="top">Home</button>
+          <button type="button" class="home-footer-link" data-home-nav="ages">Learning</button>
+          <button type="button" class="home-footer-link" data-home-nav="about">About LumaCubs</button>
+        </nav>
+        <p class="home-footer-copy">© ${new Date().getFullYear()} LumaCubs. All rights reserved.</p>
+      </footer>
     `;
 
+    // Learning segment cards (approved LE order)
+    const learnGrid = wrap.querySelector("#homeLearnGrid");
+    LITTLE_EXPLORERS_SEGMENTS.forEach((seg, i) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "home-learn-card tone-" + seg.tone;
+      card.setAttribute("aria-label", seg.title);
+      card.style.setProperty("--home-learn-delay", (i * 40) + "ms");
+      card.innerHTML = `
+        <span class="home-learn-art">
+          <img
+            src="${escapeHtml(seg.illustration)}"
+            alt="${escapeHtml(seg.title)}"
+            width="480"
+            height="360"
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+            onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='assets/segments/illustrations/_fallback.svg';}"
+          >
+        </span>
+        <span class="home-learn-body">
+          <span class="home-learn-name">${escapeHtml(seg.title)}</span>
+          <span class="home-learn-desc">${escapeHtml(seg.description)}</span>
+        </span>
+      `;
+      card.addEventListener("click", () => {
+        snd.pop();
+        selectHomeAgeSection(HOME_AGE_SECTIONS[0]);
+        trackPlatformProgress("home.learn." + seg.code, "started");
+        openLittleExplorersSegment(seg);
+      });
+      learnGrid.appendChild(card);
+    });
+
+    // Age adventure cards
     const grid = wrap.querySelector(".home-age-grid");
     HOME_AGE_SECTIONS.forEach((section, index) => {
       const isSelected = saved && saved.id === section.id;
@@ -839,16 +1201,16 @@
       card.className = "age-home-card tone-" + section.tone + (isSelected ? " is-selected" : "");
       card.href = "#age/" + section.slug;
       card.setAttribute("data-age-section", section.id);
-      card.setAttribute("aria-label", section.name + ", " + section.ages);
+      card.setAttribute("aria-label", section.name + ", " + section.ages + ". Start learning");
       card.style.setProperty("--age-card-delay", (index * 70) + "ms");
       card.innerHTML = `
         <span class="age-home-art">
           <img
             src="${escapeHtml(section.illustration)}"
-            alt=""
+            alt="${escapeHtml(section.name)} illustration"
             width="640"
             height="480"
-            loading="eager"
+            loading="lazy"
             decoding="async"
             draggable="false"
           >
@@ -857,7 +1219,7 @@
           <span class="age-home-ages">${escapeHtml(section.ages)}</span>
           <span class="age-home-name">${escapeHtml(section.name)}</span>
           <span class="age-home-desc">${escapeHtml(section.description)}</span>
-          <span class="age-home-cta">Explore path</span>
+          <span class="age-home-cta">Start Learning</span>
         </span>
       `;
       card.addEventListener("click", (e) => {
@@ -877,7 +1239,32 @@
       grid.appendChild(card);
     });
 
+    wrap.querySelector("#homeExploreLearning").addEventListener("click", () => {
+      snd.pop();
+      scrollHomeTo("#home-ages");
+      speak("Choose your learning adventure");
+    });
+    wrap.querySelector("#homeMeetFriends").addEventListener("click", () => {
+      snd.pop();
+      scrollHomeTo("#home-friends");
+    });
+    wrap.querySelector("#homeAboutExplore").addEventListener("click", () => {
+      snd.pop();
+      scrollHomeTo("#home-ages");
+    });
+    wrap.querySelectorAll("[data-home-nav]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        snd.pop();
+        const target = btn.getAttribute("data-home-nav");
+        if (target === "ages") scrollHomeTo("#home-ages");
+        else if (target === "about") scrollHomeTo("#home-about");
+        else window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
     screenRoot.appendChild(wrap);
+    bindHomeWelcomeVideo(wrap);
+    bindHomeCharacters(wrap);
   };
 
   /* -------- Little Explorers (2–4) dashboard -------- */
@@ -4549,7 +4936,23 @@
       else if (view === "fruits") go("fruits");
       else if (view === "vegetables") go("vegetables");
       else if (view === "colors") go("colors");
-      else go("home");
+      else if (view === "parentArea") {
+        openParent();
+      } else if (view === "learning") {
+        go("home");
+        setTimeout(() => {
+          const ages = document.querySelector("#home-ages");
+          if (ages) ages.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 60);
+      } else if (view === "about") {
+        go("home");
+        setTimeout(() => {
+          const about = document.querySelector("#home-about");
+          if (about) about.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 60);
+      } else {
+        go("home");
+      }
     });
   });
   parentModal.addEventListener("click", e => {
