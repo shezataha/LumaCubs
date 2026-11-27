@@ -5188,17 +5188,49 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
 }
 
 /* ---- Number Writing & Tracing ---- */
-.le-nm-nt { width: 100%; text-align: center; }
+html.le-nm-tracing,
+html.le-nm-tracing body,
+body.le-nm-tracing {
+  touch-action: none !important;
+  overscroll-behavior: none;
+  overflow: hidden;
+}
+.le-nm-play.is-tracing {
+  touch-action: none;
+  overscroll-behavior: none;
+}
+.le-nm-nt {
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
 .le-nm-nt-board {
   position: relative;
-  width: min(100%, 360px);
-  aspect-ratio: 220 / 280;
-  margin: 8px auto 12px;
+  width: 260px;
+  height: 331px;
+  margin: 0 auto;
   border-radius: 24px;
   background: linear-gradient(180deg, #FFFCF8, #F3EEFF);
-  box-shadow: inset 0 0 0 3px rgba(255,255,255,0.55), 0 8px 18px rgba(74, 68, 88, 0.12);
+  /* outline (not border) so SVG + canvas share the exact same box */
+  outline: 3px solid rgba(255,255,255,0.9);
+  border: 0;
+  box-shadow: 0 8px 18px rgba(74, 68, 88, 0.12);
   overflow: hidden;
   touch-action: none;
+  flex-shrink: 0;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.le-nm-play-stage:has(.le-nm-nt) {
+  padding: 12px 12px 16px;
+  justify-content: flex-start;
 }
 .le-nm-nt-start {
   filter: drop-shadow(0 2px 4px rgba(255, 143, 171, 0.45));
@@ -5212,15 +5244,23 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   inset: 0;
   width: 100%;
   height: 100%;
+  display: block;
 }
-.le-nm-nt-canvas { z-index: 2; cursor: crosshair; }
-.le-nm-nt-svg { z-index: 1; }
+.le-nm-nt-canvas {
+  z-index: 2;
+  cursor: crosshair;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.le-nm-nt-svg { z-index: 1; pointer-events: none; }
 .le-nm-nt-progress {
   display: flex;
   align-items: center;
   gap: 10px;
   justify-content: center;
-  margin-bottom: 10px;
+  width: 100%;
 }
 .le-nm-nt-bar {
   width: min(220px, 55vw);
@@ -5242,8 +5282,14 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
+  width: 100%;
 }
-.le-nm-nt-btn { min-width: 88px; font-size: 16px; padding: 10px 14px; }
+.le-nm-nt-btn {
+  min-width: 72px;
+  min-height: 48px;
+  font-size: 15px;
+  padding: 8px 12px;
+}
 
 @media (max-width: 720px) {
   .le-nm-cat-head { grid-template-columns: 1fr; }

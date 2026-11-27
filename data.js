@@ -141,8 +141,9 @@ const TRACE_GLYPHS = {
     start: { x: 45, y: 42 },
   },
   9: {
-    paths: ["M 66 160 Q 66 108 45 108 Q 14 108 14 156 Q 14 204 45 204 Q 74 204 74 156 L 74 58 Q 74 42 45 42 Q 18 42 14 78"],
-    start: { x: 66, y: 160 },
+    // Top circle first, then stem down (was inverted — looked like an upside-down 6)
+    paths: ["M 74 70 Q 74 42 45 42 Q 14 42 14 100 Q 14 158 45 158 Q 74 158 74 100 L 74 236"],
+    start: { x: 74, y: 70 },
   },
 };
 
@@ -164,11 +165,15 @@ function buildTraceNumber(n) {
     dx: two ? 12 + i * 96 : 55,
   }));
   const paths = [];
+  const pathDigits = [];
+  const digitStarts = [];
   let start = null;
   slots.forEach((slot, idx) => {
     const glyph = TRACE_GLYPHS[slot.digit];
+    digitStarts.push({ x: glyph.start.x + slot.dx, y: glyph.start.y, digit: slot.digit });
     glyph.paths.forEach(d => {
       paths.push(offsetPathD(d, slot.dx));
+      pathDigits.push(idx);
     });
     if (idx === 0) {
       start = { x: glyph.start.x + slot.dx, y: glyph.start.y };
@@ -194,6 +199,9 @@ function buildTraceNumber(n) {
     n,
     word: numberWord(n),
     paths,
+    pathDigits,
+    digitStarts,
+    digits,
     start,
     tip,
   };

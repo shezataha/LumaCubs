@@ -1272,8 +1272,9 @@
       }
 
       /**
-       * Shared SVG+canvas tracer.
-       * mode: guided | follow | complete | freehand
+       * Shared SVG+canvas tracer for Number Writing & Tracing.
+       * Built like the working countTrace in game.js, with LE modes.
+       * CRITICAL: never auto-finish during pointermove — that cut strokes in half.
        */
       function buildNumberTraceRound(mode) {
         const min = sub.min || 1;
@@ -1281,8 +1282,8 @@
         const n = pickTraceNumber(min, max);
         const def = getTraceDef(n);
         const VB = { w: 220, h: 280 };
-        const PASS = mode === "nt_freehand" ? 0.18 : (mode === "nt_complete" ? 0.28 : 0.32);
-        const HIT_R = mode === "nt_freehand" ? 72 : 56;
+        const PASS = mode === "nt_freehand" ? 0.45 : (mode === "nt_complete" ? 0.62 : 0.65);
+        const HIT_R = 58;
         wrongTries = 0;
 
         promptEl.textContent = mode === "nt_freehand"
@@ -1295,19 +1296,20 @@
         say((mode === "nt_follow" ? "Watch carefully. " : "") + "Number " + nameOf(n));
 
         stageEl.innerHTML = `
-          <div class="le-nm-nt">
+          <div class="le-nm-nt" id="leNtRoot">
+            <div class="le-nm-nt-actions" id="leNtActions"></div>
             <p class="le-nm-tap-hint" id="leNtTip">${escapeHtml(def.tip || "Follow the dotted path")}</p>
             <div class="le-nm-nt-board" id="leNtBoard">
-              <svg class="le-nm-nt-svg" id="leNtSvg" viewBox="0 0 ${VB.w} ${VB.h}" aria-hidden="true"></svg>
+              <svg class="le-nm-nt-svg" id="leNtSvg" viewBox="0 0 ${VB.w} ${VB.h}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
               <canvas class="le-nm-nt-canvas" id="leNtCanvas" width="320" height="400"></canvas>
             </div>
             <div class="le-nm-nt-progress">
               <div class="le-nm-nt-bar"><span id="leNtFill"></span></div>
               <span id="leNtPct">0%</span>
             </div>
-            <div class="le-nm-nt-actions" id="leNtActions"></div>
           </div>`;
 
+        const root = stageEl.querySelector("#leNtRoot");
         const board = stageEl.querySelector("#leNtBoard");
         const svg = stageEl.querySelector("#leNtSvg");
         const canvas = stageEl.querySelector("#leNtCanvas");
@@ -1317,119 +1319,188 @@
         const tipEl = stageEl.querySelector("#leNtTip");
         const ctx = canvas.getContext("2d");
         const svgNS = "http://www.w3.org/2000/svg";
+        const pageEl = stageEl.closest(".le-nm-play") || document.body;
 
         let hitPoints = [];
+        let hitCount = 0;
         let drawing = false;
-        let lastPt = null;
+        let lastCanvasPt = null;
+        let lastVb = null;
         let ink = 0;
         let completed = false;
         let demoTimer = null;
         let completeStart = null;
+        let activePointerId = null;
+        let offPathTicks = 0;
 
-        function layout() {
-          const w = board.clientWidth || 320;
-          const h = Math.min(420, Math.floor(w * (VB.h / VB.w)));
-          board.style.height = h + "px";
+        function setupStrokeStyle(cssW) {
           const dpr = Math.min(window.devicePixelRatio || 1, 2);
-          canvas.width = Math.floor(w * dpr);
-          canvas.height = Math.floor(h * dpr);
-          canvas.style.width = w + "px";
-          canvas.style.height = h + "px";
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
           ctx.lineCap = "round";
           ctx.lineJoin = "round";
           ctx.strokeStyle = "#7E5FB0";
-          ctx.lineWidth = Math.max(14, w * 0.045);
+          ctx.lineWidth = Math.max(16, cssW * 0.055);
         }
 
-        function metrics() {
+        function layoutMetrics() {
           const rect = board.getBoundingClientRect();
           const bw = board.clientWidth || rect.width;
           const bh = board.clientHeight || rect.height;
-          const scale = Math.min(bw / VB.w, bh / VB.h);
+          const borderX = (rect.width - bw) / 2;
+          const borderY = (rect.height - bh) / 2;
+          const scale = Math.min(bw / VB.w, bh / VB.h) || 1;
           const ox = (bw - VB.w * scale) / 2;
           const oy = (bh - VB.h * scale) / 2;
-          return { rect, bw, bh, scale, ox, oy };
+          return { rect, bw, bh, borderX, borderY, scale, ox, oy };
         }
 
-        function samplePath(pathEl, step) {
+        function resizeCanvas(clear) {
+          const wrapW = (root.clientWidth || stageEl.clientWidth || 320);
+          let outerW = Math.max(220, Math.min(300, Math.floor(wrapW)));
+          let outerH = Math.floor(outerW * (VB.h / VB.w));
+          const maxH = Math.floor(Math.min(window.innerHeight * 0.48, 340));
+          if (outerH > maxH) {
+            outerH = maxH;
+            outerW = Math.floor(outerH * (VB.w / VB.h));
+          }
+          board.style.width = outerW + "px";
+          board.style.height = outerH + "px";
+
+          const cw = board.clientWidth || outerW;
+          const ch = board.clientHeight || outerH;
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.max(1, Math.floor(cw * dpr));
+          canvas.height = Math.max(1, Math.floor(ch * dpr));
+          canvas.style.width = cw + "px";
+          canvas.style.height = ch + "px";
+          setupStrokeStyle(cw);
+          if (clear) ctx.clearRect(0, 0, cw, ch);
+        }
+
+        function clientToViewBox(clientX, clientY) {
+          const m = layoutMetrics();
+          const x = clientX - m.rect.left - m.borderX;
+          const y = clientY - m.rect.top - m.borderY;
+          return {
+            x: (x - m.ox) / m.scale,
+            y: (y - m.oy) / m.scale,
+          };
+        }
+
+        function clientToCanvas(clientX, clientY) {
+          const m = layoutMetrics();
+          return {
+            x: clientX - m.rect.left - m.borderX,
+            y: clientY - m.rect.top - m.borderY,
+          };
+        }
+
+        function eventClient(e) {
+          if (e.touches && e.touches[0]) return e.touches[0];
+          if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0];
+          return e;
+        }
+
+        function samplePath(pathEl, step, digitIdx) {
           let len = 0;
-          try { len = pathEl.getTotalLength(); } catch (e) { return []; }
-          if (!len) return [];
+          try { len = pathEl.getTotalLength(); } catch (err) { return []; }
+          if (!len || !isFinite(len)) return [];
           const pts = [];
-          const count = Math.max(20, Math.ceil(len / step));
+          const count = Math.max(24, Math.ceil(len / step));
           for (let i = 0; i <= count; i++) {
             const p = pathEl.getPointAtLength((len * i) / count);
-            pts.push({ x: p.x, y: p.y, hit: false });
+            pts.push({ x: p.x, y: p.y, hit: false, digit: digitIdx == null ? 0 : digitIdx });
           }
           return pts;
+        }
+
+        function addStartDot(pt, labelText) {
+          if (!pt || mode === "nt_freehand") return;
+          const g = document.createElementNS(svgNS, "g");
+          g.setAttribute("class", "le-nm-nt-start-g");
+          const dot = document.createElementNS(svgNS, "circle");
+          dot.setAttribute("cx", pt.x);
+          dot.setAttribute("cy", pt.y);
+          dot.setAttribute("r", "12");
+          dot.setAttribute("fill", "#FF8FAB");
+          dot.setAttribute("class", "le-nm-nt-start");
+          const label = document.createElementNS(svgNS, "text");
+          label.setAttribute("x", pt.x);
+          label.setAttribute("y", Math.max(18, pt.y - 18));
+          label.setAttribute("text-anchor", "middle");
+          label.setAttribute("fill", "#7E5FB0");
+          label.setAttribute("font-size", "15");
+          label.setAttribute("font-weight", "800");
+          label.textContent = labelText || "Start";
+          g.appendChild(dot);
+          g.appendChild(label);
+          svg.appendChild(g);
         }
 
         function drawGuides() {
           while (svg.firstChild) svg.removeChild(svg.firstChild);
           hitPoints = [];
+          hitCount = 0;
+          completeStart = null;
           const paths = def.paths || [];
+          const pathDigits = def.pathDigits || paths.map((_, i) => (String(n).length > 1 && i >= Math.ceil(paths.length / 2) ? 1 : 0));
           const hideFrom = mode === "nt_complete"
             ? (paths.length <= 1 ? 1 : Math.ceil(paths.length / 2))
             : paths.length;
 
           paths.forEach((d, idx) => {
+            const digitIdx = pathDigits[idx] != null ? pathDigits[idx] : 0;
             const path = document.createElementNS(svgNS, "path");
             path.setAttribute("d", d);
             path.setAttribute("fill", "none");
             path.setAttribute("stroke-linecap", "round");
             path.setAttribute("stroke-linejoin", "round");
+            path.setAttribute("class", "le-nm-nt-guide");
+            path.setAttribute("data-digit", String(digitIdx));
             if (mode === "nt_freehand") {
-              path.setAttribute("stroke", "rgba(126,95,176,0.18)");
+              path.setAttribute("stroke", "rgba(126,95,176,0.22)");
               path.setAttribute("stroke-width", "28");
             } else if (mode === "nt_complete" && idx >= hideFrom) {
-              path.setAttribute("stroke", "rgba(126,95,176,0.22)");
-              path.setAttribute("stroke-width", "10");
-              path.setAttribute("stroke-dasharray", "4 14");
+              path.setAttribute("stroke", "rgba(126,95,176,0.3)");
+              path.setAttribute("stroke-width", "16");
+              path.setAttribute("stroke-dasharray", "6 12");
             } else if (mode === "nt_complete") {
-              // Already-drawn stroke (solid)
-              path.setAttribute("stroke", "rgba(126,95,176,0.55)");
-              path.setAttribute("stroke-width", "14");
+              path.setAttribute("stroke", "rgba(126,95,176,0.62)");
+              path.setAttribute("stroke-width", "18");
             } else {
-              path.setAttribute("stroke", "rgba(126,95,176,0.35)");
-              path.setAttribute("stroke-width", "12");
-              path.setAttribute("stroke-dasharray", "8 12");
+              path.setAttribute("stroke", "rgba(126,95,176,0.5)");
+              path.setAttribute("stroke-width", "18");
+              path.setAttribute("stroke-dasharray", "3 16");
             }
             svg.appendChild(path);
-            // Complete mode: only score the missing strokes / missing half
-            if (mode === "nt_complete" && idx < hideFrom && paths.length > 1) {
-              // Multi-stroke complete: only the missing strokes count toward progress
-              /* skip pre-drawn paths for scoring */
-            } else {
-              hitPoints = hitPoints.concat(samplePath(path, mode === "nt_freehand" ? 18 : 12));
+            if (!(mode === "nt_complete" && idx < hideFrom && paths.length > 1)) {
+              hitPoints = hitPoints.concat(samplePath(path, 5, digitIdx));
             }
           });
 
-          // Single-stroke complete: show first half as solid, score only the second half
           if (mode === "nt_complete" && paths.length === 1) {
             const base = svg.querySelector("path");
             if (base) {
               let len = 0;
-              try { len = base.getTotalLength(); } catch (e) { len = 0; }
+              try { len = base.getTotalLength(); } catch (err) { len = 0; }
               if (len > 0) {
-                const half = len * 0.45;
-                base.setAttribute("stroke", "rgba(126,95,176,0.22)");
-                base.setAttribute("stroke-width", "10");
-                base.setAttribute("stroke-dasharray", "4 14");
+                const half = len * 0.42;
+                base.setAttribute("stroke", "rgba(126,95,176,0.3)");
+                base.setAttribute("stroke-width", "16");
+                base.setAttribute("stroke-dasharray", "6 12");
                 const solid = document.createElementNS(svgNS, "path");
                 solid.setAttribute("d", paths[0]);
                 solid.setAttribute("fill", "none");
-                solid.setAttribute("stroke", "rgba(126,95,176,0.55)");
-                solid.setAttribute("stroke-width", "14");
+                solid.setAttribute("stroke", "rgba(126,95,176,0.62)");
+                solid.setAttribute("stroke-width", "18");
                 solid.setAttribute("stroke-linecap", "round");
-                solid.setAttribute("stroke-dasharray", half + " " + (len + 20));
-                solid.setAttribute("stroke-dashoffset", "0");
+                solid.setAttribute("stroke-dasharray", half + " " + (len + 40));
                 svg.insertBefore(solid, base);
                 hitPoints = [];
-                const count = Math.max(16, Math.ceil((len - half) / 12));
+                const count = Math.max(18, Math.ceil((len - half) / 5));
                 for (let i = 0; i <= count; i++) {
                   const p = base.getPointAtLength(half + ((len - half) * i) / count);
-                  hitPoints.push({ x: p.x, y: p.y, hit: false });
+                  hitPoints.push({ x: p.x, y: p.y, hit: false, digit: 0 });
                 }
                 const gap = base.getPointAtLength(half);
                 completeStart = { x: gap.x, y: gap.y };
@@ -1437,109 +1508,226 @@
             }
           }
 
-          const startPt = completeStart || def.start;
-          if (startPt && mode !== "nt_freehand") {
-            const dot = document.createElementNS(svgNS, "circle");
-            dot.setAttribute("cx", startPt.x);
-            dot.setAttribute("cy", startPt.y);
-            dot.setAttribute("r", "10");
-            dot.setAttribute("fill", "#FF8FAB");
-            dot.setAttribute("class", "le-nm-nt-start");
-            svg.appendChild(dot);
-            const label = document.createElementNS(svgNS, "text");
-            label.setAttribute("x", startPt.x);
-            label.setAttribute("y", startPt.y - 16);
-            label.setAttribute("text-anchor", "middle");
-            label.setAttribute("fill", "#7E5FB0");
-            label.setAttribute("font-size", "14");
-            label.setAttribute("font-weight", "800");
-            label.textContent = "Start";
-            svg.appendChild(label);
+          addStartDot(completeStart || def.start, "Start");
+          // For two-digit numbers, also show where the second digit begins
+          if (mode !== "nt_freehand" && def.digitStarts && def.digitStarts[1] && !completeStart) {
+            addStartDot(def.digitStarts[1], "Then");
           }
-        }
-
-        function clearInk() {
-          layout();
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          hitPoints.forEach((p) => { p.hit = false; });
-          ink = 0;
-          completed = false;
-          updateProgress();
         }
 
         function updateProgress() {
           const total = hitPoints.length || 1;
-          const hits = hitPoints.filter((p) => p.hit).length;
-          const pct = Math.min(100, Math.round((hits / total) * 100));
+          const pct = Math.min(100, Math.round((hitCount / total) * 100));
           fillEl.style.width = pct + "%";
           pctEl.textContent = pct + "%";
-          return hits / total;
+          return hitCount / total;
         }
 
-        function clientToVb(e) {
-          const m = metrics();
-          const src = e.touches && e.touches[0] ? e.touches[0] : e;
-          const x = src.clientX - m.rect.left;
-          const y = src.clientY - m.rect.top;
-          return {
-            cssX: x,
-            cssY: y,
-            vbX: (x - m.ox) / m.scale,
-            vbY: (y - m.oy) / m.scale,
-          };
+        function clearInk(resetHits) {
+          resizeCanvas(true);
+          if (resetHits) {
+            hitPoints.forEach((p) => { p.hit = false; });
+            hitCount = 0;
+            ink = 0;
+            completed = false;
+            offPathTicks = 0;
+            updateProgress();
+          }
         }
 
-        function markHits(vbX, vbY) {
+        function markHits(vx, vy) {
           let near = false;
-          hitPoints.forEach((p) => {
-            const dx = p.x - vbX;
-            const dy = p.y - vbY;
-            if ((dx * dx + dy * dy) <= HIT_R * HIT_R) {
+          let gained = 0;
+          const r2 = HIT_R * HIT_R;
+          const twoDigit = String(n).length > 1;
+          // Soft gate: finish most of digit 1 before digit 2 counts
+          let allowDigit = 0;
+          if (twoDigit) {
+            const cov = digitCoverage();
+            const first = cov[0];
+            allowDigit = (first && first.total && first.hit / first.total >= 0.5) ? 1 : 0;
+          }
+          for (let i = 0; i < hitPoints.length; i++) {
+            const p = hitPoints[i];
+            if (p.hit) continue;
+            if (twoDigit && (p.digit || 0) > allowDigit) continue;
+            const dx = p.x - vx;
+            const dy = p.y - vy;
+            if ((dx * dx + dy * dy) <= r2) {
               p.hit = true;
+              hitCount++;
+              gained++;
               near = true;
             }
-          });
+          }
+          if (gained) updateProgress();
           return near;
+        }
+
+        function markSegment(v0, v1) {
+          if (!v1) return false;
+          if (!v0) return markHits(v1.x, v1.y);
+          const dist = Math.hypot(v1.x - v0.x, v1.y - v0.y);
+          const steps = Math.max(1, Math.ceil(dist / 3));
+          let near = false;
+          for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            if (markHits(v0.x + (v1.x - v0.x) * t, v0.y + (v1.y - v0.y) * t)) near = true;
+          }
+          return near;
+        }
+
+        function digitCoverage() {
+          const map = {};
+          hitPoints.forEach((p) => {
+            const d = p.digit != null ? p.digit : 0;
+            if (!map[d]) map[d] = { hit: 0, total: 0 };
+            map[d].total++;
+            if (p.hit) map[d].hit++;
+          });
+          return map;
+        }
+
+        function eachDigitDone(minRatio) {
+          const cov = digitCoverage();
+          const keys = Object.keys(cov);
+          if (!keys.length) return false;
+          return keys.every((k) => cov[k].total > 0 && (cov[k].hit / cov[k].total) >= minRatio);
+        }
+
+        function endCovered() {
+          if (hitPoints.length < 8) return hitPoints.filter((p) => p.hit).length >= Math.ceil(hitPoints.length * 0.6);
+          // Prefer the last digit's tail for two-digit numbers
+          const lastDigit = hitPoints[hitPoints.length - 1] && hitPoints[hitPoints.length - 1].digit;
+          const pool = (lastDigit != null)
+            ? hitPoints.filter((p) => p.digit === lastDigit)
+            : hitPoints;
+          const tail = pool.slice(Math.floor(pool.length * 0.7));
+          const hits = tail.filter((p) => p.hit).length;
+          return hits >= Math.max(2, Math.ceil(tail.length * 0.45));
+        }
+
+        function isCompleteEnough() {
+          const ratio = hitPoints.length ? hitCount / hitPoints.length : 0;
+          if (mode === "nt_freehand") return ratio >= PASS && ink > 22;
+          const twoDigit = String(n).length > 1;
+          // Two-digit numbers: BOTH digits must be traced — first digit alone is not enough
+          if (twoDigit && !eachDigitDone(0.55)) return false;
+          return ratio >= PASS && endCovered();
+        }
+
+        function promptNextDigit() {
+          if (mode === "nt_freehand" || String(n).length < 2) return;
+          const cov = digitCoverage();
+          const first = cov[0];
+          const second = cov[1];
+          if (!first || !second || !second.total) return;
+          const firstDone = first.hit / first.total >= 0.55;
+          const secondLow = second.hit / second.total < 0.35;
+          if (firstDone && secondLow) {
+            const secondNum = (def.digits && def.digits[1] != null) ? def.digits[1] : String(n).charAt(1);
+            tipEl.textContent = "Nice! Now trace the " + secondNum;
+          }
+        }
+
+        /** Only evaluate completion after a stroke ends — never mid-draw */
+        function checkFinishAfterStroke() {
+          if (completed || locked || drawing) return;
+          promptNextDigit();
+          if (isCompleteEnough()) finishTrace();
+          else if (String(n).length > 1 && !eachDigitDone(0.55)) {
+            const cov = digitCoverage();
+            if (cov[0] && cov[0].hit / cov[0].total >= 0.55 && cov[1] && cov[1].hit / cov[1].total < 0.35) {
+              tipEl.textContent = "Keep going — finish the second digit too!";
+            }
+          }
+        }
+
+        function setTracingLock(on) {
+          document.documentElement.classList.toggle("le-nm-tracing", on);
+          document.body.classList.toggle("le-nm-tracing", on);
+          pageEl.classList.toggle("is-tracing", on);
         }
 
         function pointerDown(e) {
           if (completed || locked) return;
+          if (activePointerId != null && e.pointerId != null && e.pointerId !== activePointerId) return;
           e.preventDefault();
+          e.stopPropagation();
           drawing = true;
-          const p = clientToVb(e);
-          lastPt = p;
+          activePointerId = e.pointerId != null ? e.pointerId : 1;
+          offPathTicks = 0;
+          setTracingLock(true);
+          const src = eventClient(e);
+          const c = clientToCanvas(src.clientX, src.clientY);
+          const v = clientToViewBox(src.clientX, src.clientY);
+          lastCanvasPt = c;
+          lastVb = v;
           ctx.beginPath();
-          ctx.moveTo(p.cssX, p.cssY);
-          markHits(p.vbX, p.vbY);
-          updateProgress();
+          ctx.moveTo(c.x, c.y);
+          ctx.lineTo(c.x + 0.01, c.y + 0.01);
+          ctx.stroke();
+          markHits(v.x, v.y);
+          try { if (e.pointerId != null) canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
         }
 
         function pointerMove(e) {
-          if (!drawing || completed || locked) return;
+          if (!drawing || completed) return;
+          if (activePointerId != null && e.pointerId != null && e.pointerId !== activePointerId) return;
           e.preventDefault();
-          const p = clientToVb(e);
-          ctx.lineTo(p.cssX, p.cssY);
-          ctx.stroke();
+          const src = eventClient(e);
+          const c = clientToCanvas(src.clientX, src.clientY);
+          const v = clientToViewBox(src.clientX, src.clientY);
+          if (lastCanvasPt) {
+            ctx.beginPath();
+            ctx.moveTo(lastCanvasPt.x, lastCanvasPt.y);
+            ctx.lineTo(c.x, c.y);
+            ctx.stroke();
+          }
           ink++;
-          const near = markHits(p.vbX, p.vbY);
-          if (!near && mode !== "nt_freehand" && ink % 8 === 0) {
-            tipEl.textContent = "Stay on the dotted path — you can do it!";
+          const near = markSegment(lastVb, v);
+          if (!near && mode !== "nt_freehand") {
+            offPathTicks++;
+            if (offPathTicks === 14 || offPathTicks % 30 === 0) {
+              tipEl.textContent = "Almost! Follow the dotted line — keep going!";
+            }
+          } else if (near) {
+            offPathTicks = 0;
+            if (/Almost!|dotted/i.test(tipEl.textContent || "")) {
+              tipEl.textContent = def.tip || "Keep going — you're doing great!";
+            }
           }
-          const ratio = updateProgress();
-          if (ratio >= PASS && (mode === "nt_freehand" ? ink > 18 : true)) {
-            finishTrace();
-          }
-          lastPt = p;
+          lastCanvasPt = c;
+          lastVb = v;
+          // Do NOT finish here — finishing mid-move locked drawing and cut strokes short
         }
 
-        function pointerUp() {
+        function pointerUp(e) {
+          if (!drawing) return;
+          if (e) {
+            e.preventDefault();
+            try {
+              if (e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) {
+                canvas.releasePointerCapture(e.pointerId);
+              }
+            } catch (err) { /* ignore */ }
+          }
           drawing = false;
-          lastPt = null;
+          lastCanvasPt = null;
+          lastVb = null;
+          activePointerId = null;
+          setTracingLock(false);
+          checkFinishAfterStroke();
         }
 
         function finishTrace() {
           if (completed || locked) return;
           completed = true;
+          drawing = false;
+          lastCanvasPt = null;
+          lastVb = null;
+          activePointerId = null;
+          setTracingLock(false);
           tipEl.textContent = "Beautiful number " + n + "!";
           say("Wonderful! Number " + nameOf(n));
           onCorrect("Great tracing!");
@@ -1547,8 +1735,10 @@
 
         function animateDemo() {
           if (demoTimer) clearInterval(demoTimer);
+          const old = svg.querySelector(".le-nm-nt-demo");
+          if (old && old.parentNode) old.parentNode.removeChild(old);
           const guide = document.createElementNS(svgNS, "circle");
-          guide.setAttribute("r", "9");
+          guide.setAttribute("r", "11");
           guide.setAttribute("fill", "#FFD166");
           guide.setAttribute("class", "le-nm-nt-demo");
           svg.appendChild(guide);
@@ -1567,52 +1757,64 @@
             const p = allPts[i];
             guide.setAttribute("cx", p.x);
             guide.setAttribute("cy", p.y);
-            i += Math.max(1, Math.floor(allPts.length / 40));
-          }, 40);
+            i += Math.max(1, Math.floor(allPts.length / 48));
+          }, 36);
         }
 
-        // Controls
         function addBtn(label, cls, fn) {
           const b = document.createElement("button");
           b.type = "button";
           b.className = "le-nm-choice le-nm-nt-btn " + (cls || "");
           b.textContent = label;
-          b.addEventListener("click", () => { if (!locked) { snd.pop(); fn(); } });
+          b.addEventListener("click", () => {
+            if (locked || completed) return;
+            snd.pop();
+            fn();
+          });
           actions.appendChild(b);
-          return b;
         }
+
         addBtn("Clear", "", () => {
-          clearInk();
+          if (demoTimer) { clearInterval(demoTimer); demoTimer = null; }
+          const demo = svg.querySelector(".le-nm-nt-demo");
+          if (demo && demo.parentNode) demo.parentNode.removeChild(demo);
+          clearInk(true);
           tipEl.textContent = def.tip || "Follow the dotted path";
           say("Try again");
         });
         addBtn("Show me", "", () => animateDemo());
         addBtn("Hear", "", () => say(nameOf(n)));
-        if (mode !== "nt_freehand") {
-          addBtn("Done", "le-nm-done", () => {
-            const ratio = updateProgress();
-            if (ratio >= PASS * 0.85 || ink > 40) finishTrace();
-            else onWrong("Trace a little more along the path");
-          });
-        } else {
-          addBtn("Done", "le-nm-done", () => {
-            if (ink > 20) finishTrace();
-            else onWrong("Draw the number a bit more");
-          });
+        addBtn("Done", "le-nm-done", () => {
+          if (isCompleteEnough()) finishTrace();
+          else onWrong(mode === "nt_freehand"
+            ? "Draw the whole number a bit more"
+            : "Keep tracing — finish the whole number!");
+        });
+
+        ["touchstart", "touchmove", "gesturestart"].forEach((evt) => {
+          board.addEventListener(evt, (e) => { e.preventDefault(); }, { passive: false });
+        });
+
+        canvas.addEventListener("pointerdown", pointerDown, { passive: false });
+        canvas.addEventListener("pointermove", pointerMove, { passive: false });
+        canvas.addEventListener("pointerup", pointerUp, { passive: false });
+        canvas.addEventListener("pointercancel", pointerUp, { passive: false });
+        canvas.addEventListener("lostpointercapture", pointerUp);
+        // Older WebViews
+        if (!window.PointerEvent) {
+          canvas.addEventListener("mousedown", pointerDown, { passive: false });
+          canvas.addEventListener("mousemove", pointerMove, { passive: false });
+          canvas.addEventListener("mouseup", pointerUp, { passive: false });
+          canvas.addEventListener("touchstart", pointerDown, { passive: false });
+          canvas.addEventListener("touchmove", pointerMove, { passive: false });
+          canvas.addEventListener("touchend", pointerUp, { passive: false });
+          canvas.addEventListener("touchcancel", pointerUp, { passive: false });
         }
 
-        canvas.addEventListener("mousedown", pointerDown);
-        canvas.addEventListener("mousemove", pointerMove);
-        canvas.addEventListener("mouseup", pointerUp);
-        canvas.addEventListener("mouseleave", pointerUp);
-        canvas.addEventListener("touchstart", pointerDown, { passive: false });
-        canvas.addEventListener("touchmove", pointerMove, { passive: false });
-        canvas.addEventListener("touchend", pointerUp);
-
-        layout();
+        resizeCanvas(true);
         drawGuides();
-        clearInk();
-        if (mode === "nt_follow") setTimeout(animateDemo, 350);
+        clearInk(true);
+        if (mode === "nt_follow") setTimeout(animateDemo, 300);
         choicesEl.innerHTML = "";
       }
 
