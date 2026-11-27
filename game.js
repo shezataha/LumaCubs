@@ -797,6 +797,8 @@
   const HOME_WELCOME_POSTER = "assets/home/welcome/welcome-poster.jpg";
   const HOME_TEDDY = "assets/home/characters/golden-teddy.svg";
   const HOME_BUNNY = "assets/home/characters/purple-bunny.svg";
+  const HOME_TEDDY_ART = "assets/home/characters/golden-teddy.jpg";
+  const HOME_BUNNY_ART = "assets/home/characters/purple-bunny.jpg";
 
   let lastHomeCharSpeak = 0;
 
@@ -810,13 +812,10 @@
     const video = root.querySelector("#homeWelcomeVideo");
     if (!video) return;
 
-    const playBtn = root.querySelector("#homeVidPlay");
-    const muteBtn = root.querySelector("#homeVidMute");
-    const replayBtn = root.querySelector("#homeVidReplay");
+    const bigPlayBtn = root.querySelector("#homeVidBigPlay");
     const statusEl = root.querySelector("#homeVidStatus");
     const stage = root.querySelector(".home-video-stage");
-
-    let userUnmuted = false;
+    let userStarted = false;
 
     function setStatus(text) {
       if (statusEl) statusEl.textContent = text || "";
@@ -824,31 +823,20 @@
 
     function syncPlayUi() {
       const playing = !video.paused && !video.ended;
-      if (playBtn) {
-        playBtn.setAttribute("aria-label", playing ? "Pause welcome video" : "Play welcome video");
-        playBtn.setAttribute("aria-pressed", playing ? "true" : "false");
-        playBtn.innerHTML = playing
-          ? '<span aria-hidden="true">❚❚</span><span class="home-vid-label">Pause</span>'
-          : '<span aria-hidden="true">▶</span><span class="home-vid-label">Play</span>';
+      if (bigPlayBtn) {
+        bigPlayBtn.hidden = playing;
+        bigPlayBtn.setAttribute("aria-hidden", playing ? "true" : "false");
       }
-      if (stage) stage.classList.toggle("is-playing", playing);
-      if (stage) stage.classList.toggle("is-ended", video.ended);
-    }
-
-    function syncMuteUi() {
-      if (!muteBtn) return;
-      muteBtn.setAttribute("aria-label", video.muted ? "Unmute welcome video" : "Mute welcome video");
-      muteBtn.setAttribute("aria-pressed", video.muted ? "true" : "false");
-      muteBtn.innerHTML = video.muted
-        ? '<span aria-hidden="true">🔇</span><span class="home-vid-label">Unmute</span>'
-        : '<span aria-hidden="true">🔊</span><span class="home-vid-label">Mute</span>';
+      if (stage) {
+        stage.classList.toggle("is-playing", playing);
+        stage.classList.toggle("is-ended", !!video.ended);
+      }
     }
 
     video.muted = true;
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "");
     syncPlayUi();
-    syncMuteUi();
     setStatus("Loading magical welcome…");
 
     video.addEventListener("loadeddata", () => {
@@ -863,7 +851,7 @@
     video.addEventListener("pause", syncPlayUi);
     video.addEventListener("ended", () => {
       syncPlayUi();
-      setStatus("Tap Replay to watch again");
+      setStatus("Tap video to watch again");
     });
     video.addEventListener("error", () => {
       if (stage) {
@@ -873,14 +861,14 @@
       setStatus("Video could not load — showing welcome art");
     });
 
-    // Soft muted autoplay attempt (never with sound)
+    // Soft muted autoplay (sound only after user tap)
     const tryMutedAutoplay = () => {
       const p = video.play();
       if (p && typeof p.then === "function") {
         p.then(syncPlayUi).catch(() => {
           video.pause();
           syncPlayUi();
-          setStatus("Tap Play to begin");
+          setStatus("Tap video to play");
         });
       }
     };
@@ -888,56 +876,57 @@
     if (video.readyState >= 2) tryMutedAutoplay();
     else video.addEventListener("canplay", tryMutedAutoplay, { once: true });
 
-    if (playBtn) {
-      playBtn.addEventListener("click", () => {
-        snd.pop();
-        if (video.paused || video.ended) {
-          if (video.ended) video.currentTime = 0;
-          const p = video.play();
-          if (p && typeof p.catch === "function") p.catch(() => setStatus("Tap again to play"));
-        } else {
-          video.pause();
-        }
-        syncPlayUi();
-      });
-    }
-
-    if (muteBtn) {
-      muteBtn.addEventListener("click", () => {
-        snd.pop();
-        if (video.muted) {
-          video.muted = false;
-          userUnmuted = true;
-          if (video.paused) {
-            const p = video.play();
-            if (p && typeof p.catch === "function") p.catch(() => {});
+    function enableSoundAndPlay() {
+      userStarted = true;
+      video.muted = false;
+      if (video.ended) video.currentTime = 0;
+      const p = video.play();
+      if (p && typeof p.catch === "function") {
+        p.then(() => {
+          // Some browsers still block unmuted play — retry muted then unmute after play
+          if (video.muted) {
+            video.muted = false;
           }
-        } else {
+          syncPlayUi();
+        }).catch(() => {
           video.muted = true;
-        }
-        syncMuteUi();
-        syncPlayUi();
-      });
-    }
-
-    if (replayBtn) {
-      replayBtn.addEventListener("click", () => {
-        snd.pop();
-        video.currentTime = 0;
-        if (!userUnmuted) video.muted = true;
-        syncMuteUi();
-        const p = video.play();
-        if (p && typeof p.catch === "function") {
-          p.then(() => {
-            setStatus("");
+          video.play().then(() => {
+            video.muted = false;
             syncPlayUi();
-          }).catch(() => setStatus("Tap Play to replay"));
-        }
-        syncPlayUi();
-      });
+          }).catch(() => setStatus("Tap again for sound"));
+        });
+      }
+      syncPlayUi();
     }
 
-    // Capture a true first-frame poster when possible (keeps layout stable)
+    function togglePlay() {
+      // First tap: always unlock audio (never pause muted autoplay)
+      if (!userStarted || video.muted) {
+        enableSoundAndPlay();
+        return;
+      }
+      if (video.paused || video.ended) {
+        if (video.ended) video.currentTime = 0;
+        video.muted = false;
+        const p = video.play();
+        if (p && typeof p.catch === "function") p.catch(() => setStatus("Tap again to play"));
+      } else {
+        video.pause();
+      }
+      syncPlayUi();
+    }
+
+    if (bigPlayBtn) {
+      bigPlayBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        togglePlay();
+      });
+    }
+    video.addEventListener("click", (e) => {
+      e.stopPropagation();
+      togglePlay();
+    });
+
     video.addEventListener("loadeddata", () => {
       try {
         if (video.videoWidth < 16) return;
@@ -1026,7 +1015,7 @@
 
     const wrap = el("div", "home-age-page home-premium");
     wrap.innerHTML = `
-      <section class="home-hero" aria-label="Welcome to LumaCubs">
+      <section class="home-hero home-hero-video-first" aria-label="Welcome to LumaCubs">
         <div class="home-hero-magic" aria-hidden="true">
           <span class="home-spark s1"></span>
           <span class="home-spark s2"></span>
@@ -1038,59 +1027,57 @@
           <span class="home-flower f1"></span>
           <span class="home-flower f2"></span>
         </div>
-        <div class="home-hero-copy">
+
+        <div class="home-hero-top">
           <p class="home-hero-brand">LumaCubs</p>
           <h2 class="home-hero-title">Welcome to LumaCubs</h2>
           <p class="home-hero-tagline">Explore, Play, Discover &amp; Grow!</p>
-          <p class="home-hero-desc">${greeting}</p>
-          <div class="home-hero-cta">
-            <button type="button" class="home-btn home-btn-primary" id="homeExploreLearning">Explore Learning</button>
-            <button type="button" class="home-btn home-btn-secondary" id="homeMeetFriends">Meet Our Friends</button>
-          </div>
         </div>
+
         <div class="home-hero-stage">
           <button type="button" class="home-char home-char-teddy" data-home-char="teddy" aria-label="Golden teddy bear says hello">
             <img src="${HOME_TEDDY}" alt="" width="180" height="200" draggable="false" decoding="async">
             <span class="home-char-bubble" data-char-bubble="teddy" role="status"></span>
           </button>
+
           <div class="home-video-shell">
             <div class="home-video-stage is-loading">
               <div class="home-video-frame">
                 <video
                   id="homeWelcomeVideo"
                   class="home-welcome-video"
-                  poster="${HOME_WELCOME_POSTER}"
-                  preload="metadata"
+                  poster="${HOME_WELCOME_POSTER}?v=6"
+                  preload="auto"
                   playsinline
                   webkit-playsinline
                   muted
-                  loop="false"
                   aria-label="LumaCubs welcome video"
                 >
-                  <source src="${HOME_WELCOME_VIDEO}" type="video/mp4">
+                  <source src="${HOME_WELCOME_VIDEO}?v=6" type="video/mp4">
                 </video>
                 <div class="home-video-fallback" aria-hidden="true">
-                  <img src="${HOME_WELCOME_POSTER}" alt="" width="640" height="360" decoding="async">
+                  <img src="${HOME_WELCOME_POSTER}?v=6" alt="" width="1280" height="720" decoding="async">
                 </div>
-              </div>
-              <p class="home-video-status" id="homeVidStatus" role="status"></p>
-              <div class="home-video-controls" role="group" aria-label="Welcome video controls">
-                <button type="button" class="home-vid-btn" id="homeVidPlay" aria-label="Play welcome video">
-                  <span aria-hidden="true">▶</span><span class="home-vid-label">Play</span>
-                </button>
-                <button type="button" class="home-vid-btn" id="homeVidMute" aria-label="Unmute welcome video" aria-pressed="true">
-                  <span aria-hidden="true">🔇</span><span class="home-vid-label">Unmute</span>
-                </button>
-                <button type="button" class="home-vid-btn" id="homeVidReplay" aria-label="Replay welcome video">
-                  <span aria-hidden="true">↻</span><span class="home-vid-label">Replay</span>
+                <button type="button" class="home-video-bigplay" id="homeVidBigPlay" aria-label="Play welcome video">
+                  <span class="home-video-bigplay-icon" aria-hidden="true">▶</span>
                 </button>
               </div>
+              <p class="home-video-status home-video-status-sr" id="homeVidStatus" role="status"></p>
             </div>
           </div>
+
           <button type="button" class="home-char home-char-bunny" data-home-char="bunny" aria-label="Purple bunny says hello">
             <img src="${HOME_BUNNY}" alt="" width="160" height="190" draggable="false" decoding="async">
             <span class="home-char-bubble" data-char-bubble="bunny" role="status"></span>
           </button>
+        </div>
+
+        <div class="home-hero-copy">
+          <p class="home-hero-desc">${greeting}</p>
+          <div class="home-hero-cta">
+            <button type="button" class="home-btn home-btn-primary" id="homeExploreLearning">Explore Learning</button>
+            <button type="button" class="home-btn home-btn-secondary" id="homeMeetFriends">Meet Our Friends</button>
+          </div>
         </div>
       </section>
 
@@ -1102,14 +1089,14 @@
         <div class="home-friends-row">
           <button type="button" class="home-friend-card" data-home-char="teddy" aria-label="Say hi to golden teddy">
             <span class="home-friend-art">
-              <img src="${HOME_TEDDY}" alt="Golden teddy bear waving" width="200" height="220" loading="lazy" decoding="async" draggable="false">
+              <img src="${HOME_TEDDY_ART}" alt="Golden teddy bear in the magical garden" width="420" height="480" loading="lazy" decoding="async" draggable="false">
             </span>
             <span class="home-friend-name">Golden Teddy</span>
             <span class="home-friend-hint">Tap me to wave!</span>
           </button>
           <button type="button" class="home-friend-card" data-home-char="bunny" aria-label="Say hi to purple bunny">
             <span class="home-friend-art">
-              <img src="${HOME_BUNNY}" alt="Purple bunny hopping" width="180" height="220" loading="lazy" decoding="async" draggable="false">
+              <img src="${HOME_BUNNY_ART}" alt="Purple bunny in the magical garden" width="420" height="480" loading="lazy" decoding="async" draggable="false">
             </span>
             <span class="home-friend-name">Purple Bunny</span>
             <span class="home-friend-hint">Tap me to hop!</span>
