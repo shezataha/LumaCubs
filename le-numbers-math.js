@@ -127,18 +127,19 @@
     },
     {
       id: "number_sequencing",
-      title: "Number Sequencing",
-      blurb: "What number comes next — up to 30!",
+      title: "Number Order & Sequences",
+      blurb: "Journey through numbers, find missing spots, climb and crack patterns!",
       tone: "aqua",
       accent: "#BFDFF2",
       art: ART + "number_sequencing.jpg",
       subs: [
-        { id: "ns_1_5", title: "Arrange numbers 1–5", level: "A", type: "arrange", max: 5 },
-        { id: "ns_1_10", title: "Arrange numbers 1–10", level: "A", type: "arrange", max: 10 },
-        { id: "ns_1_20", title: "Arrange numbers around 11–20", level: "B", type: "arrange", min: 11, max: 20 },
-        { id: "ns_forward", title: "Forward number sequence", level: "A", type: "next_number", max: 10 },
-        { id: "ns_next", title: "Identify the next number (to 30)", level: "B", type: "next_number", max: 30 },
-        { id: "ns_before_after", title: "Before and after (to 30)", level: "B", type: "before_after", max: 30 },
+        { id: "ns_journey_1_10", title: "Number Journey 1–10", level: "A", type: "ns_train", min: 1, max: 10, blurb: "Build the magical number train!", art: SUB_ART + "ns_journey_1_10.jpg" },
+        { id: "ns_journey_11_20", title: "Number Journey 11–20", level: "A", type: "ns_balloons", min: 11, max: 20, blurb: "Order the sky balloons!", art: SUB_ART + "ns_journey_11_20.jpg" },
+        { id: "ns_journey_21_30", title: "Number Journey 21–30", level: "B", type: "ns_ocean", min: 21, max: 30, blurb: "Collect ocean treasure numbers!", art: SUB_ART + "ns_journey_21_30.jpg" },
+        { id: "ns_missing_mystery", title: "Missing Number Mystery", level: "A", type: "ns_mystery", min: 1, max: 20, blurb: "Solve the clue board mysteries!", art: SUB_ART + "ns_missing_mystery.jpg" },
+        { id: "ns_neighbours", title: "Before, Between & After", level: "A", type: "ns_neighbours", min: 1, max: 20, blurb: "Find number neighbours in the village!", art: SUB_ART + "ns_neighbours.jpg" },
+        { id: "ns_asc_desc", title: "Ascending & Descending Adventure", level: "B", type: "ns_mountain", min: 1, max: 20, blurb: "Climb up and slide down with numbers!", art: SUB_ART + "ns_asc_desc.jpg" },
+        { id: "ns_pattern_detective", title: "Number Pattern Detective", level: "B", type: "ns_pattern", min: 1, max: 30, blurb: "Crack the pattern laboratory!", art: SUB_ART + "ns_pattern_detective.jpg" },
       ],
     },
     {
@@ -384,7 +385,9 @@
               ? (cat.subs.length + " unique quantity adventures · tap to play")
               : (cat.id === "sorting_grouping"
                 ? "8 unique sorting & grouping mini-games · tap to play"
-                : "Level A (2–3) and Level B (3–4) · tap to play"))));
+                : (cat.id === "number_sequencing"
+                  ? "7 unique number order adventures · tap to play"
+                  : "Level A (2–3) and Level B (3–4) · tap to play")))));
       wrap.appendChild(el("div", "home-section-label", `
         <h3>Subcategories</h3>
         <p>${catHint}</p>`));
@@ -431,7 +434,8 @@
       const isExploreOnly = /^(nr_explorer|nr_train|nr_balloons)$/.test(sub.type);
       const isMemory = sub.type === "nr_memory" || sub.type === "match_same";
       const isSorting = /^sg_/.test(sub.type);
-      const ROUNDS = isExploreOnly ? 1 : (isMemory ? 4 : (isSorting ? (sub.level === "A" ? 4 : 5) : (sub.level === "A" ? 4 : 5)));
+      const isNumberSeq = /^ns_/.test(sub.type);
+      const ROUNDS = isExploreOnly ? 1 : (isMemory ? 4 : ((isSorting || isNumberSeq) ? (sub.level === "A" ? 4 : 5) : (sub.level === "A" ? 4 : 5)));
       let round = 0;
       let score = 0;
       let locked = false;
@@ -439,7 +443,7 @@
       let wrongTries = 0;
       let exploreSeen = new Set();
 
-      if (isSorting && typeof trackPlatformProgress === "function") {
+      if ((isSorting || isNumberSeq) && typeof trackPlatformProgress === "function") {
         trackPlatformProgress("le.numbers_math." + sub.id, "started");
       }
 
@@ -3754,6 +3758,31 @@
           }
           if (page._sgBuilders[type]) {
             page._sgBuilders[type]();
+            return;
+          }
+        }
+
+        if (window.LUMACUBS_NS && typeof window.LUMACUBS_NS.createBuilders === "function") {
+          if (!page._nsBuilders) {
+            page._nsBuilders = window.LUMACUBS_NS.createBuilders({
+              stageEl,
+              promptEl,
+              choicesEl,
+              say,
+              onCorrect,
+              onWrong,
+              snd,
+              confetti,
+              sub,
+              getRound: () => round,
+              getLocked: () => locked,
+              getAgeHubReturn,
+              trackPlatformProgress,
+              NUMBER_NAMES,
+            });
+          }
+          if (page._nsBuilders[type]) {
+            page._nsBuilders[type]();
             return;
           }
         }
