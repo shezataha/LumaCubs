@@ -56,16 +56,18 @@
     },
     {
       id: "number_tracing",
-      title: "Number Tracing",
-      blurb: "Trace soft number shapes!",
+      title: "Number Writing & Tracing",
+      blurb: "Trace and write numbers 1–30 with gentle guides!",
       tone: "sky",
       accent: "#A8D4F0",
       art: ART + "number_tracing.jpg",
       subs: [
-        { id: "nt_1_5", title: "Trace numbers 1–5", level: "A", type: "trace", max: 5 },
-        { id: "nt_1_10", title: "Trace numbers 1–10", level: "B", type: "trace", max: 10 },
-        { id: "nt_follow", title: "Follow number shapes", level: "A", type: "trace", max: 5 },
-        { id: "nt_formation", title: "Number formation practice", level: "B", type: "trace", max: 10 },
+        { id: "nt_1_10", title: "Number Tracing 1–10", level: "A", type: "nt_guided", min: 1, max: 10, art: SUB_ART + "nt_1_10.svg" },
+        { id: "nt_11_20", title: "Number Tracing 11–20", level: "B", type: "nt_guided", min: 11, max: 20, art: SUB_ART + "nt_11_20.svg" },
+        { id: "nt_21_30", title: "Number Tracing 21–30", level: "B", type: "nt_guided", min: 21, max: 30, art: SUB_ART + "nt_21_30.svg" },
+        { id: "nt_follow", title: "Follow the Number Path", level: "A", type: "nt_follow", min: 1, max: 15, art: SUB_ART + "nt_follow.svg" },
+        { id: "nt_complete", title: "Complete the Number", level: "B", type: "nt_complete", min: 1, max: 20, art: SUB_ART + "nt_complete.svg" },
+        { id: "nt_freehand", title: "Freehand Number Practice", level: "B", type: "nt_freehand", min: 1, max: 30, art: SUB_ART + "nt_freehand.svg" },
       ],
     },
     {
@@ -366,7 +368,9 @@
         ? "7 unique number recognition adventures · tap to play"
         : (cat.id === "counting_quantity"
           ? "6 unique counting adventures · tap to play"
-          : "Level A (2–3) and Level B (3–4) · tap to play");
+          : (cat.id === "number_tracing"
+            ? "6 unique tracing adventures · tap to play"
+            : "Level A (2–3) and Level B (3–4) · tap to play"));
       wrap.appendChild(el("div", "home-section-label", `
         <h3>Subcategories</h3>
         <p>${catHint}</p>`));
@@ -1246,6 +1250,372 @@
         });
       }
 
+      /* ========== Number Writing & Tracing — 6 approved unique games ========== */
+
+      function pickTraceNumber(min, max) {
+        const lo = Math.max(1, min || 1);
+        const hi = Math.min(30, max || 10);
+        // Prefer smaller numbers early in a session for ages 2–3
+        const soft = round < 2 ? Math.min(hi, Math.max(lo, lo + Math.floor((hi - lo) * 0.35))) : hi;
+        return randInt(lo, Math.max(lo, soft));
+      }
+
+      function getTraceDef(n) {
+        if (typeof TRACE_NUMBERS !== "undefined" && TRACE_NUMBERS[n - 1]) return TRACE_NUMBERS[n - 1];
+        return {
+          n,
+          word: nameOf(n),
+          paths: ["M 100 40 L 100 240"],
+          start: { x: 100, y: 40 },
+          tip: "Follow the dots",
+        };
+      }
+
+      /**
+       * Shared SVG+canvas tracer.
+       * mode: guided | follow | complete | freehand
+       */
+      function buildNumberTraceRound(mode) {
+        const min = sub.min || 1;
+        const max = sub.max || 10;
+        const n = pickTraceNumber(min, max);
+        const def = getTraceDef(n);
+        const VB = { w: 220, h: 280 };
+        const PASS = mode === "nt_freehand" ? 0.18 : (mode === "nt_complete" ? 0.28 : 0.32);
+        const HIT_R = mode === "nt_freehand" ? 72 : 56;
+        wrongTries = 0;
+
+        promptEl.textContent = mode === "nt_freehand"
+          ? ("Draw number " + n + " your own way!")
+          : (mode === "nt_complete"
+            ? ("Complete number " + n)
+            : (mode === "nt_follow"
+              ? ("Watch, then follow the path for " + n)
+              : ("Trace number " + n)));
+        say((mode === "nt_follow" ? "Watch carefully. " : "") + "Number " + nameOf(n));
+
+        stageEl.innerHTML = `
+          <div class="le-nm-nt">
+            <p class="le-nm-tap-hint" id="leNtTip">${escapeHtml(def.tip || "Follow the dotted path")}</p>
+            <div class="le-nm-nt-board" id="leNtBoard">
+              <svg class="le-nm-nt-svg" id="leNtSvg" viewBox="0 0 ${VB.w} ${VB.h}" aria-hidden="true"></svg>
+              <canvas class="le-nm-nt-canvas" id="leNtCanvas" width="320" height="400"></canvas>
+            </div>
+            <div class="le-nm-nt-progress">
+              <div class="le-nm-nt-bar"><span id="leNtFill"></span></div>
+              <span id="leNtPct">0%</span>
+            </div>
+            <div class="le-nm-nt-actions" id="leNtActions"></div>
+          </div>`;
+
+        const board = stageEl.querySelector("#leNtBoard");
+        const svg = stageEl.querySelector("#leNtSvg");
+        const canvas = stageEl.querySelector("#leNtCanvas");
+        const fillEl = stageEl.querySelector("#leNtFill");
+        const pctEl = stageEl.querySelector("#leNtPct");
+        const actions = stageEl.querySelector("#leNtActions");
+        const tipEl = stageEl.querySelector("#leNtTip");
+        const ctx = canvas.getContext("2d");
+        const svgNS = "http://www.w3.org/2000/svg";
+
+        let hitPoints = [];
+        let drawing = false;
+        let lastPt = null;
+        let ink = 0;
+        let completed = false;
+        let demoTimer = null;
+        let completeStart = null;
+
+        function layout() {
+          const w = board.clientWidth || 320;
+          const h = Math.min(420, Math.floor(w * (VB.h / VB.w)));
+          board.style.height = h + "px";
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.floor(w * dpr);
+          canvas.height = Math.floor(h * dpr);
+          canvas.style.width = w + "px";
+          canvas.style.height = h + "px";
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.strokeStyle = "#7E5FB0";
+          ctx.lineWidth = Math.max(14, w * 0.045);
+        }
+
+        function metrics() {
+          const rect = board.getBoundingClientRect();
+          const bw = board.clientWidth || rect.width;
+          const bh = board.clientHeight || rect.height;
+          const scale = Math.min(bw / VB.w, bh / VB.h);
+          const ox = (bw - VB.w * scale) / 2;
+          const oy = (bh - VB.h * scale) / 2;
+          return { rect, bw, bh, scale, ox, oy };
+        }
+
+        function samplePath(pathEl, step) {
+          let len = 0;
+          try { len = pathEl.getTotalLength(); } catch (e) { return []; }
+          if (!len) return [];
+          const pts = [];
+          const count = Math.max(20, Math.ceil(len / step));
+          for (let i = 0; i <= count; i++) {
+            const p = pathEl.getPointAtLength((len * i) / count);
+            pts.push({ x: p.x, y: p.y, hit: false });
+          }
+          return pts;
+        }
+
+        function drawGuides() {
+          while (svg.firstChild) svg.removeChild(svg.firstChild);
+          hitPoints = [];
+          const paths = def.paths || [];
+          const hideFrom = mode === "nt_complete"
+            ? (paths.length <= 1 ? 1 : Math.ceil(paths.length / 2))
+            : paths.length;
+
+          paths.forEach((d, idx) => {
+            const path = document.createElementNS(svgNS, "path");
+            path.setAttribute("d", d);
+            path.setAttribute("fill", "none");
+            path.setAttribute("stroke-linecap", "round");
+            path.setAttribute("stroke-linejoin", "round");
+            if (mode === "nt_freehand") {
+              path.setAttribute("stroke", "rgba(126,95,176,0.18)");
+              path.setAttribute("stroke-width", "28");
+            } else if (mode === "nt_complete" && idx >= hideFrom) {
+              path.setAttribute("stroke", "rgba(126,95,176,0.22)");
+              path.setAttribute("stroke-width", "10");
+              path.setAttribute("stroke-dasharray", "4 14");
+            } else if (mode === "nt_complete") {
+              // Already-drawn stroke (solid)
+              path.setAttribute("stroke", "rgba(126,95,176,0.55)");
+              path.setAttribute("stroke-width", "14");
+            } else {
+              path.setAttribute("stroke", "rgba(126,95,176,0.35)");
+              path.setAttribute("stroke-width", "12");
+              path.setAttribute("stroke-dasharray", "8 12");
+            }
+            svg.appendChild(path);
+            // Complete mode: only score the missing strokes / missing half
+            if (mode === "nt_complete" && idx < hideFrom && paths.length > 1) {
+              // Multi-stroke complete: only the missing strokes count toward progress
+              /* skip pre-drawn paths for scoring */
+            } else {
+              hitPoints = hitPoints.concat(samplePath(path, mode === "nt_freehand" ? 18 : 12));
+            }
+          });
+
+          // Single-stroke complete: show first half as solid, score only the second half
+          if (mode === "nt_complete" && paths.length === 1) {
+            const base = svg.querySelector("path");
+            if (base) {
+              let len = 0;
+              try { len = base.getTotalLength(); } catch (e) { len = 0; }
+              if (len > 0) {
+                const half = len * 0.45;
+                base.setAttribute("stroke", "rgba(126,95,176,0.22)");
+                base.setAttribute("stroke-width", "10");
+                base.setAttribute("stroke-dasharray", "4 14");
+                const solid = document.createElementNS(svgNS, "path");
+                solid.setAttribute("d", paths[0]);
+                solid.setAttribute("fill", "none");
+                solid.setAttribute("stroke", "rgba(126,95,176,0.55)");
+                solid.setAttribute("stroke-width", "14");
+                solid.setAttribute("stroke-linecap", "round");
+                solid.setAttribute("stroke-dasharray", half + " " + (len + 20));
+                solid.setAttribute("stroke-dashoffset", "0");
+                svg.insertBefore(solid, base);
+                hitPoints = [];
+                const count = Math.max(16, Math.ceil((len - half) / 12));
+                for (let i = 0; i <= count; i++) {
+                  const p = base.getPointAtLength(half + ((len - half) * i) / count);
+                  hitPoints.push({ x: p.x, y: p.y, hit: false });
+                }
+                const gap = base.getPointAtLength(half);
+                completeStart = { x: gap.x, y: gap.y };
+              }
+            }
+          }
+
+          const startPt = completeStart || def.start;
+          if (startPt && mode !== "nt_freehand") {
+            const dot = document.createElementNS(svgNS, "circle");
+            dot.setAttribute("cx", startPt.x);
+            dot.setAttribute("cy", startPt.y);
+            dot.setAttribute("r", "10");
+            dot.setAttribute("fill", "#FF8FAB");
+            dot.setAttribute("class", "le-nm-nt-start");
+            svg.appendChild(dot);
+            const label = document.createElementNS(svgNS, "text");
+            label.setAttribute("x", startPt.x);
+            label.setAttribute("y", startPt.y - 16);
+            label.setAttribute("text-anchor", "middle");
+            label.setAttribute("fill", "#7E5FB0");
+            label.setAttribute("font-size", "14");
+            label.setAttribute("font-weight", "800");
+            label.textContent = "Start";
+            svg.appendChild(label);
+          }
+        }
+
+        function clearInk() {
+          layout();
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          hitPoints.forEach((p) => { p.hit = false; });
+          ink = 0;
+          completed = false;
+          updateProgress();
+        }
+
+        function updateProgress() {
+          const total = hitPoints.length || 1;
+          const hits = hitPoints.filter((p) => p.hit).length;
+          const pct = Math.min(100, Math.round((hits / total) * 100));
+          fillEl.style.width = pct + "%";
+          pctEl.textContent = pct + "%";
+          return hits / total;
+        }
+
+        function clientToVb(e) {
+          const m = metrics();
+          const src = e.touches && e.touches[0] ? e.touches[0] : e;
+          const x = src.clientX - m.rect.left;
+          const y = src.clientY - m.rect.top;
+          return {
+            cssX: x,
+            cssY: y,
+            vbX: (x - m.ox) / m.scale,
+            vbY: (y - m.oy) / m.scale,
+          };
+        }
+
+        function markHits(vbX, vbY) {
+          let near = false;
+          hitPoints.forEach((p) => {
+            const dx = p.x - vbX;
+            const dy = p.y - vbY;
+            if ((dx * dx + dy * dy) <= HIT_R * HIT_R) {
+              p.hit = true;
+              near = true;
+            }
+          });
+          return near;
+        }
+
+        function pointerDown(e) {
+          if (completed || locked) return;
+          e.preventDefault();
+          drawing = true;
+          const p = clientToVb(e);
+          lastPt = p;
+          ctx.beginPath();
+          ctx.moveTo(p.cssX, p.cssY);
+          markHits(p.vbX, p.vbY);
+          updateProgress();
+        }
+
+        function pointerMove(e) {
+          if (!drawing || completed || locked) return;
+          e.preventDefault();
+          const p = clientToVb(e);
+          ctx.lineTo(p.cssX, p.cssY);
+          ctx.stroke();
+          ink++;
+          const near = markHits(p.vbX, p.vbY);
+          if (!near && mode !== "nt_freehand" && ink % 8 === 0) {
+            tipEl.textContent = "Stay on the dotted path — you can do it!";
+          }
+          const ratio = updateProgress();
+          if (ratio >= PASS && (mode === "nt_freehand" ? ink > 18 : true)) {
+            finishTrace();
+          }
+          lastPt = p;
+        }
+
+        function pointerUp() {
+          drawing = false;
+          lastPt = null;
+        }
+
+        function finishTrace() {
+          if (completed || locked) return;
+          completed = true;
+          tipEl.textContent = "Beautiful number " + n + "!";
+          say("Wonderful! Number " + nameOf(n));
+          onCorrect("Great tracing!");
+        }
+
+        function animateDemo() {
+          if (demoTimer) clearInterval(demoTimer);
+          const guide = document.createElementNS(svgNS, "circle");
+          guide.setAttribute("r", "9");
+          guide.setAttribute("fill", "#FFD166");
+          guide.setAttribute("class", "le-nm-nt-demo");
+          svg.appendChild(guide);
+          const allPts = hitPoints.slice();
+          let i = 0;
+          tipEl.textContent = "Watch the glowing path…";
+          demoTimer = setInterval(() => {
+            if (i >= allPts.length) {
+              clearInterval(demoTimer);
+              demoTimer = null;
+              if (guide.parentNode) guide.parentNode.removeChild(guide);
+              tipEl.textContent = "Now you try! Start at the pink dot.";
+              say("Now you try");
+              return;
+            }
+            const p = allPts[i];
+            guide.setAttribute("cx", p.x);
+            guide.setAttribute("cy", p.y);
+            i += Math.max(1, Math.floor(allPts.length / 40));
+          }, 40);
+        }
+
+        // Controls
+        function addBtn(label, cls, fn) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "le-nm-choice le-nm-nt-btn " + (cls || "");
+          b.textContent = label;
+          b.addEventListener("click", () => { if (!locked) { snd.pop(); fn(); } });
+          actions.appendChild(b);
+          return b;
+        }
+        addBtn("Clear", "", () => {
+          clearInk();
+          tipEl.textContent = def.tip || "Follow the dotted path";
+          say("Try again");
+        });
+        addBtn("Show me", "", () => animateDemo());
+        addBtn("Hear", "", () => say(nameOf(n)));
+        if (mode !== "nt_freehand") {
+          addBtn("Done", "le-nm-done", () => {
+            const ratio = updateProgress();
+            if (ratio >= PASS * 0.85 || ink > 40) finishTrace();
+            else onWrong("Trace a little more along the path");
+          });
+        } else {
+          addBtn("Done", "le-nm-done", () => {
+            if (ink > 20) finishTrace();
+            else onWrong("Draw the number a bit more");
+          });
+        }
+
+        canvas.addEventListener("mousedown", pointerDown);
+        canvas.addEventListener("mousemove", pointerMove);
+        canvas.addEventListener("mouseup", pointerUp);
+        canvas.addEventListener("mouseleave", pointerUp);
+        canvas.addEventListener("touchstart", pointerDown, { passive: false });
+        canvas.addEventListener("touchmove", pointerMove, { passive: false });
+        canvas.addEventListener("touchend", pointerUp);
+
+        layout();
+        drawGuides();
+        clearInk();
+        if (mode === "nt_follow") setTimeout(animateDemo, 350);
+        choicesEl.innerHTML = "";
+      }
+
       function buildRound() {
         clearBoard();
         const type = sub.type;
@@ -1289,6 +1659,11 @@
         if (type === "cq_tap") { buildCqTapRound(); return; }
         if (type === "cq_around") { buildAroundRound(); return; }
         if (type === "cq_sounds") { buildSoundsRound(); return; }
+
+        if (type === "nt_guided" || type === "nt_follow" || type === "nt_complete" || type === "nt_freehand" || type === "trace") {
+          buildNumberTraceRound(type === "trace" ? "nt_guided" : type);
+          return;
+        }
 
         if (type === "pick_number") {
           const n = randInt(1, max);
@@ -1634,58 +2009,6 @@
               <div class="le-nm-group-view is-whole"><p>Whole</p><span class="le-nm-objects le-nm-token-row">${tokenRow(whole, kind)}</span></div>
             </div>`;
           renderChoices(uniqueNums(whole, max, 3).map(v => ({ label: v, value: v })), whole);
-          return;
-        }
-
-        if (type === "trace") {
-          const n = randInt(1, Math.min(max, 10));
-          promptEl.textContent = "Trace number " + n + " with your finger";
-          say("Trace number " + n);
-          stageEl.innerHTML = `
-            <div class="le-nm-trace-wrap">
-              <div class="le-nm-trace-ghost">${n}</div>
-              <canvas class="le-nm-trace-canvas" id="leTrace" width="320" height="240"></canvas>
-            </div>
-            <p class="le-nm-tap-hint">Draw on the number, then tap Done</p>`;
-          const canvas = stageEl.querySelector("#leTrace");
-          const ctx = canvas.getContext("2d");
-          ctx.lineWidth = 10;
-          ctx.lineCap = "round";
-          ctx.strokeStyle = "#7E5FB0";
-          let drawing = false;
-          let ink = 0;
-          const pos = (e) => {
-            const r = canvas.getBoundingClientRect();
-            const src = e.touches ? e.touches[0] : e;
-            return { x: (src.clientX - r.left) * (canvas.width / r.width), y: (src.clientY - r.top) * (canvas.height / r.height) };
-          };
-          const start = (e) => { e.preventDefault(); drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-          const move = (e) => {
-            if (!drawing) return;
-            e.preventDefault();
-            const p = pos(e);
-            ctx.lineTo(p.x, p.y);
-            ctx.stroke();
-            ink++;
-          };
-          const end = () => { drawing = false; };
-          canvas.addEventListener("mousedown", start);
-          canvas.addEventListener("mousemove", move);
-          canvas.addEventListener("mouseup", end);
-          canvas.addEventListener("mouseleave", end);
-          canvas.addEventListener("touchstart", start, { passive: false });
-          canvas.addEventListener("touchmove", move, { passive: false });
-          canvas.addEventListener("touchend", end);
-          const doneBtn = document.createElement("button");
-          doneBtn.type = "button";
-          doneBtn.className = "le-nm-choice le-nm-done";
-          doneBtn.textContent = "Done";
-          doneBtn.addEventListener("click", () => {
-            if (locked) return;
-            if (ink > 12) onCorrect();
-            else onWrong("Draw a little more!");
-          });
-          choicesEl.appendChild(doneBtn);
           return;
         }
 

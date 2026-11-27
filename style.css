@@ -5187,6 +5187,64 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   color: #2F7A5B;
 }
 
+/* ---- Number Writing & Tracing ---- */
+.le-nm-nt { width: 100%; text-align: center; }
+.le-nm-nt-board {
+  position: relative;
+  width: min(100%, 360px);
+  aspect-ratio: 220 / 280;
+  margin: 8px auto 12px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #FFFCF8, #F3EEFF);
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,0.55), 0 8px 18px rgba(74, 68, 88, 0.12);
+  overflow: hidden;
+  touch-action: none;
+}
+.le-nm-nt-start {
+  filter: drop-shadow(0 2px 4px rgba(255, 143, 171, 0.45));
+}
+.le-nm-nt-demo {
+  filter: drop-shadow(0 0 6px rgba(255, 209, 102, 0.9));
+}
+.le-nm-nt-svg,
+.le-nm-nt-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.le-nm-nt-canvas { z-index: 2; cursor: crosshair; }
+.le-nm-nt-svg { z-index: 1; }
+.le-nm-nt-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.le-nm-nt-bar {
+  width: min(220px, 55vw);
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(232, 213, 245, 0.8);
+  overflow: hidden;
+}
+.le-nm-nt-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #C9A0FF, #7ECDB5);
+  transition: width 0.15s ease;
+}
+.le-nm-nt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.le-nm-nt-btn { min-width: 88px; font-size: 16px; padding: 10px 14px; }
+
 @media (max-width: 720px) {
   .le-nm-cat-head { grid-template-columns: 1fr; }
   .le-nm-grid { grid-template-columns: 1fr 1fr; }

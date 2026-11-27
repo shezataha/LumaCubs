@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+
+<defs>
+  <linearGradient id="bgntfree" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#FFF0F4"/>
+    <stop offset="100%" stop-color="#FFE0EA"/>
+  </linearGradient>
+  <filter id="shntfree" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="3" stdDeviation="2.2" flood-color="#5B4A7A" flood-opacity="0.18"/>
+  </filter>
+</defs>
+<rect width="256" height="256" rx="56" fill="url(#bgntfree)"/>
+<circle cx="48" cy="52" r="10" fill="#fff" opacity="0.35"/>
+<circle cx="210" cy="40" r="7" fill="#fff" opacity="0.28"/>
+<circle cx="222" cy="78" r="5" fill="#fff" opacity="0.22"/>
+<g filter="url(#shntfree)"><rect x="48" y="55" width="160" height="140" rx="18" fill="#FFFCF8" stroke="#FF8FAB" stroke-width="4"/><g transform="translate(70,170) rotate(-15)">
+    <rect x="0" y="8" width="70" height="18" rx="6" fill="#FF8FAB"/>
+    <rect x="0" y="8" width="18" height="18" rx="6" fill="#FFD166"/>
+    <polygon points="70,8 88,17 70,26" fill="#FF6B8A"/>
+    <rect x="8" y="10" width="40" height="6" rx="3" fill="#fff" opacity="0.25"/>
+  </g><path d="M95 90 L95 170 M95 90 C95 70, 135 70, 135 100 C135 130, 95 130, 95 150" stroke="#7E5FB0" stroke-width="10" fill="none" stroke-linecap="round"/></g>
+</svg>

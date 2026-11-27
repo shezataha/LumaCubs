@@ -287,19 +287,28 @@ const icons = {
     magnifier(45, 55) + nb(145, 110, "24", "#C9A0FF", 58)
   ),
 
-  nt_1_5: card(
-    "nt15",
-    "#EAF4FF",
-    "#C8E0F8",
-    crayon(50, 150) +
-      `<path d="M70 80 C70 50, 120 50, 120 90 C120 130, 70 130, 70 160" stroke="#A8D4F0" stroke-width="14" stroke-linecap="round" fill="none" stroke-dasharray="18 14"/>`
-  ),
   nt_1_10: card(
     "nt110",
     "#FFF0F4",
     "#FFE0EA",
     crayon(40, 160, -30) +
       `<text x="128" y="130" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="88" font-weight="700" fill="#FF8FAB" opacity="0.35" stroke="#FF8FAB" stroke-width="3" stroke-dasharray="12 10">8</text>`
+  ),
+  nt_11_20: card(
+    "nt1120",
+    "#EAF4FF",
+    "#C8E0F8",
+    crayon(36, 168, -25) +
+      `<text x="128" y="128" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="72" font-weight="700" fill="#A8D4F0" opacity="0.4" stroke="#7EB8E0" stroke-width="3" stroke-dasharray="10 9">15</text>` +
+      `<circle cx="78" cy="78" r="10" fill="#FF8FAB"/>`
+  ),
+  nt_21_30: card(
+    "nt2130",
+    "#FFF8E8",
+    "#FFE9B8",
+    crayon(170, 155, 35) +
+      `<text x="118" y="130" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="68" font-weight="700" fill="#FFD166" opacity="0.45" stroke="#E8B84A" stroke-width="3" stroke-dasharray="10 9">27</text>` +
+      `<circle cx="72" cy="86" r="10" fill="#FF8FAB"/>`
   ),
   nt_follow: card(
     "ntfol",
@@ -309,7 +318,22 @@ const icons = {
       `<circle cx="60" cy="160" r="12" fill="#FFD166"/>` +
       crayon(140, 150)
   ),
-  nt_formation: card("ntform", "#FFF8E8", "#FFE9B8", block(50, 90, "2", "#FFD166", 55) + block(130, 90, "5", "#C9A0FF", 55) + crayon(90, 170, -20)),
+  nt_complete: card(
+    "ntcomp",
+    "#F3EEFF",
+    "#E0D4FF",
+    `<path d="M70 70 C70 40, 140 40, 140 90 C140 140, 70 140, 70 180" stroke="#C9A0FF" stroke-width="14" fill="none" stroke-linecap="round"/>` +
+      `<path d="M70 180 C70 220, 140 220, 140 180" stroke="#C9A0FF" stroke-width="14" fill="none" stroke-linecap="round" stroke-dasharray="8 12" opacity="0.45"/>` +
+      crayon(155, 175, 20)
+  ),
+  nt_freehand: card(
+    "ntfree",
+    "#FFF0F4",
+    "#FFE0EA",
+    `<rect x="48" y="55" width="160" height="140" rx="18" fill="#FFFCF8" stroke="#FF8FAB" stroke-width="4"/>` +
+      crayon(70, 170, -15) +
+      `<path d="M95 90 L95 170 M95 90 C95 70, 135 70, 135 100 C135 130, 95 130, 95 150" stroke="#7E5FB0" stroke-width="10" fill="none" stroke-linecap="round"/>`
+  ),
 
   bc_more_less: card(
     "bcml",

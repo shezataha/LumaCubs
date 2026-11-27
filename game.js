@@ -79,7 +79,7 @@
   const FALLBACK_MATH_CATEGORIES = [
     { id: 101, code: "number_recognition_number_sense", title: "Number Recognition & Number Sense", description: "Spot, name, and understand numbers", accent_color: "#FFD8C2", age_label: "Ages 2–8" },
     { id: 102, code: "counting_quantity", title: "Counting Skills", description: "Count objects and build quantity sense from 1 to 30", accent_color: "#C8F0E0", age_label: "Ages 2–8" },
-    { id: 103, code: "number_tracing_writing", title: "Number Tracing & Writing", description: "Trace and write numbers with care", accent_color: "#E8D5F5", age_label: "Ages 2–8" },
+    { id: 103, code: "number_tracing_writing", title: "Number Writing & Tracing", description: "Trace and write numbers 1–30 with care", accent_color: "#E8D5F5", age_label: "Ages 2–8" },
     { id: 104, code: "number_comparison", title: "Number Comparison", description: "Compare numbers: more, less, and equal", accent_color: "#A8D4F0", age_label: "Ages 4–8" },
     { id: 105, code: "addition", title: "Addition", description: "Put groups together to make more", accent_color: "#FFB4C8", age_label: "Ages 4–8" },
     { id: 106, code: "subtraction", title: "Subtraction", description: "Take away and find what is left", accent_color: "#F0A98A", age_label: "Ages 4–8" },
