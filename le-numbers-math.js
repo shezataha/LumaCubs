@@ -72,17 +72,18 @@
     },
     {
       id: "basic_number_comparison",
-      title: "Basic Number Comparison",
-      blurb: "Which group has more?",
+      title: "Quantity & Comparison",
+      blurb: "Compare quantities in playful real-life scenes!",
       tone: "lilac",
       accent: "#DCC8F5",
       art: ART + "basic_number_comparison.jpg",
       subs: [
-        { id: "bc_more_less", title: "More and less", level: "A", type: "more_less", max: 5 },
-        { id: "bc_same", title: "Same quantity", level: "A", type: "same_qty", max: 5 },
-        { id: "bc_big_small", title: "Big group and small group", level: "A", type: "more_less", max: 6 },
-        { id: "bc_compare", title: "Compare groups of objects", level: "B", type: "more_less", max: 10 },
-        { id: "bc_identify_more", title: "Identify the group with more objects", level: "B", type: "more_less", max: 8 },
+        { id: "qc_toys", title: "Toy Shop Challenge", level: "A", type: "qc_toys", min: 1, max: 8, art: SUB_ART + "qc_toys.svg" },
+        { id: "qc_parking", title: "Parking Lot Numbers", level: "A", type: "qc_parking", min: 2, max: 10, art: SUB_ART + "qc_parking.svg" },
+        { id: "qc_picnic", title: "Picnic Preparation", level: "A", type: "qc_picnic", min: 1, max: 8, art: SUB_ART + "qc_picnic.svg" },
+        { id: "qc_garden", title: "Growing Garden", level: "B", type: "qc_garden", min: 2, max: 15, art: SUB_ART + "qc_garden.svg" },
+        { id: "qc_aquarium", title: "Aquarium Inspector", level: "B", type: "qc_aquarium", min: 3, max: 20, art: SUB_ART + "qc_aquarium.svg" },
+        { id: "qc_party", title: "Birthday Party Planner", level: "B", type: "qc_party", min: 2, max: 12, art: SUB_ART + "qc_party.svg" },
       ],
     },
     {
@@ -370,7 +371,9 @@
           ? "6 unique counting adventures · tap to play"
           : (cat.id === "number_tracing"
             ? "6 unique tracing adventures · tap to play"
-            : "Level A (2–3) and Level B (3–4) · tap to play"));
+            : (cat.id === "basic_number_comparison"
+              ? "6 unique quantity adventures · tap to play"
+              : "Level A (2–3) and Level B (3–4) · tap to play")));
       wrap.appendChild(el("div", "home-section-label", `
         <h3>Subcategories</h3>
         <p>${catHint}</p>`));
@@ -1818,6 +1821,667 @@
         choicesEl.innerHTML = "";
       }
 
+      /* ========== Quantity & Comparison — 6 approved unique games ========== */
+
+      function qcRange() {
+        const lo = Math.max(1, sub.min || 1);
+        const hi = Math.min(30, sub.max || 8);
+        const soft = round < 2 ? Math.min(hi, Math.max(lo, lo + Math.floor((hi - lo) * 0.4))) : hi;
+        return { min: lo, max: Math.max(lo, soft), hardMax: hi };
+      }
+
+      /** Self-contained cartoon SVG icons — always visible, no external assets */
+      function qcIcon(kind, size, tone) {
+        const s = size || 68;
+        const t = tone == null ? 0 : tone;
+        const carColors = ["#FF8FAB", "#7ECDB5", "#FFD166", "#A8D4F0", "#C9A0FF", "#FFB86B"];
+        const fishColors = ["#FF8FAB", "#7ECDB5", "#FFD166", "#C9A0FF", "#FF6B6B", "#A8D4F0"];
+        const balloonColors = ["#C9A0FF", "#FF8FAB", "#FFD166", "#7ECDB5", "#A8D4F0", "#FFB86B"];
+        const flowerPetals = [
+          ["#FF8FAB", "#C9A0FF", "#A8D4F0", "#7ECDB5"],
+          ["#FFD166", "#FF8FAB", "#C9A0FF", "#7ECDB5"],
+          ["#A8D4F0", "#7ECDB5", "#FFD166", "#FF8FAB"],
+        ];
+        const carBody = carColors[t % carColors.length];
+        const fishBody = fishColors[t % fishColors.length];
+        const balloonFill = balloonColors[t % balloonColors.length];
+        const petals = flowerPetals[t % flowerPetals.length];
+        const shine = `<ellipse cx="22" cy="18" rx="7" ry="4" fill="#fff" opacity=".45"/>`;
+        const svg = {
+          teddy: `<ellipse cx="32" cy="40" rx="18" ry="16" fill="#E8B86D"/><circle cx="16" cy="18" r="10" fill="#D4A574"/><circle cx="48" cy="18" r="10" fill="#D4A574"/><circle cx="32" cy="28" r="14" fill="#E8B86D"/><ellipse cx="32" cy="36" rx="8" ry="6" fill="#F6D7A8"/><circle cx="26" cy="26" r="2.2" fill="#5B4A7A"/><circle cx="38" cy="26" r="2.2" fill="#5B4A7A"/><ellipse cx="32" cy="31" rx="3" ry="2.2" fill="#C9845A"/><path d="M27 34c3 3 7 3 10 0" stroke="#C9845A" stroke-width="1.6" fill="none"/>${shine}`,
+          car: `<rect x="6" y="30" width="52" height="16" rx="7" fill="${carBody}"/><path d="M18 30h28l-6-12H24z" fill="#A8D4F0"/><rect x="22" y="20" width="10" height="8" rx="2" fill="#EAF4FF" opacity=".9"/><rect x="34" y="20" width="10" height="8" rx="2" fill="#EAF4FF" opacity=".9"/><circle cx="18" cy="48" r="7" fill="#5B4A7A"/><circle cx="46" cy="48" r="7" fill="#5B4A7A"/><circle cx="18" cy="48" r="3" fill="#FFD166"/><circle cx="46" cy="48" r="3" fill="#FFD166"/><rect x="8" y="34" width="6" height="4" rx="1" fill="#FFD166"/>${shine}`,
+          ball: `<circle cx="32" cy="32" r="22" fill="url(#none)"/><circle cx="32" cy="32" r="22" fill="#FF8FAB"/><path d="M12 32h40M32 12v40M16 18c10 8 22 8 32 0M16 46c10-8 22-8 32 0" stroke="#fff" stroke-width="3" fill="none"/><circle cx="32" cy="32" r="22" fill="none" stroke="#E86A8A" stroke-width="2"/>${shine}`,
+          block: `<rect x="10" y="12" width="44" height="40" rx="8" fill="#7EB8E0"/><rect x="10" y="12" width="44" height="12" rx="8" fill="#A8D4F0"/><rect x="18" y="28" width="28" height="16" rx="4" fill="#fff" opacity=".35"/><circle cx="20" cy="20" r="4" fill="#FFD166"/><circle cx="32" cy="20" r="4" fill="#FF8FAB"/><circle cx="44" cy="20" r="4" fill="#7ECDB5"/>`,
+          doll: `<circle cx="32" cy="16" r="11" fill="#FFD0B8"/><path d="M18 18c4-10 24-10 28 0" fill="#C9A0FF"/><rect x="18" y="28" width="28" height="26" rx="12" fill="#FF8FAB"/><rect x="24" y="34" width="16" height="12" rx="4" fill="#fff" opacity=".35"/><circle cx="28" cy="15" r="1.8" fill="#5B4A7A"/><circle cx="36" cy="15" r="1.8" fill="#5B4A7A"/><path d="M28 20c2.2 2.4 6 2.4 8 0" stroke="#E86A8A" stroke-width="1.8" fill="none"/>`,
+          train: `<rect x="6" y="32" width="52" height="14" rx="4" fill="#7ECDB5"/><rect x="8" y="16" width="20" height="18" rx="4" fill="#FFD166"/><rect x="12" y="20" width="10" height="8" rx="2" fill="#A8D4F0"/><rect x="34" y="22" width="16" height="12" rx="3" fill="#FF8FAB"/><circle cx="16" cy="50" r="5.5" fill="#5B4A7A"/><circle cx="32" cy="50" r="5.5" fill="#5B4A7A"/><circle cx="48" cy="50" r="5.5" fill="#5B4A7A"/><rect x="26" y="10" width="5" height="10" rx="2" fill="#C9A0FF"/>${shine}`,
+          plane: `<ellipse cx="30" cy="34" rx="24" ry="9" fill="#A8D4F0"/><rect x="26" y="14" width="10" height="22" rx="4" fill="#C9A0FF"/><rect x="10" y="30" width="40" height="7" rx="3" fill="#FF8FAB"/><polygon points="50,34 62,26 62,42" fill="#FFD166"/><circle cx="18" cy="32" r="3" fill="#fff" opacity=".7"/>${shine}`,
+          dino: `<ellipse cx="28" cy="38" rx="18" ry="13" fill="#7ECDB5"/><circle cx="46" cy="22" r="11" fill="#7ECDB5"/><path d="M20 12l4 14M28 8l2 14M36 10l0 14" stroke="#4F9B78" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="20" r="2.2" fill="#5B4A7A"/><rect x="16" y="46" width="7" height="12" rx="2" fill="#4F9B78"/><rect x="32" y="46" width="7" height="12" rx="2" fill="#4F9B78"/><path d="M12 40c-6 2-8 8-4 10" stroke="#4F9B78" stroke-width="4" fill="none"/>${shine}`,
+          cup: `<path d="M18 18h28l-5 34H23z" fill="#A8D4F0"/><ellipse cx="32" cy="18" rx="15" ry="5" fill="#7EB8E0"/><path d="M46 22c8 2 10 18 2 26" fill="none" stroke="#7EB8E0" stroke-width="4"/><rect x="24" y="28" width="10" height="14" rx="3" fill="#fff" opacity=".5"/><ellipse cx="32" cy="22" rx="10" ry="3" fill="#FFE8A0" opacity=".8"/>`,
+          plate: `<ellipse cx="32" cy="34" rx="26" ry="16" fill="#FFFCF8" stroke="#C9A0FF" stroke-width="4"/><ellipse cx="32" cy="34" rx="14" ry="8" fill="#F3EEFF"/><ellipse cx="24" cy="28" rx="5" ry="3" fill="#fff" opacity=".55"/>`,
+          sandwich: `<path d="M10 28h44l-4 8H14z" fill="#F0C987"/><rect x="12" y="34" width="40" height="7" rx="2" fill="#7ECDB5"/><rect x="12" y="40" width="40" height="7" rx="2" fill="#FF8FAB"/><path d="M10 46h44l-4 8H14z" fill="#E8B86D"/><circle cx="24" cy="30" r="2" fill="#C9845A"/>`,
+          apple: `<circle cx="32" cy="36" r="17" fill="#FF6B6B"/><path d="M32 22c-4 0-8 4-8 8 4-2 8-2 12 0 0-4-2-8-4-8z" fill="#E84A4A"/><rect x="30" y="12" width="4" height="12" rx="2" fill="#8B5A2B"/><ellipse cx="40" cy="18" rx="8" ry="4" fill="#7ECDB5"/>${shine}`,
+          banana: `<path d="M16 40c4-18 28-24 36-8-10-2-22 2-28 12-2 4-6 4-8-4z" fill="#FFD166"/><path d="M18 38c6-12 22-16 30-6" stroke="#E8B84A" stroke-width="3" fill="none"/><ellipse cx="48" cy="30" rx="4" ry="3" fill="#C9845A"/>`,
+          juice: `<rect x="20" y="16" width="24" height="36" rx="6" fill="#FFB86B"/><rect x="24" y="22" width="16" height="18" rx="3" fill="#FF8FAB"/><rect x="26" y="8" width="12" height="10" rx="3" fill="#A8D4F0"/><ellipse cx="32" cy="12" rx="8" ry="3" fill="#7EB8E0"/>${shine}`,
+          basket: `<ellipse cx="32" cy="20" rx="22" ry="8" fill="#E8C9A0"/><path d="M12 22h40l-5 30H17z" fill="#D4A574"/><path d="M18 22h28l-2 8H20z" fill="#C4956A" opacity=".45"/><path d="M20 12c0-10 24-10 24 0" fill="none" stroke="#C4956A" stroke-width="4"/><rect x="22" y="34" width="8" height="8" rx="2" fill="#FF8FAB"/><rect x="34" y="34" width="8" height="8" rx="2" fill="#7ECDB5"/>`,
+          tablecloth: `<rect x="6" y="18" width="52" height="34" rx="6" fill="#FFF8E8"/><path d="M6 28h52M6 40h52M18 18v34M34 18v34M50 18v34" stroke="#FFD166" stroke-width="3"/><rect x="6" y="18" width="52" height="34" rx="6" fill="none" stroke="#E8B86D" stroke-width="2"/>`,
+          flower: `<circle cx="20" cy="20" r="9" fill="${petals[0]}"/><circle cx="44" cy="20" r="9" fill="${petals[1]}"/><circle cx="20" cy="40" r="9" fill="${petals[2]}"/><circle cx="44" cy="40" r="9" fill="${petals[3]}"/><circle cx="32" cy="30" r="9" fill="#FFD166"/><rect x="30" y="38" width="4" height="18" rx="2" fill="#4F9B78"/>${shine}`,
+          pot: `<path d="M18 30h28l-4 24H22z" fill="#E8A07A"/><rect x="16" y="24" width="32" height="10" rx="4" fill="#C9845A"/><ellipse cx="32" cy="18" rx="10" ry="8" fill="#7ECDB5"/><circle cx="28" cy="14" r="3" fill="#FF8FAB"/><circle cx="36" cy="16" r="3" fill="#C9A0FF"/>`,
+          tree: `<rect x="28" y="36" width="8" height="20" rx="2" fill="#8B5A2B"/><circle cx="32" cy="24" r="16" fill="#4F9B78"/><circle cx="22" cy="28" r="10" fill="#7ECDB5"/><circle cx="42" cy="26" r="11" fill="#5FBA8A"/>${shine}`,
+          plant: `<rect x="24" y="40" width="16" height="14" rx="3" fill="#E8A07A"/><path d="M32 40c-8-12-14-18-4-28 2 8 4 16 4 28z" fill="#7ECDB5"/><path d="M32 40c8-12 14-18 4-28-2 8-4 16-4 28z" fill="#4F9B78"/>`,
+          butterfly: `<ellipse cx="20" cy="28" rx="12" ry="16" fill="#C9A0FF"/><ellipse cx="44" cy="28" rx="12" ry="16" fill="#FF8FAB"/><ellipse cx="32" cy="32" rx="5" ry="12" fill="#FFD166"/><circle cx="20" cy="24" r="4" fill="#fff" opacity=".45"/><circle cx="44" cy="24" r="4" fill="#fff" opacity=".45"/><path d="M30 20c-2-8 2-12 2-12M34 20c2-8-2-12-2-12" stroke="#5B4A7A" stroke-width="2" fill="none"/>`,
+          can: `<rect x="18" y="22" width="28" height="28" rx="6" fill="#A8D4F0"/><path d="M18 28h28" stroke="#7EB8E0" stroke-width="4"/><path d="M42 18c10 2 14 12 8 18" fill="none" stroke="#7EB8E0" stroke-width="4"/><circle cx="46" cy="16" r="5" fill="#7ECDB5"/><rect x="24" y="34" width="12" height="8" rx="2" fill="#fff" opacity=".45"/>`,
+          tool: `<rect x="28" y="8" width="8" height="36" rx="3" fill="#C4956A"/><path d="M18 40h28l-4 14H22z" fill="#A8A0B8"/><rect x="26" y="42" width="12" height="6" rx="2" fill="#7E5FB0"/>`,
+          seed: `<ellipse cx="32" cy="34" rx="12" ry="16" fill="#C9845A"/><ellipse cx="28" cy="28" rx="4" ry="6" fill="#E8C9A0"/><path d="M32 18c0-6 4-10 4-10" stroke="#4F9B78" stroke-width="2" fill="none"/>`,
+          fish: `<ellipse cx="28" cy="32" rx="18" ry="12" fill="${fishBody}"/><polygon points="44,32 60,20 60,44" fill="#FFD166"/><circle cx="20" cy="28" r="3" fill="#5B4A7A"/><circle cx="19" cy="27" r="1" fill="#fff"/><path d="M24 36c5 4 12 4 16 0" stroke="#fff" stroke-width="2" fill="none"/><path d="M30 22c2-6 8-6 8-2" fill="${fishBody}"/>${shine}`,
+          starfish: `<path d="M32 8l5 16 17 2-13 11 4 16-13-9-13 9 4-16-13-11 17-2z" fill="#FFB86B"/><circle cx="32" cy="30" r="5" fill="#FFD166"/>`,
+          turtle: `<ellipse cx="32" cy="34" rx="18" ry="14" fill="#7ECDB5"/><ellipse cx="32" cy="34" rx="12" ry="9" fill="#4F9B78"/><circle cx="48" cy="24" r="8" fill="#7ECDB5"/><circle cx="50" cy="22" r="2" fill="#5B4A7A"/><ellipse cx="14" cy="28" rx="6" ry="4" fill="#5FBA8A"/><ellipse cx="14" cy="40" rx="6" ry="4" fill="#5FBA8A"/><ellipse cx="46" cy="44" rx="6" ry="4" fill="#5FBA8A"/>`,
+          jellyfish: `<ellipse cx="32" cy="22" rx="16" ry="12" fill="#C9A0FF"/><path d="M20 30c0 16 4 24 4 24M28 32c0 18 2 26 2 26M36 32c0 18-2 26-2 26M44 30c0 16-4 24-4 24" stroke="#E8D5F5" stroke-width="3" fill="none"/><circle cx="26" cy="20" r="2" fill="#5B4A7A"/><circle cx="38" cy="20" r="2" fill="#5B4A7A"/>${shine}`,
+          coral: `<path d="M20 54c0-16 6-20 6-32M32 54c2-18-4-22 2-36M44 54c0-14-6-18-2-30" stroke="#FF8FAB" stroke-width="6" stroke-linecap="round" fill="none"/><circle cx="26" cy="20" r="5" fill="#FFD166"/><circle cx="34" cy="16" r="5" fill="#C9A0FF"/><circle cx="44" cy="22" r="5" fill="#FF8FAB"/>`,
+          bubble: `<circle cx="32" cy="32" r="14" fill="#A8D4F0" opacity=".55"/><circle cx="26" cy="26" r="5" fill="#fff" opacity=".75"/>`,
+          seaweed: `<path d="M24 58c-4-14 8-16 2-30 8-2 10 10 6 18 8 0 8 10 2 12" fill="none" stroke="#4F9B78" stroke-width="5" stroke-linecap="round"/><path d="M40 58c4-16-6-18 0-32-6-2-8 10-4 18-6 2-6 10 0 14" fill="none" stroke="#7ECDB5" stroke-width="4" stroke-linecap="round"/>`,
+          rock: `<ellipse cx="32" cy="40" rx="22" ry="12" fill="#C9B8A8"/><ellipse cx="24" cy="36" rx="9" ry="6" fill="#B09A88"/><ellipse cx="40" cy="38" rx="7" ry="5" fill="#D4C4B4"/>`,
+          balloon: `<ellipse cx="32" cy="24" rx="16" ry="20" fill="${balloonFill}"/><path d="M32 44l-4 12h8z" fill="#7E5FB0"/><line x1="32" y1="56" x2="32" y2="62" stroke="#7E5FB0" stroke-width="2"/><ellipse cx="26" cy="16" rx="5" ry="7" fill="#fff" opacity=".35"/>`,
+          gift: `<rect x="12" y="26" width="40" height="28" rx="5" fill="#FF8FAB"/><rect x="28" y="26" width="8" height="28" fill="#FFD166"/><rect x="12" y="36" width="40" height="8" fill="#FFD166"/><path d="M32 26c-8-12 8-12 0 0c8-12-8-12 0 0" fill="#C9A0FF"/><rect x="12" y="26" width="40" height="6" rx="3" fill="#E86A8A" opacity=".35"/>`,
+          cake: `<rect x="12" y="32" width="40" height="22" rx="5" fill="#FFD8C2"/><rect x="12" y="32" width="40" height="10" rx="4" fill="#FF8FAB"/><rect x="18" y="22" width="28" height="12" rx="4" fill="#FFF0F5"/><rect x="28" y="10" width="8" height="14" rx="2" fill="#FFD166"/><circle cx="32" cy="8" r="4" fill="#FF6B6B"/><circle cx="20" cy="38" r="3" fill="#C9A0FF"/><circle cx="44" cy="38" r="3" fill="#7ECDB5"/>`,
+          cupcake: `<path d="M18 30h28l-4 22H22z" fill="#FFD8C2"/><ellipse cx="32" cy="30" rx="16" ry="8" fill="#FF8FAB"/><circle cx="32" cy="18" r="10" fill="#FFF0F5"/><circle cx="32" cy="12" r="4" fill="#FF6B6B"/><rect x="22" y="36" width="4" height="10" rx="1" fill="#C9A0FF"/><rect x="30" y="36" width="4" height="10" rx="1" fill="#FFD166"/><rect x="38" y="36" width="4" height="10" rx="1" fill="#7ECDB5"/>`,
+          candle: `<rect x="28" y="24" width="8" height="30" rx="2" fill="#A8D4F0"/><rect x="28" y="30" width="8" height="6" fill="#fff" opacity=".5"/><ellipse cx="32" cy="16" rx="6" ry="10" fill="#FFD166"/><ellipse cx="32" cy="12" rx="3" ry="5" fill="#FF8FAB"/>`,
+          hat: `<path d="M12 40h40l-8-18H20z" fill="#C9A0FF"/><ellipse cx="32" cy="22" rx="8" ry="6" fill="#FFD166"/><circle cx="32" cy="12" r="5" fill="#FF8FAB"/><path d="M20 36h6M30 34h6M40 36h6" stroke="#fff" stroke-width="2"/>`,
+          ribbon: `<path d="M16 20c8 0 12 8 16 12 4-4 8-12 16-12-6 8-10 16-16 24-6-8-10-16-16-24z" fill="#FF8FAB"/><circle cx="32" cy="34" r="6" fill="#FFD166"/><path d="M26 38l-8 16M38 38l8 16" stroke="#C9A0FF" stroke-width="4" stroke-linecap="round"/>`,
+          sign: `<rect x="28" y="28" width="8" height="28" rx="2" fill="#C4956A"/><rect x="12" y="10" width="40" height="24" rx="6" fill="#7ECDB5"/><path d="M22 16h12c6 0 6 10 0 10H28v8h-6zM28 20h4c2 0 2 2 0 2h-4z" fill="#fff"/>`,
+        };
+        const body = svg[kind] || svg.ball;
+        return `<svg class="le-nm-qc-ico" viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true">${body}</svg>`;
+      }
+
+      function qcObj(kind, attrs) {
+        const a = attrs || {};
+        const tone = a.tone == null ? 0 : a.tone;
+        const cls = "le-nm-qc-obj is-" + kind + (a.cls ? " " + a.cls : "");
+        const data = ` data-kind="${a.kind || kind}" data-tone="${tone}"`;
+        const drag = a.drag ? ` draggable="true"` : "";
+        const label = a.label || kind;
+        const size = a.size || 72;
+        if (a.tag === "span") {
+          return `<span class="${cls}"${data} aria-hidden="true">${qcIcon(kind, size, tone)}</span>`;
+        }
+        return `<button type="button" class="${cls}"${data}${drag} aria-label="${label}">${qcIcon(kind, size, tone)}</button>`;
+      }
+
+      function qcBounce(node) {
+        if (!node) return;
+        node.classList.add("is-pop");
+        setTimeout(() => node.classList.remove("is-pop"), 320);
+      }
+
+      /** 1) Toy Shop Challenge — illustrated shop, drag/tap requested toys into basket */
+      function buildToyShopRound() {
+        const TOY_CATALOG = [
+          { id: "teddy", singular: "teddy bear", plural: "teddy bears", speak: "teddy" },
+          { id: "car", singular: "toy car", plural: "toy cars", speak: "car" },
+          { id: "ball", singular: "ball", plural: "balls", speak: "ball" },
+          { id: "block", singular: "building block", plural: "building blocks", speak: "block" },
+          { id: "doll", singular: "doll", plural: "dolls", speak: "doll" },
+          { id: "train", singular: "toy train", plural: "toy trains", speak: "train" },
+          { id: "plane", singular: "airplane", plural: "airplanes", speak: "plane" },
+          { id: "dino", singular: "dinosaur", plural: "dinosaurs", speak: "dinosaur" },
+        ];
+        const { min, max, hardMax } = qcRange();
+        const need = randInt(min, Math.min(max, round < 2 ? Math.min(max, 5) : max));
+        const wanted = TOY_CATALOG[randInt(0, TOY_CATALOG.length - 1)];
+        const distractorCount = round < 1 ? randInt(2, 3) : randInt(3, 5);
+        const shelfKinds = [];
+        for (let i = 0; i < need; i++) shelfKinds.push(wanted.id);
+        for (let i = 0; i < distractorCount; i++) {
+          let other = TOY_CATALOG[randInt(0, TOY_CATALOG.length - 1)].id;
+          while (other === wanted.id) other = TOY_CATALOG[randInt(0, TOY_CATALOG.length - 1)].id;
+          shelfKinds.push(other);
+        }
+        // Shuffle shelf
+        for (let i = shelfKinds.length - 1; i > 0; i--) {
+          const j = randInt(0, i);
+          const tmp = shelfKinds[i];
+          shelfKinds[i] = shelfKinds[j];
+          shelfKinds[j] = tmp;
+        }
+
+        function toyFigure(kind, extraClass, size) {
+          const sz = size || 72;
+          return `<span class="le-nm-shop-toy is-${kind}${extraClass ? " " + extraClass : ""}" data-kind="${kind}" draggable="true" role="button" tabindex="0" aria-label="${kind}">${qcIcon(kind, sz)}</span>`;
+        }
+
+        let packed = 0;
+        let selected = null;
+        wrongTries = 0;
+        const orderLabel = need === 1 ? wanted.singular : wanted.plural;
+        promptEl.textContent = "Customer wants " + need + " " + orderLabel + "!";
+        say("Please find " + nameOf(need) + " " + wanted.speak + (need > 1 ? "s" : ""));
+
+        const rows = [[], []];
+        shelfKinds.forEach((kind, i) => rows[i % 2].push(toyFigure(kind)));
+
+        stageEl.innerHTML = `
+          <div class="le-nm-qc le-nm-shop">
+            <div class="le-nm-shop-scene">
+              <div class="le-nm-shop-sign">Toy Shop</div>
+              <div class="le-nm-shop-customer">
+                <span class="le-nm-shop-avatar" aria-hidden="true">${qcIcon("doll", 48)}</span>
+                <div class="le-nm-shop-bubble">
+                  ${toyFigure(wanted.id, "is-preview", 44)}
+                  <strong>× ${need}</strong>
+                </div>
+              </div>
+              <div class="le-nm-shop-shelves" id="leShopShelves">
+                <div class="le-nm-shop-shelf-row">${rows[0].join("")}<span class="le-nm-shop-plank" aria-hidden="true"></span></div>
+                <div class="le-nm-shop-shelf-row">${rows[1].join("")}<span class="le-nm-shop-plank" aria-hidden="true"></span></div>
+              </div>
+              <div class="le-nm-shop-basket is-drop" id="leShopBasket">
+                <span class="le-nm-shop-basket-label" id="leShopCount">0 / ${need}</span>
+                <div class="le-nm-shop-basket-items" id="leShopItems"></div>
+              </div>
+            </div>
+            <p class="le-nm-tap-hint">Drag or tap the matching toys into the basket</p>
+          </div>`;
+
+        const basket = stageEl.querySelector("#leShopBasket");
+        const itemsEl = stageEl.querySelector("#leShopItems");
+        const countEl = stageEl.querySelector("#leShopCount");
+        choicesEl.innerHTML = "";
+
+        function celebrateOrder() {
+          promptEl.textContent = "Order complete! Beautiful toys!";
+          stageEl.querySelector(".le-nm-tap-hint").textContent = "You packed " + need + " " + orderLabel + "!";
+          basket.classList.add("is-done");
+          confetti(10);
+          say("Wonderful! " + nameOf(need) + " " + wanted.speak + (need > 1 ? "s" : ""));
+          setTimeout(() => {
+            if (locked) return;
+            promptEl.textContent = "How many " + wanted.plural + " did we pack?";
+            say("How many " + wanted.speak + "s?");
+            renderChoices(uniqueNumsNear(need, min, hardMax, 3).map(v => ({ label: v, value: v })), need);
+          }, 700);
+        }
+
+        function packToy(node) {
+          if (locked || !node || node.classList.contains("is-used") || packed >= need) return;
+          const kind = node.getAttribute("data-kind");
+          if (kind !== wanted.id) {
+            snd.wrong();
+            tipWrong(node);
+            onWrong("Find the " + wanted.speak + " toys!");
+            return;
+          }
+          node.classList.add("is-used");
+          node.classList.remove("is-selected");
+          packed++;
+          countEl.textContent = packed + " / " + need;
+          itemsEl.insertAdjacentHTML("beforeend", toyFigure(kind, "is-packed", 40));
+          const packedNode = itemsEl.lastElementChild;
+          qcBounce(packedNode);
+          snd.pop();
+          say(nameOf(packed) + " " + wanted.speak + (packed > 1 ? "s" : ""));
+          selected = null;
+          if (packed === need) celebrateOrder();
+        }
+
+        function tipWrong(node) {
+          node.classList.add("is-shake");
+          setTimeout(() => node.classList.remove("is-shake"), 420);
+        }
+
+        stageEl.querySelectorAll("#leShopShelves .le-nm-shop-toy").forEach((node) => {
+          node.addEventListener("click", () => {
+            if (locked || node.classList.contains("is-used")) return;
+            // Tap-to-select then tap basket, or double-tap style: first tap selects, second packing via basket
+            // Toddler-friendly: tap matching toy packs directly
+            if (node.getAttribute("data-kind") === wanted.id) {
+              packToy(node);
+              return;
+            }
+            stageEl.querySelectorAll("#leShopShelves .le-nm-shop-toy").forEach((x) => x.classList.remove("is-selected"));
+            node.classList.add("is-selected");
+            selected = node;
+            snd.pop();
+            tipWrong(node);
+            onWrong("That is not a " + wanted.speak + " — try another!");
+          });
+          node.addEventListener("dragstart", (e) => {
+            if (locked || node.classList.contains("is-used")) {
+              e.preventDefault();
+              return;
+            }
+            selected = node;
+            node.classList.add("is-dragging");
+            try { e.dataTransfer.setData("text/plain", node.getAttribute("data-kind") || "toy"); } catch (err) { /* ignore */ }
+            e.dataTransfer.effectAllowed = "move";
+          });
+          node.addEventListener("dragend", () => node.classList.remove("is-dragging"));
+        });
+
+        basket.addEventListener("click", () => {
+          if (selected) packToy(selected);
+        });
+        basket.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          basket.classList.add("is-over");
+        });
+        basket.addEventListener("dragleave", () => basket.classList.remove("is-over"));
+        basket.addEventListener("drop", (e) => {
+          e.preventDefault();
+          basket.classList.remove("is-over");
+          packToy(selected);
+        });
+      }
+
+      /** 2) Parking Lot Numbers — colourful cars + lot scene */
+      function buildParkingRound() {
+        const { min, max, hardMax } = qcRange();
+        const spots = Math.min(10, Math.max(min + 1, randInt(min + 1, Math.min(max + 2, 10))));
+        const carsNeeded = randInt(Math.max(1, min), Math.min(spots - 1, max));
+        let parked = 0;
+        wrongTries = 0;
+        promptEl.textContent = "Park " + carsNeeded + " cars in the lot!";
+        say("Park " + nameOf(carsNeeded) + " cars");
+        const stalls = Array.from({ length: spots }, (_, i) =>
+          `<button type="button" class="le-nm-qc-stall" data-i="${i}" aria-label="parking spot ${i + 1}">
+            <span class="le-nm-qc-stall-num">${i + 1}</span>
+            <span class="le-nm-qc-stall-mark" aria-hidden="true"></span>
+          </button>`
+        ).join("");
+        const carPool = carsNeeded + 2;
+        stageEl.innerHTML = `
+          <div class="le-nm-qc le-nm-qc-parking">
+            <div class="le-nm-qc-scene is-parking">
+              <div class="le-nm-qc-scene-top">
+                <span class="le-nm-qc-sign" aria-hidden="true">${qcIcon("sign", 52)}</span>
+                <div class="le-nm-shop-sign">Parking Lot</div>
+              </div>
+              <div class="le-nm-qc-road" aria-hidden="true"></div>
+              <div class="le-nm-qc-lot" id="leQcLot">${stalls}</div>
+              <div class="le-nm-qc-car-row" id="leQcCars">
+                ${Array.from({ length: carPool }, (_, i) =>
+                  `<button type="button" class="le-nm-qc-car le-nm-qc-obj is-car" data-tone="${i % 6}" aria-label="car ${i + 1}">${qcIcon("car", 70, i % 6)}</button>`
+                ).join("")}
+              </div>
+            </div>
+            <p class="le-nm-tap-hint">Tap a car, then tap an empty parking spot · <span id="leQcParked">0</span> / ${carsNeeded}</p>
+          </div>`;
+        const parkedEl = stageEl.querySelector("#leQcParked");
+        let selectedCar = null;
+        stageEl.querySelectorAll("#leQcCars .le-nm-qc-car").forEach((car) => {
+          car.addEventListener("click", () => {
+            if (locked || car.classList.contains("is-used")) return;
+            stageEl.querySelectorAll("#leQcCars .le-nm-qc-car").forEach((c) => c.classList.remove("is-selected"));
+            car.classList.add("is-selected");
+            selectedCar = car;
+            qcBounce(car);
+            snd.pop();
+          });
+        });
+        stageEl.querySelectorAll(".le-nm-qc-stall").forEach((stall) => {
+          stall.addEventListener("click", () => {
+            if (locked || stall.classList.contains("is-full") || !selectedCar || parked >= carsNeeded) return;
+            const tone = Number(selectedCar.getAttribute("data-tone") || 0);
+            stall.classList.add("is-full");
+            stall.insertAdjacentHTML("beforeend", `<span class="le-nm-qc-car is-parked" aria-hidden="true">${qcIcon("car", 44, tone)}</span>`);
+            selectedCar.classList.add("is-used");
+            selectedCar.classList.remove("is-selected");
+            selectedCar = null;
+            parked++;
+            parkedEl.textContent = String(parked);
+            qcBounce(stall);
+            snd.pop();
+            say(nameOf(parked));
+            if (parked === carsNeeded) {
+              const empty = spots - parked;
+              confetti(8);
+              promptEl.textContent = empty === parked
+                ? "Filled and empty are the same! How many empty?"
+                : (empty > parked ? "Which is more — filled or empty?" : "How many empty spots?");
+              if (empty === parked) {
+                say("How many empty spots?");
+                renderChoices(uniqueNumsNear(empty, 0, hardMax, 3).map(v => ({ label: v, value: v })), empty);
+              } else if (empty > parked) {
+                say("Which has more?");
+                renderChoices([
+                  { label: "Filled " + parked, value: "filled" },
+                  { label: "Empty " + empty, value: "empty" },
+                ], "empty");
+              } else {
+                say("How many empty spots?");
+                renderChoices(uniqueNumsNear(empty, 0, hardMax, 3).map(v => ({ label: v, value: v })), empty);
+              }
+            }
+          });
+        });
+        choicesEl.innerHTML = "";
+      }
+
+      /** 3) Picnic Preparation — mixed picnic items like Toy Shop shelves */
+      function buildPicnicRound() {
+        const { min, max, hardMax } = qcRange();
+        const friends = randInt(Math.max(2, min), Math.min(max, 8));
+        const PICNIC = [
+          { id: "cup", singular: "cup", plural: "cups", speak: "cup" },
+          { id: "plate", singular: "plate", plural: "plates", speak: "plate" },
+          { id: "sandwich", singular: "sandwich", plural: "sandwiches", speak: "sandwich" },
+          { id: "apple", singular: "apple", plural: "apples", speak: "apple" },
+          { id: "banana", singular: "banana", plural: "bananas", speak: "banana" },
+          { id: "juice", singular: "juice bottle", plural: "juice bottles", speak: "juice" },
+        ];
+        const wanted = PICNIC[randInt(0, PICNIC.length - 1)];
+        const need = friends;
+        const distractors = randInt(2, 4);
+        const shelf = [];
+        for (let i = 0; i < need; i++) shelf.push(wanted.id);
+        for (let i = 0; i < distractors; i++) {
+          let other = PICNIC[randInt(0, PICNIC.length - 1)].id;
+          while (other === wanted.id) other = PICNIC[randInt(0, PICNIC.length - 1)].id;
+          shelf.push(other);
+        }
+        for (let i = shelf.length - 1; i > 0; i--) {
+          const j = randInt(0, i);
+          const tmp = shelf[i]; shelf[i] = shelf[j]; shelf[j] = tmp;
+        }
+        let packed = 0;
+        wrongTries = 0;
+        const orderLabel = need === 1 ? wanted.singular : wanted.plural;
+        promptEl.textContent = "Pick " + need + " " + orderLabel + " for the picnic!";
+        say("Pick " + nameOf(need) + " " + wanted.speak + (need > 1 ? "s" : ""));
+
+        function picnicFig(kind, extra, size) {
+          return `<button type="button" class="le-nm-qc-supply-item le-nm-qc-obj is-${kind}${extra ? " " + extra : ""}" data-kind="${kind}" aria-label="${kind}">${qcIcon(kind, size || 70)}</button>`;
+        }
+
+        stageEl.innerHTML = `
+          <div class="le-nm-qc le-nm-qc-picnic">
+            <div class="le-nm-qc-scene is-picnic">
+              <div class="le-nm-qc-scene-top">
+                <span aria-hidden="true">${qcIcon("tablecloth", 48)}</span>
+                <div class="le-nm-shop-sign">Picnic Time</div>
+                <span aria-hidden="true">${qcIcon("basket", 48)}</span>
+              </div>
+              <div class="le-nm-qc-friends">
+                ${Array.from({ length: friends }, () =>
+                  `<span class="le-nm-qc-friend" aria-hidden="true">${qcIcon("doll", 42)}</span>`
+                ).join("")}
+              </div>
+              <div class="le-nm-shop-bubble le-nm-qc-order-bubble">
+                ${qcIcon(wanted.id, 44)}
+                <strong>× ${need}</strong>
+              </div>
+              <div class="le-nm-qc-blanket" id="leQcBlanket">
+                <span class="le-nm-qc-basket-ico" aria-hidden="true">${qcIcon("basket", 40)}</span>
+                <span id="leQcPicnicCount">0 / ${need}</span>
+              </div>
+              <div class="le-nm-qc-supply" id="leQcSupply">
+                ${shelf.map((k) => picnicFig(k)).join("")}
+              </div>
+            </div>
+            <p class="le-nm-tap-hint">Tap the matching ${wanted.plural} onto the picnic blanket</p>
+          </div>`;
+        const blanket = stageEl.querySelector("#leQcBlanket");
+        const countEl = stageEl.querySelector("#leQcPicnicCount");
+        stageEl.querySelectorAll("#leQcSupply .le-nm-qc-supply-item").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (locked || btn.classList.contains("is-used") || packed >= need) return;
+            const kind = btn.getAttribute("data-kind");
+            if (kind !== wanted.id) {
+              snd.wrong();
+              btn.classList.add("is-shake");
+              setTimeout(() => btn.classList.remove("is-shake"), 400);
+              onWrong("Find the " + wanted.speak + "!");
+              return;
+            }
+            btn.classList.add("is-used");
+            packed++;
+            countEl.textContent = packed + " / " + need;
+            const bit = document.createElement("span");
+            bit.className = "le-nm-qc-supply-item is-" + kind + " is-on-blanket";
+            bit.innerHTML = qcIcon(kind, 40);
+            blanket.appendChild(bit);
+            qcBounce(bit);
+            snd.pop();
+            say(nameOf(packed));
+            if (packed === need) {
+              confetti(10);
+              promptEl.textContent = "Picnic ready! How many " + wanted.plural + "?";
+              say("How many " + wanted.speak + "s?");
+              renderChoices(uniqueNumsNear(need, min, hardMax, 3).map(v => ({ label: v, value: v })), need);
+            }
+          });
+        });
+        choicesEl.innerHTML = "";
+      }
+
+      /** 4) Growing Garden — flowers, pots, trees, butterflies, tools */
+      function buildGrowGardenRound() {
+        const { min, max } = qcRange();
+        let a = randInt(min, Math.max(min, Math.min(max - 1, 8)));
+        let b = randInt(min, Math.max(min, Math.min(max - 1, 8)));
+        while (a === b) b = randInt(min, Math.max(min, Math.min(max, 10)));
+        const growA = Math.min(max, a + randInt(1, 3));
+        const growB = Math.min(max, b + randInt(0, 2));
+        wrongTries = 0;
+        promptEl.textContent = "Watch the gardens grow!";
+        say("Watch the gardens grow");
+        stageEl.innerHTML = `
+          <div class="le-nm-qc le-nm-qc-grow">
+            <div class="le-nm-qc-scene is-garden">
+              <div class="le-nm-qc-scene-top">
+                <span aria-hidden="true">${qcIcon("tree", 48)}</span>
+                <div class="le-nm-shop-sign">Growing Garden</div>
+                <span aria-hidden="true">${qcIcon("can", 48)}</span>
+              </div>
+              <div class="le-nm-qc-garden-tools" aria-hidden="true">
+                ${qcIcon("tool", 40)}${qcIcon("seed", 40)}${qcIcon("butterfly", 44)}${qcIcon("plant", 40)}${qcIcon("pot", 40)}
+              </div>
+              <div class="le-nm-qc-beds">
+                <button type="button" class="le-nm-qc-bed" id="leQcBedA" data-side="a" aria-label="Garden A">
+                  <p>Garden A <span class="le-nm-qc-pot-ico">${qcIcon("pot", 30)}</span></p>
+                  <div class="le-nm-qc-flowers" id="leQcFlowersA"></div>
+                </button>
+                <button type="button" class="le-nm-qc-bed" id="leQcBedB" data-side="b" aria-label="Garden B">
+                  <p>Garden B <span class="le-nm-qc-pot-ico">${qcIcon("pot", 30)}</span></p>
+                  <div class="le-nm-qc-flowers" id="leQcFlowersB"></div>
+                </button>
+              </div>
+            </div>
+            <p class="le-nm-tap-hint" id="leQcGrowHint">Flowers are sprouting…</p>
+          </div>`;
+        const boxA = stageEl.querySelector("#leQcFlowersA");
+        const boxB = stageEl.querySelector("#leQcFlowersB");
+        const hint = stageEl.querySelector("#leQcGrowHint");
+        choicesEl.innerHTML = "";
+
+        function paint(box, count, grown) {
+          box.innerHTML = Array.from({ length: count }, (_, i) =>
+            `<span class="le-nm-qc-flower${grown ? " is-grown" : ""}" aria-hidden="true">${qcIcon("flower", grown ? 48 : 34, i % 3)}</span>`
+          ).join("");
+        }
+        paint(boxA, a, false);
+        paint(boxB, b, false);
+
+        setTimeout(() => {
+          paint(boxA, growA, true);
+          paint(boxB, growB, true);
+          stageEl.querySelectorAll(".le-nm-qc-flower.is-grown").forEach((f, i) => {
+            setTimeout(() => qcBounce(f), i * 40);
+          });
+          snd.pop();
+          const askMore = growA !== growB;
+          if (askMore) {
+            promptEl.textContent = "Which garden has more flowers now?";
+            say("Which garden has more?");
+            hint.textContent = "Tap the garden with more flowers";
+            const answer = growA > growB ? "a" : "b";
+            stageEl.querySelectorAll(".le-nm-qc-bed").forEach((bed) => {
+              bed.classList.add("is-pickable");
+              bed.addEventListener("click", () => {
+                if (locked) return;
+                if (bed.getAttribute("data-side") === answer) {
+                  confetti(10);
+                  onCorrect("More flowers!");
+                } else onWrong("Count again — which has more?");
+              });
+            });
+          } else {
+            promptEl.textContent = "They grew the same! How many in each?";
+            say("How many in each garden?");
+            hint.textContent = "Both gardens match";
+            renderChoices(uniqueNumsNear(growA, min, max, 3).map(v => ({ label: v, value: v })), growA);
+          }
+        }, 900);
+      }
+
+      /** 5) Aquarium Inspector — colourful sea life in two tanks */
+      function buildAquariumRound() {
+        const { min, max } = qcRange();
+        let left = randInt(min, Math.min(max, 9));
+        let right = randInt(min, Math.min(max, 9));
+        while (left === right) right = randInt(min, Math.min(max, 9));
+        wrongTries = 0;
+        const ask = Math.random() > 0.45 ? "more" : "less";
+        promptEl.textContent = ask === "more"
+          ? "Which tank has more fish?"
+          : "Which tank has fewer fish?";
+        say(promptEl.textContent);
+        const seaDecor = ["starfish", "turtle", "jellyfish", "coral", "seaweed", "rock", "bubble"];
+        function tankHtml(id, count) {
+          const decor = seaDecor.map((k, i) =>
+            `<span class="le-nm-qc-decor is-${k}" aria-hidden="true">${qcIcon(k, k === "bubble" ? 18 : 30)}</span>`
+          ).join("");
+          const fish = Array.from({ length: count }, (_, i) => {
+            const leftPos = 8 + (i % 3) * 28 + (i % 2) * 4;
+            const topPos = 10 + Math.floor(i / 3) * 34 + (i % 2) * 6;
+            return `<span class="le-nm-qc-fish" style="left:${leftPos}%;top:${topPos}%" aria-hidden="true">${qcIcon("fish", 44, i % 6)}</span>`;
+          }).join("");
+          return `<button type="button" class="le-nm-qc-tank" data-side="${id}" aria-label="tank ${id}">
+            <span class="le-nm-qc-water">${decor}${fish}</span>
+            <span class="le-nm-qc-tank-label">Tank ${id.toUpperCase()}</span>
+          </button>`;
+        }
+        stageEl.innerHTML = `
+          <div class="le-nm-qc le-nm-qc-aqua">
+            <div class="le-nm-qc-scene is-aqua">
+              <div class="le-nm-qc-scene-top">
+                <span aria-hidden="true">${qcIcon("turtle", 44)}</span>
+                <div class="le-nm-shop-sign">Aquarium</div>
+                <span aria-hidden="true">${qcIcon("jellyfish", 44)}</span>
+              </div>
+              <div class="le-nm-qc-tanks">
+                ${tankHtml("a", left)}
+                ${tankHtml("b", right)}
+              </div>
+            </div>
+            <p class="le-nm-tap-hint">Tap the tank that matches the question</p>
+          </div>`;
+        const answer = ask === "more"
+          ? (left > right ? "a" : "b")
+          : (left < right ? "a" : "b");
+        stageEl.querySelectorAll(".le-nm-qc-tank").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (locked) return;
+            qcBounce(btn);
+            if (btn.getAttribute("data-side") === answer) {
+              confetti(10);
+              onCorrect("Great comparing!");
+            } else onWrong("Look at both tanks again!");
+          });
+        });
+        choicesEl.innerHTML = "";
+      }
+
+      /** 6) Birthday Party Planner — balloons + party decorations */
+      function buildPartyRound() {
+        const { min, max, hardMax } = qcRange();
+        const PARTY = [
+          { id: "balloon", singular: "balloon", plural: "balloons", speak: "balloon" },
+          { id: "cupcake", singular: "cupcake", plural: "cupcakes", speak: "cupcake" },
+          { id: "gift", singular: "gift", plural: "gifts", speak: "gift" },
+          { id: "hat", singular: "party hat", plural: "party hats", speak: "hat" },
+        ];
+        const wanted = PARTY[Math.random() > 0.55 ? 0 : randInt(0, PARTY.length - 1)];
+        const need = randInt(min, max);
+        const distractors = randInt(2, 4);
+        const pool = [];
+        for (let i = 0; i < need; i++) pool.push(wanted.id);
+        for (let i = 0; i < distractors; i++) {
+          let other = PARTY[randInt(0, PARTY.length - 1)].id;
+          while (other === wanted.id) other = PARTY[randInt(0, PARTY.length - 1)].id;
+          pool.push(other);
+        }
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = randInt(0, i);
+          const tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+        }
+        let hung = 0;
+        wrongTries = 0;
+        const orderLabel = need === 1 ? wanted.singular : wanted.plural;
+        promptEl.textContent = "Hang " + need + " " + orderLabel + " for the party!";
+        say("Hang " + nameOf(need) + " " + wanted.speak + (need > 1 ? "s" : ""));
+        stageEl.innerHTML = `
+          <div class="le-nm-qc le-nm-qc-party">
+            <div class="le-nm-qc-scene is-party">
+              <div class="le-nm-qc-scene-top">
+                <span aria-hidden="true">${qcIcon("cake", 48)}</span>
+                <div class="le-nm-shop-sign">Birthday Party</div>
+                <span aria-hidden="true">${qcIcon("ribbon", 48)}</span>
+              </div>
+              <div class="le-nm-qc-party-decor" aria-hidden="true">
+                ${["cake", "cupcake", "gift", "candle", "hat", "ribbon"].map((k) =>
+                  `<span class="le-nm-qc-party-extra">${qcIcon(k, 46)}</span>`
+                ).join("")}
+              </div>
+              <div class="le-nm-shop-bubble le-nm-qc-order-bubble">
+                ${qcIcon(wanted.id, 44, 0)}
+                <strong>× ${need}</strong>
+              </div>
+              <div class="le-nm-qc-string" id="leQcString">
+                <span class="le-nm-qc-party-count" id="leQcHung">0 / ${need}</span>
+              </div>
+              <div class="le-nm-qc-balloon-pool" id="leQcBalloons">
+                ${pool.map((k, i) =>
+                  `<button type="button" class="le-nm-qc-balloon le-nm-qc-obj is-${k} tone-${i % 6}" data-kind="${k}" aria-label="${k}">${qcIcon(k, 70, i % 6)}</button>`
+                ).join("")}
+              </div>
+            </div>
+            <p class="le-nm-tap-hint">Tap the matching ${wanted.plural} to hang them up</p>
+          </div>`;
+        const stringEl = stageEl.querySelector("#leQcString");
+        const hungEl = stageEl.querySelector("#leQcHung");
+        stageEl.querySelectorAll("#leQcBalloons .le-nm-qc-balloon").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (locked || btn.classList.contains("is-used") || hung >= need) return;
+            const kind = btn.getAttribute("data-kind");
+            if (kind !== wanted.id) {
+              snd.wrong();
+              btn.classList.add("is-shake");
+              setTimeout(() => btn.classList.remove("is-shake"), 400);
+              onWrong("Find the " + wanted.speak + "!");
+              return;
+            }
+            const tone = Number(btn.className.match(/tone-(\d+)/)?.[1] || hung % 6);
+            btn.classList.add("is-used");
+            hung++;
+            hungEl.textContent = hung + " / " + need;
+            const b = document.createElement("span");
+            b.className = "le-nm-qc-balloon is-hung is-" + kind;
+            b.innerHTML = qcIcon(kind, 40, tone);
+            stringEl.appendChild(b);
+            qcBounce(b);
+            snd.pop();
+            say(nameOf(hung));
+            if (hung === need) {
+              confetti(12);
+              promptEl.textContent = "Party time! How many " + wanted.plural + "?";
+              say("How many " + wanted.speak + "s?");
+              renderChoices(uniqueNumsNear(need, min, hardMax, 3).map(v => ({ label: v, value: v })), need);
+            }
+          });
+        });
+        choicesEl.innerHTML = "";
+      }
+
       function buildRound() {
         clearBoard();
         const type = sub.type;
@@ -1861,6 +2525,13 @@
         if (type === "cq_tap") { buildCqTapRound(); return; }
         if (type === "cq_around") { buildAroundRound(); return; }
         if (type === "cq_sounds") { buildSoundsRound(); return; }
+
+        if (type === "qc_toys") { buildToyShopRound(); return; }
+        if (type === "qc_parking") { buildParkingRound(); return; }
+        if (type === "qc_picnic") { buildPicnicRound(); return; }
+        if (type === "qc_garden") { buildGrowGardenRound(); return; }
+        if (type === "qc_aquarium") { buildAquariumRound(); return; }
+        if (type === "qc_party") { buildPartyRound(); return; }
 
         if (type === "nt_guided" || type === "nt_follow" || type === "nt_complete" || type === "nt_freehand" || type === "trace") {
           buildNumberTraceRound(type === "trace" ? "nt_guided" : type);

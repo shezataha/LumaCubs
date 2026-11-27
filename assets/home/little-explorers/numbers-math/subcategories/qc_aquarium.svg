@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+
+<defs>
+  <linearGradient id="bgqcaqua" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#EAF4FF"/>
+    <stop offset="100%" stop-color="#C8E0F8"/>
+  </linearGradient>
+  <filter id="shqcaqua" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="3" stdDeviation="2.2" flood-color="#5B4A7A" flood-opacity="0.18"/>
+  </filter>
+</defs>
+<rect width="256" height="256" rx="56" fill="url(#bgqcaqua)"/>
+<circle cx="48" cy="52" r="10" fill="#fff" opacity="0.35"/>
+<circle cx="210" cy="40" r="7" fill="#fff" opacity="0.28"/>
+<circle cx="222" cy="78" r="5" fill="#fff" opacity="0.22"/>
+<g filter="url(#shqcaqua)"><rect x="36" y="60" width="84" height="120" rx="16" fill="#A8D4F0" opacity="0.55"/><rect x="136" y="60" width="84" height="120" rx="16" fill="#A8D4F0" opacity="0.55"/><ellipse cx="60" cy="100" rx="14" ry="8" fill="#FF8FAB"/><ellipse cx="90" cy="130" rx="14" ry="8" fill="#FFD166"/><ellipse cx="160" cy="110" rx="14" ry="8" fill="#FF8FAB"/><ellipse cx="190" cy="140" rx="14" ry="8" fill="#C9A0FF"/><ellipse cx="175" cy="90" rx="14" ry="8" fill="#7ECDB5"/></g>
+</svg>

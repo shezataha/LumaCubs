@@ -335,6 +335,76 @@ const icons = {
       `<path d="M95 90 L95 170 M95 90 C95 70, 135 70, 135 100 C135 130, 95 130, 95 150" stroke="#7E5FB0" stroke-width="10" fill="none" stroke-linecap="round"/>`
   ),
 
+  qc_toys: card(
+    "qctoys",
+    "#FFF0F4",
+    "#FFE0EA",
+    `<rect x="36" y="168" width="184" height="16" rx="6" fill="#C4956A"/>` +
+      `<circle cx="78" cy="130" r="26" fill="#D4A574"/>` +
+      `<circle cx="62" cy="108" r="10" fill="#D4A574"/>` +
+      `<circle cx="94" cy="108" r="10" fill="#D4A574"/>` +
+      `<circle cx="128" cy="128" r="24" fill="#FF8FAB"/>` +
+      `<rect x="158" y="118" width="42" height="28" rx="8" fill="#E86A8A"/>` +
+      `<circle cx="168" cy="150" r="7" fill="#5B4A7A"/>` +
+      `<circle cx="190" cy="150" r="7" fill="#5B4A7A"/>` +
+      `<rect x="70" y="70" width="116" height="28" rx="14" fill="#FFD166"/>` +
+      `<text x="128" y="90" text-anchor="middle" font-family="Verdana" font-size="14" font-weight="700" fill="#7E5FB0">Toy Shop</text>`
+  ),
+  qc_parking: card(
+    "qcpark",
+    "#EAF4FF",
+    "#C8E0F8",
+    `<rect x="40" y="70" width="70" height="55" rx="10" fill="#FFFCF8" stroke="#A8D4F0" stroke-width="3"/>` +
+      `<rect x="130" y="70" width="70" height="55" rx="10" fill="#FFFCF8" stroke="#A8D4F0" stroke-width="3"/>` +
+      `<rect x="40" y="140" width="70" height="55" rx="10" fill="#EAF8F2" stroke="#7ECDB5" stroke-width="3"/>` +
+      `<ellipse cx="75" cy="168" rx="22" ry="12" fill="#FF8FAB"/>` +
+      `<rect x="130" y="140" width="70" height="55" rx="10" fill="#FFFCF8" stroke="#A8D4F0" stroke-width="3" stroke-dasharray="6 6"/>`
+  ),
+  qc_picnic: card(
+    "qcpic",
+    "#EAF8F2",
+    "#C8F0E0",
+    `<ellipse cx="128" cy="170" rx="90" ry="28" fill="#7ECDB5" opacity="0.45"/>` +
+      `<circle cx="90" cy="150" r="18" fill="#FFFCF8" stroke="#C9A0FF" stroke-width="4"/>` +
+      `<circle cx="128" cy="145" r="18" fill="#FFFCF8" stroke="#C9A0FF" stroke-width="4"/>` +
+      `<circle cx="166" cy="150" r="18" fill="#FFFCF8" stroke="#C9A0FF" stroke-width="4"/>` +
+      `<circle cx="100" cy="95" r="16" fill="#FFD8C2"/>` +
+      `<circle cx="150" cy="95" r="16" fill="#FFD8C2"/>`
+  ),
+  qc_garden: card(
+    "qcgrow",
+    "#EAF8F2",
+    "#C8F0E0",
+    `<rect x="40" y="150" width="80" height="50" rx="14" fill="#7ECDB5" opacity="0.5"/>` +
+      `<rect x="136" y="150" width="80" height="50" rx="14" fill="#7ECDB5" opacity="0.5"/>` +
+      `<circle cx="60" cy="145" r="12" fill="#FFD166"/>` +
+      `<circle cx="88" cy="138" r="12" fill="#FF8FAB"/>` +
+      `<circle cx="160" cy="142" r="12" fill="#FFD166"/>` +
+      `<circle cx="188" cy="136" r="12" fill="#C9A0FF"/>` +
+      `<circle cx="174" cy="160" r="10" fill="#FF8FAB"/>`
+  ),
+  qc_aquarium: card(
+    "qcaqua",
+    "#EAF4FF",
+    "#C8E0F8",
+    `<rect x="36" y="60" width="84" height="120" rx="16" fill="#A8D4F0" opacity="0.55"/>` +
+      `<rect x="136" y="60" width="84" height="120" rx="16" fill="#A8D4F0" opacity="0.55"/>` +
+      `<ellipse cx="60" cy="100" rx="14" ry="8" fill="#FF8FAB"/>` +
+      `<ellipse cx="90" cy="130" rx="14" ry="8" fill="#FFD166"/>` +
+      `<ellipse cx="160" cy="110" rx="14" ry="8" fill="#FF8FAB"/>` +
+      `<ellipse cx="190" cy="140" rx="14" ry="8" fill="#C9A0FF"/>` +
+      `<ellipse cx="175" cy="90" rx="14" ry="8" fill="#7ECDB5"/>`
+  ),
+  qc_party: card(
+    "qcparty",
+    "#F3EEFF",
+    "#E0D4FF",
+    `<ellipse cx="80" cy="100" rx="22" ry="28" fill="#C9A0FF"/>` +
+      `<ellipse cx="128" cy="85" rx="22" ry="28" fill="#FF8FAB"/>` +
+      `<ellipse cx="176" cy="100" rx="22" ry="28" fill="#FFD166"/>` +
+      `<path d="M80 128 L80 170 M128 113 L128 170 M176 128 L176 170" stroke="#7E5FB0" stroke-width="3"/>` +
+      `<rect x="60" y="175" width="136" height="18" rx="8" fill="#FFFCF8" stroke="#C9A0FF" stroke-width="3"/>`
+  ),
   bc_more_less: card(
     "bcml",
     "#FFF0E8",
