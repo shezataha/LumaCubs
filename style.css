@@ -5316,11 +5316,259 @@ body.le-nm-tracing {
   background:
     radial-gradient(circle at 70% 12%, rgba(255,255,255,0.45), transparent 30%),
     linear-gradient(180deg, #EAF8F2 0%, #C8F0E0 50%, #A8E0C8 100%);
+  width: min(100%, 500px);
 }
+.le-nm-g-order {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px auto 10px;
+  padding: 8px 14px;
+  border-radius: 18px;
+  background: rgba(255,252,248,0.92);
+  box-shadow: 0 4px 12px rgba(74,68,88,0.1);
+  font-weight: 900;
+  color: #2F7A5B;
+}
+.le-nm-g-order .le-nm-qc-ico { max-width: 44px; max-height: 44px; }
+.le-nm-g-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+.le-nm-g-item {
+  width: 72px;
+  height: 72px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255,252,248,0.92);
+  box-shadow: 0 4px 0 rgba(74,68,88,0.12);
+  cursor: grab;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  transition: transform 0.14s ease, opacity 0.18s ease;
+}
+.le-nm-g-item .le-nm-qc-ico { max-width: 64px; max-height: 64px; }
+.le-nm-g-item.is-selected {
+  outline: 3px solid #7E5FB0;
+  transform: translateY(-4px) scale(1.05);
+}
+.le-nm-g-item.is-used { opacity: 0.25; pointer-events: none; }
+.le-nm-g-item.is-shake { animation: leNmShopShake 0.4s ease; }
+.le-nm-g-plots,
+.le-nm-g-spots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 6px 0;
+}
+.le-nm-g-plot,
+.le-nm-g-spot {
+  position: relative;
+  width: 72px;
+  min-height: 78px;
+  border: 2px dashed rgba(47,122,91,0.35);
+  border-radius: 16px;
+  background: rgba(255,252,248,0.65);
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+.le-nm-g-plot.is-full,
+.le-nm-g-spot.is-full {
+  border-style: solid;
+  border-color: #7ECDB5;
+  background: #EAF8F2;
+}
+.le-nm-g-plot .le-nm-qc-ico,
+.le-nm-g-spot .le-nm-qc-ico { max-width: 48px; max-height: 40px; filter: none; }
+.le-nm-g-plot-slot {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.le-nm-g-spot-num {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(47,122,91,0.55);
+}
+.le-nm-g-placed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -8px;
+}
+.le-nm-g-placed .le-nm-qc-ico { max-width: 36px; max-height: 34px; }
+.le-nm-g-count {
+  font-weight: 900;
+  color: #2F7A5B;
+  margin-top: 6px;
+}
+.le-nm-g-can-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.le-nm-g-can {
+  width: 72px;
+  height: 72px;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(255,252,248,0.95);
+  box-shadow: 0 4px 0 rgba(74,68,88,0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.le-nm-g-can.is-selected { outline: 3px solid #7EB8E0; }
+.le-nm-g-can .le-nm-qc-ico { max-width: 64px; max-height: 64px; }
+.le-nm-g-thirsty-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.le-nm-g-thirsty {
+  width: 70px;
+  height: 92px;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  cursor: pointer;
+  opacity: 0.55;
+  filter: saturate(0.55);
+  transition: opacity 0.2s ease, filter 0.2s ease, transform 0.15s ease;
+}
+.le-nm-g-thirsty.is-watered {
+  opacity: 1;
+  filter: none;
+}
+.le-nm-g-thirsty.is-dim { opacity: 0.28; pointer-events: none; }
+.le-nm-g-thirsty.is-watering-anim { animation: leNmQcWater 0.45s ease; }
+.le-nm-g-thirsty-top .le-nm-qc-ico { max-width: 52px; max-height: 52px; }
+.le-nm-g-thirsty-pot .le-nm-qc-ico { max-width: 40px; max-height: 36px; filter: none; }
+.le-nm-g-basket,
+.le-nm-g-flowerbed {
+  min-height: 88px;
+  width: min(100%, 340px);
+  margin: 6px auto;
+  border-radius: 20px;
+  border: 3px dashed rgba(47,122,91,0.35);
+  background: linear-gradient(180deg, #FFFCF8, #EAF8F2);
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.le-nm-g-flowerbed { background: linear-gradient(180deg, #FFF8E8, #EAF8F2); }
+.le-nm-g-basket-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  width: 100%;
+}
+.le-nm-g-caught { width: 36px; height: 36px; display: inline-flex; }
+.le-nm-g-caught .le-nm-qc-ico { max-width: 36px; max-height: 36px; }
+.le-nm-g-potstack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.le-nm-g-potstack .le-nm-qc-ico { max-width: 40px; max-height: 36px; }
+.le-nm-g-stage-rail {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.le-nm-g-stage-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255,252,248,0.55);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.45;
+}
+.le-nm-g-stage-dot.is-on {
+  opacity: 1;
+  background: #FFFCF8;
+  box-shadow: 0 0 0 3px rgba(126,205,181,0.45);
+}
+.le-nm-g-stage-dot .le-nm-qc-ico { max-width: 28px; max-height: 28px; }
+.le-nm-g-growrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  min-height: 70px;
+  margin: 8px 0;
+}
+.le-nm-g-growcell {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgba(255,252,248,0.9);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.le-nm-g-growcell .le-nm-qc-ico { max-width: 56px; max-height: 56px; }
+.le-nm-g-growbtn {
+  min-width: 120px;
+  min-height: 48px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #FFD166, #FFB84A);
+  color: #7E5FB0;
+  font-weight: 900;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(232,184,74,0.45);
+}
+.le-nm-g-growbtn:disabled {
+  opacity: 0.7;
+  cursor: default;
+  background: #7ECDB5;
+  color: #fff;
+  box-shadow: none;
+}
+.le-nm-g-choice {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 88px;
+}
+.le-nm-g-choice .le-nm-qc-ico { max-width: 44px; max-height: 44px; }
+.le-nm-g-choice span { font-size: 13px; }
 .le-nm-qc-scene.is-aqua {
   background:
-    radial-gradient(circle at 30% 10%, rgba(255,255,255,0.5), transparent 30%),
-    linear-gradient(180deg, #EAF4FF 0%, #A8D4F0 55%, #7EB8E0 100%);
+    radial-gradient(circle at 20% 12%, rgba(255,255,255,0.45), transparent 28%),
+    radial-gradient(circle at 80% 30%, rgba(168,212,240,0.35), transparent 35%),
+    linear-gradient(180deg, #D6EFFF 0%, #7EB8E0 48%, #3F8FB5 100%);
+  width: min(100%, 520px);
 }
 .le-nm-qc-scene.is-party {
   background:
@@ -5338,7 +5586,8 @@ body.le-nm-tracing {
   margin: 6px auto 10px;
   width: fit-content;
 }
-.le-nm-qc-garden-tools {
+.le-nm-qc-garden-tools,
+.le-nm-qc-garden-shelf {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -5348,6 +5597,139 @@ body.le-nm-tracing {
 .le-nm-qc-garden-tools .le-nm-qc-ico {
   max-width: 40px;
   max-height: 40px;
+}
+.le-nm-qc-tool-chip {
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255,252,248,0.9);
+  box-shadow: 0 3px 0 rgba(74,68,88,0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+.le-nm-qc-tool-chip .le-nm-qc-ico {
+  max-width: 46px;
+  max-height: 46px;
+}
+.le-nm-qc-tool-chip.is-can.is-selected {
+  outline: 3px solid #7EB8E0;
+  transform: translateY(-2px);
+}
+.le-nm-qc-plant {
+  position: relative;
+  width: 58px;
+  height: 78px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.le-nm-qc-plant-bloom {
+  display: block;
+  width: 52px;
+  height: 52px;
+  line-height: 0;
+  z-index: 1;
+}
+.le-nm-qc-plant-bloom .le-nm-qc-ico {
+  max-width: 52px;
+  max-height: 52px;
+}
+.le-nm-qc-plant-pot {
+  display: block;
+  width: 40px;
+  height: 36px;
+  margin-top: -10px;
+  z-index: 0;
+}
+.le-nm-qc-plant-pot .le-nm-qc-ico {
+  max-width: 40px;
+  max-height: 36px;
+  filter: none;
+}
+.le-nm-qc-plant.is-seed .le-nm-qc-plant-bloom {
+  width: 34px;
+  height: 34px;
+  opacity: 0.85;
+}
+.le-nm-qc-plant.is-seed .le-nm-qc-plant-bloom .le-nm-qc-ico {
+  max-width: 34px;
+  max-height: 34px;
+}
+.le-nm-qc-plant.is-grown.is-counted {
+  transform: translateY(-6px) scale(1.06);
+  filter: drop-shadow(0 6px 8px rgba(126,95,176,0.3));
+}
+.le-nm-qc-soil {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  height: 18px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #C9845A, #8B5A2B);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.2);
+  pointer-events: none;
+}
+.le-nm-qc-bed-label {
+  position: relative;
+  z-index: 1;
+  font-weight: 900;
+  color: #2F7A5B;
+  margin-bottom: 4px;
+}
+.le-nm-qc-bed-hint {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(47,122,91,0.75);
+}
+.le-nm-qc-bed.is-waterable {
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(126,205,181,0.35);
+}
+.le-nm-qc-bed.is-watering {
+  animation: leNmQcWater 0.5s ease;
+}
+@keyframes leNmQcWater {
+  0%, 100% { filter: none; }
+  40% { filter: brightness(1.08) saturate(1.15); }
+  50% { background: linear-gradient(180deg, #D8F6FF, #C8F0E0); }
+}
+.le-nm-qc-bed.is-bloomed {
+  background: linear-gradient(180deg, #FFFCF8, #EAF8F2 55%, #D8F0C8);
+}
+.le-nm-qc-butterflies {
+  display: none;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+.le-nm-qc-butterflies.is-show {
+  display: flex;
+  animation: leNmQcPop 0.4s ease;
+}
+.le-nm-qc-butterflies .le-nm-qc-ico {
+  max-width: 40px;
+  max-height: 40px;
+  animation: leNmQcFlutter 2.2s ease-in-out infinite;
+}
+.le-nm-qc-butterflies .le-nm-qc-ico:nth-child(2) { animation-delay: 0.35s; }
+.le-nm-qc-butterflies .le-nm-qc-ico:nth-child(3) { animation-delay: 0.7s; }
+@keyframes leNmQcFlutter {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-8px) rotate(6deg); }
 }
 .le-nm-qc-obj.is-pop,
 .le-nm-qc-flower.is-pop,
@@ -5418,18 +5800,18 @@ body.le-nm-tracing {
   display: block;
   width: 100%;
   height: 100%;
-  max-width: 72px;
-  max-height: 72px;
+  max-width: 80px;
+  max-height: 80px;
   margin: 0 auto;
-  filter: drop-shadow(0 4px 0 rgba(74,68,88,0.14));
+  filter: drop-shadow(0 5px 0 rgba(74,68,88,0.16));
   pointer-events: none;
 }
 .le-nm-qc-obj,
 .le-nm-qc-supply-item,
 .le-nm-qc-balloon,
 .le-nm-qc-car {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   border: 0;
   border-radius: 18px;
   cursor: pointer;
@@ -5747,16 +6129,18 @@ body.le-nm-tracing {
   margin: 0 auto;
 }
 .le-nm-qc-bed {
-  border-radius: 20px;
-  padding: 10px;
-  background: linear-gradient(180deg, #FFFCF8, #EAF8F2);
+  position: relative;
+  border-radius: 22px;
+  padding: 10px 8px 28px;
+  background: linear-gradient(180deg, #FFFCF8, #EAF8F2 60%, #E0D0B8);
   border: 0;
-  min-height: 148px;
+  min-height: 190px;
   width: 100%;
   cursor: default;
   box-shadow: inset 0 0 0 2px rgba(255,255,255,0.7);
+  overflow: hidden;
 }
-.le-nm-qc-bed.is-pickable { cursor: pointer; box-shadow: 0 0 0 3px rgba(126,95,176,0.2); }
+.le-nm-qc-bed.is-pickable { cursor: pointer; box-shadow: 0 0 0 3px rgba(126,95,176,0.28); }
 .le-nm-qc-bed p {
   margin: 0 0 8px;
   font-weight: 800;
@@ -5772,11 +6156,15 @@ body.le-nm-tracing {
   height: 28px;
 }
 .le-nm-qc-flowers {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px 6px;
   justify-content: center;
-  min-height: 56px;
+  align-items: flex-end;
+  min-height: 96px;
+  padding-bottom: 6px;
 }
 .le-nm-qc-flower {
   width: 36px;
@@ -5804,6 +6192,197 @@ body.le-nm-tracing {
   max-width: 48px;
   max-height: 48px;
 }
+.le-nm-aqua-clipboard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 4px auto 10px;
+  padding: 8px 14px;
+  width: fit-content;
+  border-radius: 18px;
+  background: rgba(255,252,248,0.92);
+  box-shadow: 0 4px 12px rgba(74,68,88,0.12);
+  font-weight: 800;
+  color: #3F5A7A;
+  text-align: left;
+}
+.le-nm-aqua-clipboard strong {
+  display: block;
+  color: #7E5FB0;
+  font-size: 15px;
+}
+.le-nm-aqua-clipboard span {
+  display: block;
+  font-size: 12px;
+  opacity: 0.85;
+}
+.le-nm-aqua-clipboard .le-nm-qc-ico {
+  max-width: 48px;
+  max-height: 48px;
+}
+.le-nm-aqua-zones {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .le-nm-aqua-zones {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+.le-nm-aqua-zone {
+  position: relative;
+  border: 0;
+  border-radius: 20px;
+  padding: 0;
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 6px 0 rgba(74,68,88,0.12);
+  background: linear-gradient(180deg, #EAF4FF, #7EB8E0);
+  width: 100%;
+  cursor: default;
+}
+.le-nm-aqua-zone.is-reef {
+  background: linear-gradient(180deg, #E8FFF6, #7ECDB5 70%, #4F9B78);
+}
+.le-nm-aqua-zone.is-lagoon {
+  background: linear-gradient(180deg, #EAF4FF, #7EB8E0 65%, #4A8FB8);
+}
+.le-nm-aqua-zone.is-cave {
+  background: linear-gradient(180deg, #E8E0F5, #8A7A9A 55%, #5B4A7A);
+}
+.le-nm-aqua-zone.is-pickable {
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+.le-nm-aqua-zone.is-pickable:hover,
+.le-nm-aqua-zone.is-pickable:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 0 0 3px rgba(255,209,102,0.55), 0 8px 0 rgba(74,68,88,0.12);
+}
+.le-nm-aqua-zones.is-compare .le-nm-aqua-critter {
+  pointer-events: none;
+}
+.le-nm-aqua-zone-title {
+  position: relative;
+  z-index: 2;
+  padding: 6px 8px;
+  font-weight: 900;
+  font-size: 13px;
+  color: #2F4A60;
+  background: rgba(255,255,255,0.55);
+}
+.le-nm-aqua-zone.is-cave .le-nm-aqua-zone-title { color: #3D3550; }
+.le-nm-aqua-zone-water {
+  position: relative;
+  min-height: 150px;
+  padding: 8px 6px 12px;
+}
+.le-nm-aqua-decor {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 32px;
+  height: 32px;
+}
+.le-nm-aqua-decor .le-nm-qc-ico {
+  max-width: 100%;
+  max-height: 100%;
+  filter: none;
+}
+.le-nm-aqua-decor.is-coral.d0 { left: 4%; bottom: 4%; width: 36px; height: 38px; }
+.le-nm-aqua-decor.is-seaweed.d1,
+.le-nm-aqua-decor.is-seaweed.d0 { right: 6%; bottom: 2%; width: 34px; height: 40px; }
+.le-nm-aqua-decor.is-pebble { left: 30%; bottom: 6%; width: 28px; height: 22px; }
+.le-nm-aqua-decor.is-rock { right: 28%; bottom: 4%; width: 30px; height: 26px; }
+.le-nm-aqua-decor.is-bubble.d3,
+.le-nm-aqua-decor.is-bubble.d4 { left: 55%; top: 10%; width: 18px; height: 18px; }
+.le-nm-aqua-decor.is-bubble.d2 { left: 70%; top: 28%; width: 14px; height: 14px; }
+.le-nm-aqua-decor.is-shell { left: 12%; top: 18%; width: 28px; height: 28px; }
+.le-nm-aqua-decor.is-cave { left: 8%; bottom: 8%; width: 44px; height: 44px; }
+.le-nm-aqua-decor.is-treasure { right: 10%; bottom: 10%; width: 40px; height: 40px; }
+.le-nm-aqua-critters {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  min-height: 120px;
+}
+.le-nm-aqua-critter {
+  width: 64px;
+  height: 64px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255,252,248,0.88);
+  box-shadow: 0 4px 0 rgba(74,68,88,0.12);
+  cursor: grab;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  touch-action: none;
+  transition: transform 0.14s ease, opacity 0.18s ease, filter 0.18s ease;
+}
+.le-nm-aqua-critter .le-nm-qc-ico {
+  max-width: 58px;
+  max-height: 58px;
+}
+.le-nm-aqua-critter:active { cursor: grabbing; transform: scale(0.95); }
+.le-nm-aqua-critter.is-selected {
+  transform: translateY(-5px) scale(1.06);
+  outline: 3px solid #FFD166;
+}
+.le-nm-aqua-critter.is-dragging { opacity: 0.55; transform: scale(1.08); }
+.le-nm-aqua-critter.is-used { opacity: 0.22; pointer-events: none; filter: grayscale(0.25); }
+.le-nm-aqua-critter.is-shake { animation: leNmShopShake 0.4s ease; }
+.le-nm-aqua-net {
+  margin-top: 10px;
+  min-height: 84px;
+  border-radius: 22px;
+  border: 3px dashed rgba(255,255,255,0.65);
+  background:
+    linear-gradient(180deg, rgba(255,252,248,0.9), rgba(168,212,240,0.55));
+  padding: 8px 10px 12px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.le-nm-aqua-net.is-over {
+  border-style: solid;
+  border-color: #FFD166;
+  background: #EAF8F2;
+}
+.le-nm-aqua-net.is-done {
+  border-style: solid;
+  border-color: #7ECDB5;
+  box-shadow: 0 0 0 4px rgba(126,205,181,0.3);
+}
+.le-nm-aqua-net-label {
+  display: block;
+  font-weight: 900;
+  color: #3F5A7A;
+  margin-bottom: 4px;
+}
+.le-nm-aqua-net-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  min-height: 40px;
+}
+.le-nm-aqua-caught {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+}
+.le-nm-aqua-caught .le-nm-qc-ico {
+  max-width: 40px;
+  max-height: 40px;
+}
+/* legacy tank helpers kept for safety */
 .le-nm-qc-tanks {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -5840,35 +6419,12 @@ body.le-nm-tracing {
   box-shadow: none;
   z-index: 2;
 }
-.le-nm-qc-fish .le-nm-qc-ico {
-  max-width: 40px;
-  max-height: 40px;
-}
 .le-nm-qc-decor {
   position: absolute;
   z-index: 1;
   pointer-events: none;
   width: 30px;
   height: 30px;
-}
-.le-nm-qc-decor .le-nm-qc-ico {
-  max-width: 100%;
-  max-height: 100%;
-  filter: none;
-}
-.le-nm-qc-decor.is-seaweed { left: 2%; bottom: 2%; width: 34px; height: 40px; }
-.le-nm-qc-decor.is-rock { right: 6%; bottom: 2%; width: 30px; height: 28px; }
-.le-nm-qc-decor.is-coral { left: 18%; bottom: 0; width: 32px; height: 34px; }
-.le-nm-qc-decor.is-starfish { right: 22%; bottom: 8%; width: 28px; height: 28px; }
-.le-nm-qc-decor.is-turtle { left: 40%; bottom: 4%; width: 34px; height: 30px; opacity: 0.9; }
-.le-nm-qc-decor.is-jellyfish { right: 8%; top: 8%; width: 30px; height: 36px; opacity: 0.85; }
-.le-nm-qc-decor.is-bubble { left: 58%; top: 12%; width: 18px; height: 18px; }
-.le-nm-qc-tank-label {
-  display: block;
-  padding: 6px;
-  font-weight: 800;
-  color: #4A6280;
-  background: rgba(255,255,255,0.55);
 }
 .le-nm-qc-party-decor {
   display: flex;
@@ -5921,8 +6477,8 @@ body.le-nm-tracing {
   .le-nm-qc-balloon,
   .le-nm-qc-car,
   .le-nm-shop-toy {
-    width: 64px;
-    height: 64px;
+    width: 72px;
+    height: 72px;
   }
   .le-nm-qc-beds,
   .le-nm-qc-tanks { width: 100%; }
