@@ -136,10 +136,10 @@
         { id: "ns_journey_1_10", title: "Number Journey 1–10", level: "A", type: "ns_train", min: 1, max: 10, blurb: "Build the magical number train!", art: SUB_ART + "ns_journey_1_10.jpg" },
         { id: "ns_journey_11_20", title: "Number Journey 11–20", level: "A", type: "ns_balloons", min: 11, max: 20, blurb: "Order the sky balloons!", art: SUB_ART + "ns_journey_11_20.jpg" },
         { id: "ns_journey_21_30", title: "Number Journey 21–30", level: "B", type: "ns_ocean", min: 21, max: 30, blurb: "Collect ocean treasure numbers!", art: SUB_ART + "ns_journey_21_30.jpg" },
-        { id: "ns_missing_mystery", title: "Missing Number Mystery", level: "A", type: "ns_mystery", min: 1, max: 20, blurb: "Solve the clue board mysteries!", art: SUB_ART + "ns_missing_mystery.jpg" },
+        { id: "ns_missing_mystery", title: "Missing Number Mystery", level: "A", type: "ns_mystery", min: 1, max: 20, blurb: "8 detective cases to find missing numbers!", art: SUB_ART + "ns_missing_mystery.jpg" },
         { id: "ns_neighbours", title: "Before, Between & After", level: "A", type: "ns_neighbours", min: 1, max: 20, blurb: "Find number neighbours in the village!", art: SUB_ART + "ns_neighbours.jpg" },
         { id: "ns_asc_desc", title: "Ascending & Descending Adventure", level: "B", type: "ns_mountain", min: 1, max: 20, blurb: "Climb up and slide down with numbers!", art: SUB_ART + "ns_asc_desc.jpg" },
-        { id: "ns_pattern_detective", title: "Number Pattern Detective", level: "B", type: "ns_pattern", min: 1, max: 30, blurb: "Crack the pattern laboratory!", art: SUB_ART + "ns_pattern_detective.jpg" },
+        { id: "ns_pattern_detective", title: "Number Pattern Detective", level: "B", type: "ns_pattern", min: 1, max: 30, blurb: "8 laboratory games to crack number patterns!", art: SUB_ART + "ns_pattern_detective.jpg" },
       ],
     },
     {
@@ -435,7 +435,8 @@
       const isMemory = sub.type === "nr_memory" || sub.type === "match_same";
       const isSorting = /^sg_/.test(sub.type);
       const isNumberSeq = /^ns_/.test(sub.type);
-      const ROUNDS = isExploreOnly ? 1 : (isMemory ? 4 : ((isSorting || isNumberSeq) ? (sub.level === "A" ? 4 : 5) : (sub.level === "A" ? 4 : 5)));
+      const isNsHub = sub.type === "ns_mystery" || sub.type === "ns_pattern";
+      const ROUNDS = isExploreOnly || isNsHub ? 1 : (isMemory ? 4 : ((isSorting || isNumberSeq) ? (sub.level === "A" ? 4 : 5) : (sub.level === "A" ? 4 : 5)));
       let round = 0;
       let score = 0;
       let locked = false;
@@ -3764,7 +3765,7 @@
 
         if (window.LUMACUBS_NS && typeof window.LUMACUBS_NS.createBuilders === "function") {
           if (!page._nsBuilders) {
-            page._nsBuilders = window.LUMACUBS_NS.createBuilders({
+            const nsCtx = {
               stageEl,
               promptEl,
               choicesEl,
@@ -3776,10 +3777,17 @@
               sub,
               getRound: () => round,
               getLocked: () => locked,
+              setLocked: (v) => { locked = !!v; },
               getAgeHubReturn,
               trackPlatformProgress,
               NUMBER_NAMES,
-            });
+              LS,
+              roundEl,
+            };
+            page._nsBuilders = window.LUMACUBS_NS.createBuilders(nsCtx);
+            if (window.LUMACUBS_NS_MP && typeof window.LUMACUBS_NS_MP.createHubs === "function") {
+              Object.assign(page._nsBuilders, window.LUMACUBS_NS_MP.createHubs(nsCtx));
+            }
           }
           if (page._nsBuilders[type]) {
             page._nsBuilders[type]();
