@@ -601,6 +601,31 @@
   let current = "home";
   let ageHubReturn = null; // e.g. "littleExplorers" when browsing from an age dashboard
 
+  function clearAgeHashFromUrl() {
+    try {
+      const hash = String(location.hash || "");
+      if (!/^#age\//i.test(hash)) return;
+      const clean = String(location.pathname || "/") + String(location.search || "");
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState({}, "", clean);
+      } else {
+        location.hash = "";
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function ageHubFromHash(hash) {
+    const raw = String(hash || "").replace(/^#/, "").trim().toLowerCase();
+    if (!raw) return null;
+    const map = {
+      "age/little-explorers": "littleExplorers",
+      "age/curious-learners": "curiousLearners",
+      "age/smart-achievers": "smartAchievers",
+    };
+    const view = map[raw];
+    return view && typeof VIEWS[view] === "function" ? view : null;
+  }
+
   function go(name, arg) {
     token++;
     speakToken++;
@@ -609,6 +634,8 @@
     try { if ("speechSynthesis" in window) speechSynthesis.cancel(); } catch (e) {}
     current = name;
     if (name === "home" || name === "auth") ageHubReturn = null;
+    // Keep the main website URL clean whenever the homepage is shown
+    if (name === "home") clearAgeHashFromUrl();
     screenRoot.innerHTML = "";
     const hideBack = name === "home" || name === "auth" || name === "forgot" || name === "reset"
       || name === "childPicker" || name === "ageDashboard";
@@ -624,6 +651,15 @@
 
   let segmentReturn = null;
   let leMathCatReturn = null;
+
+  // Tapping the LumaCubs title always returns to the welcome homepage
+  titleEl.style.cursor = "pointer";
+  titleEl.title = "LumaCubs home";
+  titleEl.addEventListener("click", () => {
+    if (current === "home") return;
+    snd.pop();
+    go("home");
+  });
 
   backBtn.addEventListener("click", () => {
     snd.pop();
@@ -5187,17 +5223,10 @@
     platformMode = !!(foundationPing && foundationPing.ok);
     await loadCatalogSegments();
 
-    // Prefer home so Learning paths are always visible for guests.
-    // Restored parent+child opens the age dashboard; parent-only opens picker.
+    // Restore any saved session for UI/progress, but do NOT skip the homepage.
+    // The main LumaCubs URL must always open the welcome homepage first.
     if (platformMode) {
-      const restored = await restoreParentSession();
-      if (restored) {
-        updateParentUI();
-        updateSidebarUI();
-        if (parentSession && parentSession.childId) go("ageDashboard");
-        else go("childPicker");
-        return;
-      }
+      await restoreParentSession();
     }
 
     if (serverMode) {
@@ -5215,10 +5244,15 @@
 
     updateParentUI();
     updateSidebarUI();
-    go("home");
-    if (/#age\/little-explorers/i.test(String(location.hash || ""))) {
-      go("littleExplorers");
+
+    // Intentional deep links (e.g. #age/little-explorers) still work.
+    // Plain main URL / refresh without an age hash always lands on homepage.
+    const deepAgeHub = ageHubFromHash(location.hash);
+    if (deepAgeHub) {
+      go(deepAgeHub);
+      return;
     }
+    go("home");
   }
 
   // flush pending progress right before the page is hidden or closed

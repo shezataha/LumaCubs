@@ -78,17 +78,17 @@
       accent: "#DCC8F5",
       art: ART + "basic_number_comparison.jpg",
       subs: [
-        { id: "qc_toys", title: "Toy Shop Challenge", level: "A", type: "qc_toys", min: 1, max: 8, art: SUB_ART + "qc_toys.svg" },
-        { id: "qc_parking", title: "Parking Lot Numbers", level: "A", type: "qc_parking", min: 2, max: 10, art: SUB_ART + "qc_parking.svg" },
-        { id: "qc_picnic", title: "Picnic Preparation", level: "A", type: "qc_picnic", min: 1, max: 8, art: SUB_ART + "qc_picnic.svg" },
-        { id: "qc_g_seeds", title: "Plant the Seeds", level: "A", type: "qc_g_seeds", min: 1, max: 6, art: SUB_ART + "qc_garden.svg" },
-        { id: "qc_g_water", title: "Water the Garden", level: "A", type: "qc_g_water", min: 2, max: 8, art: SUB_ART + "qc_garden.svg" },
-        { id: "qc_g_harvest", title: "Harvest Time", level: "A", type: "qc_g_harvest", min: 1, max: 8, art: SUB_ART + "qc_garden.svg" },
-        { id: "qc_g_visitors", title: "Garden Visitors", level: "B", type: "qc_g_visitors", min: 2, max: 10, art: SUB_ART + "qc_garden.svg" },
-        { id: "qc_g_arrange", title: "Garden Arrangement", level: "B", type: "qc_g_arrange", min: 2, max: 10, art: SUB_ART + "qc_garden.svg" },
-        { id: "qc_g_grow", title: "Watch It Grow", level: "B", type: "qc_g_grow", min: 2, max: 8, art: SUB_ART + "qc_garden.svg" },
-        { id: "qc_aquarium", title: "Aquarium Inspector", level: "B", type: "qc_aquarium", min: 3, max: 20, art: SUB_ART + "qc_aquarium.svg" },
-        { id: "qc_party", title: "Birthday Party Planner", level: "B", type: "qc_party", min: 2, max: 12, art: SUB_ART + "qc_party.svg" },
+        { id: "qc_toys", title: "Toy Shop Challenge", level: "A", type: "qc_toys", min: 1, max: 8, art: SUB_ART + "qc_toys.jpg" },
+        { id: "qc_parking", title: "Parking Lot Numbers", level: "A", type: "qc_parking", min: 2, max: 10, art: SUB_ART + "qc_parking.jpg" },
+        { id: "qc_picnic", title: "Picnic Preparation", level: "A", type: "qc_picnic", min: 1, max: 8, art: SUB_ART + "qc_picnic.jpg" },
+        { id: "qc_g_seeds", title: "Plant the Seeds", level: "A", type: "qc_g_seeds", min: 1, max: 6, art: SUB_ART + "qc_garden.jpg" },
+        { id: "qc_g_water", title: "Water the Garden", level: "A", type: "qc_g_water", min: 2, max: 8, art: SUB_ART + "qc_garden.jpg" },
+        { id: "qc_g_harvest", title: "Harvest Time", level: "A", type: "qc_g_harvest", min: 1, max: 8, art: SUB_ART + "qc_garden.jpg" },
+        { id: "qc_g_visitors", title: "Garden Visitors", level: "B", type: "qc_g_visitors", min: 2, max: 10, art: SUB_ART + "qc_garden.jpg" },
+        { id: "qc_g_arrange", title: "Garden Arrangement", level: "B", type: "qc_g_arrange", min: 2, max: 10, art: SUB_ART + "qc_garden.jpg" },
+        { id: "qc_g_grow", title: "Watch It Grow", level: "B", type: "qc_g_grow", min: 2, max: 8, art: SUB_ART + "qc_garden.jpg" },
+        { id: "qc_aquarium", title: "Aquarium Inspector", level: "B", type: "qc_aquarium", min: 3, max: 20, art: SUB_ART + "qc_aquarium.jpg" },
+        { id: "qc_party", title: "Birthday Party Planner", level: "B", type: "qc_party", min: 2, max: 12, art: SUB_ART + "qc_party.jpg" },
       ],
     },
     {
@@ -382,7 +382,9 @@
             ? "6 unique tracing adventures · tap to play"
             : (cat.id === "basic_number_comparison"
               ? (cat.subs.length + " unique quantity adventures · tap to play")
-              : "Level A (2–3) and Level B (3–4) · tap to play")));
+              : (cat.id === "sorting_grouping"
+                ? "8 unique sorting & grouping mini-games · tap to play"
+                : "Level A (2–3) and Level B (3–4) · tap to play"))));
       wrap.appendChild(el("div", "home-section-label", `
         <h3>Subcategories</h3>
         <p>${catHint}</p>`));
@@ -399,7 +401,7 @@
           </span>
           <span class="subcat-copy">
             <strong>${escapeHtml(sub.title)}</strong>
-            <span>${sub.level === "A" ? "Level A · Early Explorers" : "Level B · Growing Explorers"}</span>
+            <span>${sub.blurb ? escapeHtml(sub.blurb) : (sub.level === "A" ? "Level A · Early Explorers" : "Level B · Growing Explorers")}</span>
             <em class="subcat-soon">${done ? ("★".repeat(Math.min(3, done)) + " done") : "Tap to play"}</em>
           </span>
         `);
@@ -428,13 +430,18 @@
 
       const isExploreOnly = /^(nr_explorer|nr_train|nr_balloons)$/.test(sub.type);
       const isMemory = sub.type === "nr_memory" || sub.type === "match_same";
-      const ROUNDS = isExploreOnly ? 1 : (isMemory ? 4 : (sub.level === "A" ? 4 : 5));
+      const isSorting = /^sg_/.test(sub.type);
+      const ROUNDS = isExploreOnly ? 1 : (isMemory ? 4 : (isSorting ? (sub.level === "A" ? 4 : 5) : (sub.level === "A" ? 4 : 5)));
       let round = 0;
       let score = 0;
       let locked = false;
       let lastSpeak = "";
       let wrongTries = 0;
       let exploreSeen = new Set();
+
+      if (isSorting && typeof trackPlatformProgress === "function") {
+        trackPlatformProgress("le.numbers_math." + sub.id, "started");
+      }
 
       const page = el("div", "le-nm-play");
       page.innerHTML = `
@@ -3725,6 +3732,32 @@
         if (type === "ia_story") { buildIaStoryRound(); return; }
         if (type === "ia_build") { buildIaBuildRound(); return; }
 
+        if (window.LUMACUBS_SG && typeof window.LUMACUBS_SG.createBuilders === "function") {
+          if (!page._sgBuilders) {
+            page._sgBuilders = window.LUMACUBS_SG.createBuilders({
+              stageEl,
+              promptEl,
+              choicesEl,
+              say,
+              onCorrect,
+              onWrong,
+              snd,
+              confetti,
+              qcIcon,
+              qcBounce,
+              sub,
+              getRound: () => round,
+              getLocked: () => locked,
+              getAgeHubReturn,
+              trackPlatformProgress,
+            });
+          }
+          if (page._sgBuilders[type]) {
+            page._sgBuilders[type]();
+            return;
+          }
+        }
+
         if (type === "nt_guided" || type === "nt_follow" || type === "nt_complete" || type === "nt_freehand" || type === "trace") {
           buildNumberTraceRound(type === "trace" ? "nt_guided" : type);
           return;
@@ -4112,6 +4145,9 @@
       const stars = (payload && payload.stars) || 1;
       const score = (payload && payload.score) || 0;
       const rounds = (payload && payload.rounds) || 1;
+      const nextSub = cat && cat.subs && sub
+        ? cat.subs[cat.subs.findIndex((s) => s.id === sub.id) + 1]
+        : null;
       titleEl.textContent = "Well done!";
       const page = el("div", "le-nm-result");
       page.innerHTML = `
@@ -4122,6 +4158,7 @@
           <p>You got ${score} of ${rounds}!</p>
           <div class="le-nm-result-actions">
             <button type="button" class="le-nm-choice le-nm-done" id="leNmAgain">Play again</button>
+            ${nextSub ? `<button type="button" class="le-nm-choice le-nm-done" id="leNmNext">Next: ${escapeHtml(nextSub.title)}</button>` : ""}
             <button type="button" class="le-nm-choice" id="leNmBackCat">More in this category</button>
             <button type="button" class="le-nm-choice" id="leNmBackHub">All math categories</button>
           </div>
@@ -4131,6 +4168,10 @@
       speak("Well done!");
       confetti(16);
       page.querySelector("#leNmAgain").addEventListener("click", () => { snd.pop(); go("leMathPlay", { cat, sub }); });
+      const nextBtn = page.querySelector("#leNmNext");
+      if (nextBtn && nextSub) {
+        nextBtn.addEventListener("click", () => { snd.pop(); go("leMathPlay", { cat, sub: nextSub }); });
+      }
       page.querySelector("#leNmBackCat").addEventListener("click", () => { snd.pop(); go("leMathCat", cat); });
       page.querySelector("#leNmBackHub").addEventListener("click", () => { snd.pop(); go("leNumbersMath"); });
     };
