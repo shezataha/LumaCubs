@@ -3833,6 +3833,116 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   border: 0;
 }
 
+/* ---- Age-wise learning bands (below welcome video) ---- */
+.home-age-learning {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.home-age-band {
+  --band-accent: #FFD8C2;
+  --band-wash: #FFF4EC;
+  position: relative;
+  padding: 20px 16px 18px;
+  border-radius: 32px;
+  background:
+    radial-gradient(ellipse 60% 50% at 8% 0%, rgba(255,255,255,0.75), transparent 55%),
+    linear-gradient(165deg, var(--band-wash), #FFFCF8 60%);
+  border: 1.5px solid rgba(255,255,255,0.95);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+.home-age-band.tone-peach {
+  --band-accent: #FFD8C2;
+  --band-wash: #FFF1E6;
+}
+.home-age-band.tone-mint {
+  --band-accent: #C8F0E0;
+  --band-wash: #EAF8F3;
+}
+.home-age-band.tone-sun {
+  --band-accent: #FFE29A;
+  --band-wash: #FFF6E0;
+}
+
+.home-age-band-head {
+  text-align: center;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+.home-age-band-ages {
+  display: inline-flex;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #5C4F6E;
+  background: color-mix(in srgb, var(--band-accent) 72%, white);
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+.home-age-band-title {
+  margin: 10px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.home-age-band-desc {
+  margin: 8px auto 0;
+  max-width: 42ch;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.home-age-band-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.home-age-band-card {
+  width: 100%;
+}
+
+@media (max-width: 920px) {
+  .home-age-band-grid {
+    grid-template-columns: 1fr;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 700px) and (max-width: 920px) {
+  .home-age-band-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: none;
+  }
+}
+
+@media (max-width: 430px) {
+  .home-age-band {
+    padding: 16px 12px 14px;
+    border-radius: 26px;
+  }
+  .home-age-band-title {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-age-band-card {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 /* ---- Friends ---- */
 .home-friends-row {
   display: grid;
@@ -3988,66 +4098,118 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   --age-accent: #FFD8C2;
   --age-accent-deep: #FFB894;
   --age-wash: #FFF4EC;
+  --age-glow: rgba(255, 184, 148, 0.35);
   position: relative;
   display: flex;
   flex-direction: column;
   text-decoration: none;
   color: inherit;
-  border-radius: 32px;
+  border-radius: 34px;
   overflow: hidden;
-  background: linear-gradient(180deg, var(--age-wash), #FFFCF8 58%);
-  border: 1.5px solid rgba(255, 255, 255, 0.95);
-  box-shadow: var(--shadow-soft);
+  background:
+    radial-gradient(ellipse 80% 55% at 50% -10%, var(--age-glow), transparent 60%),
+    linear-gradient(180deg, #FFFCF8 0%, var(--age-wash) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 14px 32px rgba(74, 68, 88, 0.10),
+    0 2px 0 rgba(255, 255, 255, 0.9) inset;
   cursor: pointer;
   transform: translateY(0) scale(1);
   transition:
-    transform 0.28s var(--spring),
-    box-shadow 0.28s var(--ease),
+    transform 0.32s var(--spring),
+    box-shadow 0.32s var(--ease),
     border-color 0.2s ease;
   animation: tileIn 0.6s var(--spring) both;
   animation-delay: var(--age-card-delay, 0ms);
   -webkit-user-drag: none;
+  isolation: isolate;
+}
+
+.age-home-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,0.55), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(255,255,255,0.28), transparent 22%);
+  opacity: 0.9;
+  z-index: 1;
 }
 
 .age-home-card.tone-peach {
   --age-accent: #FFD8C2;
   --age-accent-deep: #FFB894;
   --age-wash: #FFF1E6;
+  --age-glow: rgba(255, 184, 148, 0.42);
 }
 .age-home-card.tone-mint {
   --age-accent: #C8F0E0;
   --age-accent-deep: #8ED9BE;
   --age-wash: #EAF8F3;
+  --age-glow: rgba(142, 217, 190, 0.35);
+}
+.age-home-card.tone-lilac {
+  --age-accent: #E0D0F5;
+  --age-accent-deep: #C9B1E8;
+  --age-wash: #F5EEFC;
+  --age-glow: rgba(201, 177, 232, 0.45);
+}
+.age-home-card.tone-sky {
+  --age-accent: #C8E8F5;
+  --age-accent-deep: #8EC8E0;
+  --age-wash: #ECF7FC;
+  --age-glow: rgba(142, 200, 224, 0.42);
 }
 .age-home-card.tone-sun {
   --age-accent: #FFE29A;
   --age-accent-deep: #F0C96A;
   --age-wash: #FFF6E0;
+  --age-glow: rgba(240, 201, 106, 0.35);
 }
 
 .age-home-card:hover,
 .age-home-card:focus-visible {
-  transform: translateY(-8px) scale(1.018);
-  box-shadow: var(--shadow-lift);
+  transform: translateY(-10px) scale(1.022);
+  box-shadow:
+    0 22px 44px rgba(74, 68, 88, 0.16),
+    0 0 0 1px color-mix(in srgb, var(--age-accent-deep) 55%, white),
+    0 0 28px var(--age-glow);
   border-color: var(--age-accent-deep);
   outline: none;
 }
 
 .age-home-card:active {
-  transform: translateY(-2px) scale(0.995);
+  transform: translateY(-3px) scale(0.992);
 }
 
 .age-home-card.is-selected {
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 0 0 6px var(--age-accent-deep), var(--shadow-lift);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 0 0 6px var(--age-accent-deep),
+    0 20px 40px rgba(74, 68, 88, 0.14);
 }
 
 .age-home-art {
+  position: relative;
+  z-index: 2;
   display: block;
   aspect-ratio: 4 / 3;
   background:
-    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.7), transparent 45%),
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.55), transparent 42%),
     var(--age-accent);
   overflow: hidden;
+}
+
+.age-home-art::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 28%;
+  background: linear-gradient(180deg, transparent, rgba(255, 252, 248, 0.55));
+  pointer-events: none;
+  z-index: 1;
 }
 
 .age-home-art img {
@@ -4055,16 +4217,20 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
-  transition: transform 0.45s var(--ease);
+  object-position: center 42%;
+  transition: transform 0.55s var(--ease), filter 0.35s ease;
+  filter: saturate(1.05) contrast(1.02);
 }
 
 .age-home-card:hover .age-home-art img,
 .age-home-card:focus-visible .age-home-art img {
-  transform: scale(1.04);
+  transform: scale(1.06);
+  filter: saturate(1.1) contrast(1.04) brightness(1.02);
 }
 
 .age-home-body {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -4083,6 +4249,7 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   background: color-mix(in srgb, var(--age-accent) 70%, white);
   border-radius: 999px;
   padding: 6px 12px;
+  box-shadow: 0 2px 8px rgba(74, 68, 88, 0.06);
 }
 
 .age-home-name {
@@ -4107,16 +4274,17 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   font-weight: 900;
   color: #4A4458;
   background: linear-gradient(180deg, #FFFCF8, var(--age-accent));
-  border: 1.5px solid rgba(255,255,255,0.9);
+  border: 1.5px solid rgba(255,255,255,0.95);
   border-radius: 999px;
-  padding: 10px 16px;
-  box-shadow: 0 4px 12px rgba(74, 68, 88, 0.08);
-  transition: transform 0.2s var(--spring), background 0.2s ease;
+  padding: 11px 18px;
+  box-shadow: 0 6px 14px rgba(74, 68, 88, 0.10);
+  transition: transform 0.22s var(--spring), background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .age-home-card:hover .age-home-cta {
-  transform: translateX(3px);
+  transform: translateX(4px) scale(1.03);
   background: linear-gradient(180deg, #fff, var(--age-accent-deep));
+  box-shadow: 0 8px 18px rgba(74, 68, 88, 0.14);
 }
 
 /* ---- Parent / about ---- */

@@ -643,7 +643,7 @@
       else if (parentSession && parentSession.childId) go("ageDashboard");
       else go("home");
     }
-    else if (current === "littleExplorers") go("home");
+    else if (current === "littleExplorers" || current === "curiousLearners" || current === "smartAchievers") go("home");
     else if (current === "auth") go("home");
     else if (parentSession && parentSession.childId && current !== "ageDashboard") go("ageDashboard");
     else go("home");
@@ -770,7 +770,7 @@
       name: "Little Explorers",
       ages: "2–4 Years",
       description: "A playful first step into colours, numbers, words and everyday discoveries.",
-      illustration: "assets/home/age-groups/little-explorers.svg",
+      illustration: "assets/home/age-groups/little-explorers.jpg",
       tone: "peach",
     },
     {
@@ -779,8 +779,8 @@
       name: "Curious Learners",
       ages: "4–6 Years",
       description: "Explore new ideas, discover patterns and enjoy exciting learning adventures.",
-      illustration: "assets/home/age-groups/curious-learners.svg",
-      tone: "mint",
+      illustration: "assets/home/age-groups/curious-learners.jpg",
+      tone: "lilac",
     },
     {
       id: "smart_achievers",
@@ -788,8 +788,8 @@
       name: "Smart Achievers",
       ages: "6–8 Years",
       description: "Build knowledge, develop thinking skills and take on new learning challenges.",
-      illustration: "assets/home/age-groups/smart-achievers.svg",
-      tone: "sun",
+      illustration: "assets/home/age-groups/smart-achievers.jpg",
+      tone: "sky",
     },
   ];
 
@@ -1081,6 +1081,14 @@
         </div>
       </section>
 
+      <section class="home-ages" id="home-ages" aria-label="Choose your learning adventure">
+        <div class="home-section-head">
+          <h3>Choose Your Learning Adventure</h3>
+          <p>Every child has a magical journey of discovery!</p>
+        </div>
+        <div class="home-age-grid" aria-label="Age learning sections"></div>
+      </section>
+
       <section class="home-friends" id="home-friends" aria-label="Meet our friends">
         <div class="home-section-head">
           <h3>Meet Our Friends</h3>
@@ -1102,22 +1110,6 @@
             <span class="home-friend-hint">Tap me to hop!</span>
           </button>
         </div>
-      </section>
-
-      <section class="home-learn" id="home-learn" aria-label="Discover a world of learning">
-        <div class="home-section-head">
-          <h3>Discover a World of Learning</h3>
-          <p>Every little adventure brings a new discovery!</p>
-        </div>
-        <div class="home-learn-grid" id="homeLearnGrid"></div>
-      </section>
-
-      <section class="home-ages" id="home-ages" aria-label="Choose your learning adventure">
-        <div class="home-section-head">
-          <h3>Choose Your Learning Adventure</h3>
-          <p>Every child has a magical journey of discovery!</p>
-        </div>
-        <div class="home-age-grid" aria-label="Age learning sections"></div>
       </section>
 
       <section class="home-parent" id="home-about" aria-label="Learning made magical">
@@ -1145,43 +1137,13 @@
       </footer>
     `;
 
-    // Learning segment cards (approved LE order)
-    const learnGrid = wrap.querySelector("#homeLearnGrid");
-    LITTLE_EXPLORERS_SEGMENTS.forEach((seg, i) => {
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = "home-learn-card tone-" + seg.tone;
-      card.setAttribute("aria-label", seg.title);
-      card.style.setProperty("--home-learn-delay", (i * 40) + "ms");
-      card.innerHTML = `
-        <span class="home-learn-art">
-          <img
-            src="${escapeHtml(seg.illustration)}"
-            alt="${escapeHtml(seg.title)}"
-            width="480"
-            height="360"
-            loading="lazy"
-            decoding="async"
-            draggable="false"
-            onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='assets/segments/illustrations/_fallback.svg';}"
-          >
-        </span>
-        <span class="home-learn-body">
-          <span class="home-learn-name">${escapeHtml(seg.title)}</span>
-          <span class="home-learn-desc">${escapeHtml(seg.description)}</span>
-        </span>
-      `;
-      card.addEventListener("click", () => {
-        snd.pop();
-        selectHomeAgeSection(HOME_AGE_SECTIONS[0]);
-        trackPlatformProgress("home.learn." + seg.code, "started");
-        openLittleExplorersSegment(seg);
-      });
-      learnGrid.appendChild(card);
-    });
-
-    // Age adventure cards
+    // Age groups only on homepage — segments live inside each age hub
     const grid = wrap.querySelector(".home-age-grid");
+    const AGE_HUB_VIEWS = {
+      little_explorers: "littleExplorers",
+      curious_learners: "curiousLearners",
+      smart_achievers: "smartAchievers",
+    };
     HOME_AGE_SECTIONS.forEach((section, index) => {
       const isSelected = saved && saved.id === section.id;
       const card = document.createElement("a");
@@ -1216,8 +1178,9 @@
         grid.querySelectorAll(".age-home-card").forEach(c => c.classList.remove("is-selected"));
         card.classList.add("is-selected");
         trackPlatformProgress("home.age." + section.id, "started");
-        if (section.id === "little_explorers") {
-          go("littleExplorers");
+        const hub = AGE_HUB_VIEWS[section.id];
+        if (hub && typeof VIEWS[hub] === "function") {
+          go(hub);
           return;
         }
         speak(section.name);
@@ -1276,6 +1239,233 @@
 
   const LITTLE_EXPLORERS_HERO = "assets/home/little-explorers/hero.jpg";
   const LE_ILLUSTRATION_FALLBACK = "assets/segments/illustrations/_fallback.svg";
+
+  /* Age → segment map from backend segment_age_map (hidden placements excluded).
+     Keep exact approved order; do not invent/reorder. */
+  const SEGMENT_AGE_VISIBLE_IDS = Object.freeze({
+    little_explorers: Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
+    curious_learners: Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]),
+    smart_achievers: Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]),
+  });
+
+  const SEGMENT_MASTER_BY_ID = Object.freeze({
+    1:  { code: "numbers_math", title: "Numbers & Math", description: "Let's count and play with numbers!", tone: "peach" },
+    2:  { code: "english_literacy", title: "English Language & Literacy", description: "Discover letters, words and sounds!", tone: "sky" },
+    3:  { code: "urdu_literacy", title: "Urdu Language & Literacy", description: "Explore Urdu letters and words!", tone: "lilac" },
+    4:  { code: "world_around_us", title: "World Around Us", description: "Discover people, places and things!", tone: "mint" },
+    5:  { code: "colors_shapes_patterns", title: "Colors, Shapes & Patterns", description: "Explore colors, shapes and patterns!", tone: "rose" },
+    6:  { code: "music_rhymes_movement", title: "Music, Rhymes & Movement", description: "Sing, dance and have fun!", tone: "violet" },
+    7:  { code: "games_brain_play", title: "Games & Brain Play", description: "Play fun thinking games!", tone: "aqua" },
+    8:  { code: "creativity_art", title: "Creativity & Art", description: "Draw, color and create!", tone: "sun" },
+    9:  { code: "basic_islamic_studies", title: "Basic Islamic Studies", description: "Discover simple Islamic learning!", tone: "sage" },
+    10: { code: "life_skills_discovery", title: "Life Skills & Discovery", description: "Learn everyday skills through play!", tone: "coral" },
+    11: { code: "science_nature", title: "Science & Nature", description: "Explore animals, plants and nature!", tone: "leaf" },
+    12: { code: "digital_world_technology", title: "Digital World & Technology", description: "Safe, guided early digital literacy!", tone: "sky" },
+    13: { code: "everyday_math_money", title: "Everyday Mathematics & Money Skills", description: "Practical math for daily life!", tone: "sun" },
+  });
+
+  const HOME_AGE_LEARNING_BANDS = Object.freeze([
+    Object.freeze({
+      id: "little_explorers",
+      slug: "little-explorers",
+      name: "Little Explorers",
+      ages: "2–4 Years",
+      description: "A playful first step into colours, numbers, words and everyday discoveries.",
+      tone: "peach",
+      hubView: "littleExplorers",
+    }),
+    Object.freeze({
+      id: "curious_learners",
+      slug: "curious-learners",
+      name: "Curious Learners",
+      ages: "4–6 Years",
+      description: "Explore new ideas, discover patterns and enjoy exciting learning adventures.",
+      tone: "lilac",
+      hubView: "curiousLearners",
+    }),
+    Object.freeze({
+      id: "smart_achievers",
+      slug: "smart-achievers",
+      name: "Smart Achievers",
+      ages: "6–8 Years",
+      description: "Build knowledge, develop thinking skills and take on new learning challenges.",
+      tone: "sky",
+      hubView: "smartAchievers",
+    }),
+  ]);
+
+  function segmentIllustrationFor(code) {
+    const jpg = "assets/home/little-explorers/segments/" + code + ".jpg";
+    const svg = "assets/segments/illustrations/" + code + ".svg";
+    // Prefer rich JPG art when available; SVG catalog art otherwise.
+    if (code === "digital_world_technology" || code === "everyday_math_money") return svg;
+    return jpg;
+  }
+
+  function segmentsForAgeBand(bandId) {
+    const ids = SEGMENT_AGE_VISIBLE_IDS[bandId] || [];
+    return ids.map((id) => {
+      const base = SEGMENT_MASTER_BY_ID[id];
+      if (!base) return null;
+      const le = LITTLE_EXPLORERS_SEGMENTS.find(s => Number(s.id) === Number(id));
+      return {
+        id: id,
+        code: base.code,
+        title: (le && le.title) || base.title,
+        description: (le && le.description) || base.description,
+        tone: (le && le.tone) || base.tone,
+        illustration: segmentIllustrationFor(base.code),
+        illustration_uri: segmentIllustrationFor(base.code),
+        icon_uri: "assets/segments/icons/" + base.code + ".svg",
+      };
+    }).filter(Boolean);
+  }
+
+  function openAgeHubSegment(band, seg) {
+    if (!band || !seg) return;
+    const ageSection = HOME_AGE_SECTIONS.find(s => s.id === band.id) || {
+      id: band.id,
+      slug: band.slug,
+      name: band.name,
+      ages: band.ages,
+    };
+    selectHomeAgeSection(ageSection);
+    trackPlatformProgress("home.age." + band.id + ".segment." + seg.code, "started");
+
+    if (band.id === "little_explorers") {
+      openLittleExplorersSegment(seg);
+      return;
+    }
+
+    const hubView = band.id === "curious_learners" ? "curiousLearners" : "smartAchievers";
+    ageHubReturn = hubView;
+    const catalog = (catalogSegments || []).find(s => Number(s.id) === Number(seg.id) || s.code === seg.code);
+    const payload = Object.assign({}, catalog || {}, {
+      id: seg.id,
+      code: seg.code,
+      title: seg.title,
+      description: seg.description,
+      illustration_uri: seg.illustration_uri || (catalog && catalog.illustration_uri),
+      icon_uri: seg.icon_uri || (catalog && catalog.icon_uri),
+      fromAgeHub: hubView,
+      ageGroupId: band.id === "curious_learners" ? 2 : 3,
+    });
+    go("segment", payload);
+  }
+
+  function renderAgeHubPage(band) {
+    ageHubReturn = band.hubView;
+    titleEl.textContent = band.name;
+
+    const childName = (activeProfile && activeProfile.childId && activeProfile.name)
+      ? activeProfile.name
+      : null;
+    const avatar = (activeProfile && activeProfile.avatar) ? activeProfile.avatar : "🧸";
+    const welcomeTitle = childName
+      ? ("Hello, " + childName + "!")
+      : ("Hello, " + band.name.replace(/s$/, "") + "!");
+    const segments = segmentsForAgeBand(band.id);
+    const heroArt = band.id === "little_explorers"
+      ? LITTLE_EXPLORERS_HERO
+      : (band.id === "curious_learners"
+        ? "assets/home/age-groups/curious-learners.jpg"
+        : "assets/home/age-groups/smart-achievers.jpg");
+
+    const page = el("div", "le-dash age-hub tone-" + band.tone);
+    page.innerHTML = `
+      <header class="le-dash-header">
+        <div class="le-dash-header-deco" aria-hidden="true">
+          <span class="le-deco le-deco-a"></span>
+          <span class="le-deco le-deco-b"></span>
+          <span class="le-deco le-deco-c"></span>
+        </div>
+        <div class="le-dash-brand-row">
+          <div class="le-dash-brand-text">
+            <p class="le-dash-brand">LumaCubs</p>
+            <p class="le-dash-ages">${escapeHtml(band.name)} · ${escapeHtml(band.ages)}</p>
+          </div>
+          <div class="le-dash-profile" aria-label="Child profile">
+            <span class="le-dash-avatar">${escapeHtml(avatar)}</span>
+          </div>
+        </div>
+        <h2 class="le-dash-welcome">${escapeHtml(welcomeTitle)}</h2>
+        <p class="le-dash-subtitle">${escapeHtml(band.description)}</p>
+      </header>
+
+      <section class="le-hero" aria-label="Welcome hero">
+        <div class="le-hero-art">
+          <img
+            src="${escapeHtml(heroArt)}"
+            alt="${escapeHtml(band.name)} learning world"
+            width="640"
+            height="480"
+            loading="eager"
+            decoding="async"
+            onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${LE_ILLUSTRATION_FALLBACK}';}"
+          >
+        </div>
+        <div class="le-hero-copy">
+          <h3>Your learning world is ready</h3>
+          <p>Tap a colorful path and start exploring.</p>
+          <button type="button" class="le-hero-cta" id="ageHubLetsExplore">Let's Explore</button>
+        </div>
+      </section>
+
+      <section class="le-segments" aria-label="Learning segments">
+        <div class="le-section-label">
+          <h3>Explore Your Learning World</h3>
+          <p>${segments.length} learning path${segments.length === 1 ? "" : "s"} for ${escapeHtml(band.name.toLowerCase())}</p>
+        </div>
+        <div class="le-segment-grid" id="ageHubSegmentGrid"></div>
+      </section>
+    `;
+
+    const grid = page.querySelector("#ageHubSegmentGrid");
+    segments.forEach((seg, i) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "le-segment-card tone-" + seg.tone;
+      card.setAttribute("aria-label", seg.title);
+      card.style.setProperty("--le-delay", (i * 45) + "ms");
+      card.innerHTML = `
+        <span class="le-segment-art">
+          <img
+            src="${escapeHtml(seg.illustration)}"
+            alt="${escapeHtml(seg.title)}"
+            width="640"
+            height="480"
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+            onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${LE_ILLUSTRATION_FALLBACK}';}"
+          >
+        </span>
+        <span class="le-segment-body">
+          <span class="le-segment-name">${escapeHtml(seg.title)}</span>
+          <span class="le-segment-desc">${escapeHtml(seg.description)}</span>
+        </span>
+      `;
+      card.addEventListener("click", () => {
+        snd.pop();
+        speak(seg.title);
+        openAgeHubSegment(band, seg);
+      });
+      grid.appendChild(card);
+    });
+
+    page.querySelector("#ageHubLetsExplore").addEventListener("click", () => {
+      snd.pop();
+      const first = grid.querySelector(".le-segment-card");
+      if (first) {
+        first.focus();
+        first.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      speak("Explore your learning world");
+    });
+
+    screenRoot.appendChild(page);
+    speak(welcomeTitle);
+  }
 
   function openLittleExplorersSegment(leSeg) {
     ageHubReturn = "littleExplorers";
@@ -1406,6 +1596,16 @@
     speak(welcomeTitle);
   };
 
+  VIEWS.curiousLearners = function () {
+    const band = HOME_AGE_LEARNING_BANDS.find(b => b.id === "curious_learners");
+    renderAgeHubPage(band);
+  };
+
+  VIEWS.smartAchievers = function () {
+    const band = HOME_AGE_LEARNING_BANDS.find(b => b.id === "smart_achievers");
+    renderAgeHubPage(band);
+  };
+
   /* -------- learning segment hub -------- */
 
   VIEWS.segment = function (segment) {
@@ -1529,7 +1729,7 @@
       let endpoint = isMath
         ? "/segments/" + encodeURIComponent(seg.id) + "/categories?lang=" + encodeURIComponent(CATALOG_LANG)
         : "/segments/" + encodeURIComponent(seg.id) + "/subcategories?lang=" + encodeURIComponent(CATALOG_LANG);
-      const ageId = activeProfile && activeProfile.ageGroupId;
+      const ageId = (seg && seg.ageGroupId) || (activeProfile && activeProfile.ageGroupId);
       if (ageId) endpoint += "&age_group_id=" + encodeURIComponent(ageId);
       platformCall(endpoint).then(data => {
         if (current !== "segment") return;
