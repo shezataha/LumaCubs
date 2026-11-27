@@ -14,38 +14,44 @@
   const NUMBER_NAMES = {
     1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five",
     6: "Six", 7: "Seven", 8: "Eight", 9: "Nine", 10: "Ten",
+    11: "Eleven", 12: "Twelve", 13: "Thirteen", 14: "Fourteen", 15: "Fifteen",
+    16: "Sixteen", 17: "Seventeen", 18: "Eighteen", 19: "Nineteen", 20: "Twenty",
+    21: "Twenty-one", 22: "Twenty-two", 23: "Twenty-three", 24: "Twenty-four", 25: "Twenty-five",
+    26: "Twenty-six", 27: "Twenty-seven", 28: "Twenty-eight", 29: "Twenty-nine", 30: "Thirty",
   };
 
   const CURRICULUM = [
     {
       id: "number_recognition",
       title: "Number Recognition",
-      blurb: "Spot and name friendly numbers!",
+      blurb: "Explore, find, match, listen, and build numbers 1–30!",
       tone: "peach",
       accent: "#FFD8C2",
       art: ART + "number_recognition.jpg",
       subs: [
-        { id: "nr_meet_1_5", title: "Meet Numbers 1–5", level: "A", type: "meet_numbers", min: 1, max: 5, art: SUB_ART + "nr_meet_1_5.jpg" },
-        { id: "nr_meet_6_10", title: "Meet Numbers 6–10", level: "B", type: "meet_numbers", min: 6, max: 10, art: SUB_ART + "nr_meet_6_10.jpg" },
-        { id: "nr_find_number", title: "Find the Number", level: "A", type: "find_number", max: 10, art: SUB_ART + "nr_find_number.jpg" },
-        { id: "nr_match_same", title: "Match Same Numbers", level: "B", type: "match_same", max: 10, art: SUB_ART + "nr_match_same.jpg" },
-        { id: "nr_number_names", title: "Number Names", level: "B", type: "number_names", max: 10, art: SUB_ART + "nr_number_names.jpg" },
+        { id: "nr_meet_1_10", title: "Meet Numbers 1–10", level: "A", type: "nr_explorer", min: 1, max: 10, art: SUB_ART + "nr_meet_1_10.svg" },
+        { id: "nr_meet_11_20", title: "Meet Numbers 11–20", level: "B", type: "nr_train", min: 11, max: 20, art: SUB_ART + "nr_meet_11_20.svg" },
+        { id: "nr_meet_21_30", title: "Meet Numbers 21–30", level: "B", type: "nr_balloons", min: 21, max: 30, art: SUB_ART + "nr_meet_21_30.svg" },
+        { id: "nr_detective", title: "Number Detective", level: "A", type: "nr_detective", min: 1, max: 30, art: SUB_ART + "nr_detective.svg" },
+        { id: "nr_memory_match", title: "Number Memory Match", level: "A", type: "nr_memory", min: 1, max: 20, art: SUB_ART + "nr_memory_match.svg" },
+        { id: "nr_names_sounds", title: "Number Names & Sounds", level: "B", type: "nr_listen", min: 1, max: 30, art: SUB_ART + "nr_names_sounds.svg" },
+        { id: "nr_builder", title: "Number Builder", level: "B", type: "nr_builder", min: 1, max: 30, art: SUB_ART + "nr_builder.svg" },
       ],
     },
     {
       id: "counting_quantity",
-      title: "Counting & Quantity",
-      blurb: "Count toys, fruits, and fun things!",
+      title: "Counting Skills",
+      blurb: "Count from 1 to 30 through playful adventures!",
       tone: "mint",
       accent: "#C8F0E0",
       art: ART + "counting_quantity.jpg",
       subs: [
-        { id: "cq_1_5", title: "Count 1–5 objects", level: "A", type: "count_objects", max: 5 },
-        { id: "cq_1_10", title: "Count 1–10 objects", level: "B", type: "count_objects", max: 10 },
-        { id: "cq_familiar", title: "Count familiar objects", level: "A", type: "count_objects", max: 5 },
-        { id: "cq_match", title: "Match number with quantity", level: "B", type: "match_qty", max: 10 },
-        { id: "cq_pictures", title: "Count objects in pictures", level: "B", type: "count_objects", max: 8 },
-        { id: "cq_one_to_one", title: "One-to-one counting", level: "A", type: "tap_count", max: 5 },
+        { id: "cq_count_1_10", title: "Count 1–10", level: "A", type: "cq_garden", min: 1, max: 10, art: SUB_ART + "cq_count_1_10.svg" },
+        { id: "cq_count_11_20", title: "Count 11–20", level: "B", type: "cq_feed", min: 11, max: 20, art: SUB_ART + "cq_count_11_20.svg" },
+        { id: "cq_count_21_30", title: "Count 21–30", level: "B", type: "cq_underwater", min: 21, max: 30, art: SUB_ART + "cq_count_21_30.svg" },
+        { id: "cq_one_by_one", title: "One-by-One Counting", level: "A", type: "cq_tap", min: 1, max: 10, art: SUB_ART + "cq_one_by_one.svg" },
+        { id: "cq_around_us", title: "Count Around Us", level: "A", type: "cq_around", min: 1, max: 15, art: SUB_ART + "cq_around_us.svg" },
+        { id: "cq_sounds", title: "Count Sounds & Actions", level: "B", type: "cq_sounds", min: 1, max: 10, art: SUB_ART + "cq_sounds.svg" },
       ],
     },
     {
@@ -110,30 +116,33 @@
     {
       id: "number_sequencing",
       title: "Number Sequencing",
-      blurb: "What number comes next?",
+      blurb: "What number comes next — up to 30!",
       tone: "aqua",
       accent: "#BFDFF2",
       art: ART + "number_sequencing.jpg",
       subs: [
         { id: "ns_1_5", title: "Arrange numbers 1–5", level: "A", type: "arrange", max: 5 },
-        { id: "ns_1_10", title: "Arrange numbers 1–10", level: "B", type: "arrange", max: 10 },
-        { id: "ns_forward", title: "Forward number sequence", level: "A", type: "next_number", max: 5 },
-        { id: "ns_next", title: "Identify the next number", level: "B", type: "next_number", max: 10 },
-        { id: "ns_before_after", title: "Before and after (basic introduction)", level: "B", type: "before_after", max: 10 },
+        { id: "ns_1_10", title: "Arrange numbers 1–10", level: "A", type: "arrange", max: 10 },
+        { id: "ns_1_20", title: "Arrange numbers around 11–20", level: "B", type: "arrange", min: 11, max: 20 },
+        { id: "ns_forward", title: "Forward number sequence", level: "A", type: "next_number", max: 10 },
+        { id: "ns_next", title: "Identify the next number (to 30)", level: "B", type: "next_number", max: 30 },
+        { id: "ns_before_after", title: "Before and after (to 30)", level: "B", type: "before_after", max: 30 },
       ],
     },
     {
       id: "missing_numbers_patterns",
       title: "Missing Numbers & Patterns",
-      blurb: "Find what is missing!",
+      blurb: "Find what is missing — up to 30!",
       tone: "violet",
       accent: "#D5C8F5",
       art: ART + "missing_numbers_patterns.jpg",
       subs: [
         { id: "mp_miss_5", title: "Find missing numbers 1–5", level: "A", type: "missing", max: 5 },
-        { id: "mp_miss_10", title: "Find missing numbers 1–10", level: "B", type: "missing", max: 10 },
-        { id: "mp_complete", title: "Complete simple number sequences", level: "B", type: "missing", max: 10 },
-        { id: "mp_comes_next", title: "Identify what comes next", level: "A", type: "next_number", max: 5 },
+        { id: "mp_miss_10", title: "Find missing numbers 1–10", level: "A", type: "missing", max: 10 },
+        { id: "mp_miss_20", title: "Find missing numbers 11–20", level: "B", type: "missing", min: 11, max: 20 },
+        { id: "mp_miss_30", title: "Find missing numbers 21–30", level: "B", type: "missing", min: 21, max: 30 },
+        { id: "mp_complete", title: "Complete number sequences", level: "B", type: "missing", max: 30 },
+        { id: "mp_comes_next", title: "Identify what comes next", level: "A", type: "next_number", max: 10 },
         { id: "mp_patterns", title: "Simple repeating quantity patterns", level: "B", type: "qty_pattern", max: 4 },
       ],
     },
@@ -204,16 +213,37 @@
     ).join("");
   }
 
+  /** Visual quantity: small groups for tiny counts, tens-frames for bigger (up to 30). */
+  function qtyVisual(n, kind) {
+    const k = kind || pickToken();
+    const count = Math.max(0, Math.min(30, n | 0));
+    if (count <= 12) {
+      return `<div class="le-nm-objects le-nm-token-row">${tokenRow(count, k)}</div>`;
+    }
+    const tens = Math.floor(count / 10);
+    const ones = count % 10;
+    let html = `<div class="le-nm-qty-groups" aria-hidden="true">`;
+    for (let t = 0; t < tens; t++) {
+      html += `<div class="le-nm-ten-frame le-nm-token-row is-dense">${tokenRow(10, k)}</div>`;
+    }
+    if (ones > 0) {
+      html += `<div class="le-nm-ten-frame le-nm-token-row is-dense">${tokenRow(ones, k)}</div>`;
+    }
+    html += `</div>`;
+    return html;
+  }
+
   function subArtSrc(sub) {
     if (sub && sub.art) return sub.art;
-    if (sub && sub.id) return SUB_ART + sub.id + ".jpg";
+    // Categories 2–10 ship SVG icons; Cat 1 uses explicit .jpg via sub.art
+    if (sub && sub.id) return SUB_ART + sub.id + ".svg";
     return FALLBACK;
   }
 
   window.LUMACUBS_REGISTER_LE_MATH = function registerLEMath(api) {
     const {
       VIEWS, go, el, snd, speak, toast, confetti, LS, escapeHtml, trackPlatformProgress,
-      titleEl, setAgeHubReturn, setLeMathCatReturn,
+      titleEl, setAgeHubReturn, getAgeHubReturn, setLeMathCatReturn,
     } = api;
 
     const progressKey = "leMathProgress";
@@ -242,7 +272,12 @@
 
     /* ---------- hub: reuse existing math-hub / math-category-card UI ---------- */
     VIEWS.leNumbersMath = function () {
-      setAgeHubReturn("littleExplorers");
+      // Keep ageDashboard return when opened from a logged-in child hub
+      if (typeof getAgeHubReturn === "function" && getAgeHubReturn() !== "ageDashboard") {
+        setAgeHubReturn("littleExplorers");
+      } else if (typeof getAgeHubReturn !== "function") {
+        setAgeHubReturn("littleExplorers");
+      }
       titleEl.textContent = "Numbers & Math";
 
       const wrap = el("div", "segment-hub math-hub le-nm-existing");
@@ -327,12 +362,14 @@
         </div>
       `));
 
-      const isNumberRecognition = cat.id === "number_recognition";
+      const catHint = cat.id === "number_recognition"
+        ? "7 unique number recognition adventures · tap to play"
+        : (cat.id === "counting_quantity"
+          ? "6 unique counting adventures · tap to play"
+          : "Level A (2–3) and Level B (3–4) · tap to play");
       wrap.appendChild(el("div", "home-section-label", `
         <h3>Subcategories</h3>
-        <p>${isNumberRecognition
-          ? "Five playful number recognition paths · tap to play"
-          : "Level A (2–3) and Level B (3–4) · tap to play"}</p>`));
+        <p>${catHint}</p>`));
 
       const ul = el("div", "subcat-list le-nm-subcat-list");
       cat.subs.forEach((sub, i) => {
@@ -373,15 +410,15 @@
       if (typeof setLeMathCatReturn === "function") setLeMathCatReturn(cat);
       titleEl.textContent = sub.title;
 
-      const isMeet = sub.type === "meet_numbers";
-      const isMatchSame = sub.type === "match_same";
-      const ROUNDS = isMeet ? 5 : (isMatchSame ? 4 : (sub.level === "A" ? 4 : 5));
+      const isExploreOnly = /^(nr_explorer|nr_train|nr_balloons)$/.test(sub.type);
+      const isMemory = sub.type === "nr_memory" || sub.type === "match_same";
+      const ROUNDS = isExploreOnly ? 1 : (isMemory ? 4 : (sub.level === "A" ? 4 : 5));
       let round = 0;
       let score = 0;
       let locked = false;
       let lastSpeak = "";
       let wrongTries = 0;
-      let meetReady = false;
+      let exploreSeen = new Set();
 
       const page = el("div", "le-nm-play");
       page.innerHTML = `
@@ -389,7 +426,7 @@
           <span class="le-nm-play-cat">${escapeHtml(cat.title)}</span>
           <div class="le-nm-play-top-right">
             <button type="button" class="le-nm-replay" id="leNmReplay" aria-label="Replay audio">Replay</button>
-            <span class="le-nm-play-round" id="leNmRound">${isMeet && !meetReady ? "Explore" : ("1 / " + ROUNDS)}</span>
+            <span class="le-nm-play-round" id="leNmRound">${isExploreOnly ? "Explore" : ("1 / " + ROUNDS)}</span>
           </div>
         </div>
         <div class="le-nm-play-prompt" id="leNmPrompt"></div>
@@ -454,6 +491,19 @@
         say(soft);
       }
 
+      function hintForAnswer(answer, options) {
+        if (answer == null) return "Look again!";
+        const match = (options || []).find((opt) => {
+          const val = opt && opt.value != null ? opt.value : opt;
+          return val === answer;
+        });
+        if (match && match.label != null) return "Find " + match.label;
+        if (typeof answer === "number") return "Find " + answer;
+        if (answer === "same") return "Find Same";
+        if (answer === "diff") return "Find Different";
+        return "Look again!";
+      }
+
       function renderChoices(options, answer, onPick) {
         choicesEl.innerHTML = "";
         shuffle(options).forEach((opt) => {
@@ -469,7 +519,7 @@
               onCorrect();
             } else {
               b.classList.add("is-wrong");
-              onWrong(wrongTries >= 1 ? ("Find " + answer) : null);
+              onWrong(wrongTries >= 1 ? hintForAnswer(answer, options) : null);
               if (onPick) onPick(false);
             }
             if (onPick && val === answer) onPick(true);
@@ -478,229 +528,239 @@
         });
       }
 
-      function showNumberExplore(n, kind) {
-        const name = NUMBER_NAMES[n] || numberWord(n);
-        const preview = stageEl.querySelector("#leMeetPreview");
-        if (!preview) return;
-        preview.innerHTML = `
-          <div class="le-nm-big-num le-nm-big-num-soft">${n}</div>
-          <p class="le-nm-name-tag">${escapeHtml(name)}</p>
-          <div class="le-nm-objects le-nm-token-row">${tokenRow(n, kind)}</div>`;
-        say(name);
+      function nameOf(n) {
+        return NUMBER_NAMES[n] || numberWord(n);
       }
 
-      function startMeetExplore() {
+      function finishExplore() {
+        const min = sub.min || 1;
+        const max = sub.max || 10;
+        const total = max - min + 1;
+        const seen = exploreSeen.size;
+        score = seen >= total ? ROUNDS : (seen >= Math.ceil(total * 0.5) ? Math.max(1, ROUNDS - 1) : 1);
+        const stars = seen >= total ? 3 : seen >= 3 ? 2 : 1;
+        markDone(sub.id, stars);
+        go("leMathResult", { cat, sub, score: seen, rounds: total, stars });
+      }
+
+      function mountExploreDone() {
+        choicesEl.innerHTML = "";
+        const need = Math.min(3, (sub.max || 10) - (sub.min || 1) + 1);
+        if (exploreSeen.size < need) return;
+        const done = document.createElement("button");
+        done.type = "button";
+        done.className = "le-nm-choice le-nm-done";
+        done.textContent = exploreSeen.size >= ((sub.max || 10) - (sub.min || 1) + 1)
+          ? "Great exploring!"
+          : "I'm done exploring";
+        done.addEventListener("click", () => {
+          if (locked) return;
+          locked = true;
+          snd.correct();
+          confetti(10);
+          say("Great job!");
+          setTimeout(finishExplore, 700);
+        });
+        choicesEl.appendChild(done);
+      }
+
+      function showExploreFocus(n, kind) {
+        const preview = stageEl.querySelector("#leExploreFocus");
+        if (!preview) return;
+        const spoken = nameOf(n);
+        let visual;
+        if (n <= 10) {
+          visual = `<div class="le-nm-objects le-nm-token-row">${tokenRow(n, kind)}</div>`;
+        } else {
+          const digits = String(n).split("");
+          visual = `
+            <div class="le-nm-digit-split" aria-hidden="true">
+              ${digits.map((d) => `<span class="le-nm-digit-chip">${d}</span>`).join("")}
+            </div>
+            <p class="le-nm-prompt-soft">${digits.length > 1 ? "Two-digit number · " + digits.join(" and ") : ""}</p>`;
+        }
+        preview.innerHTML = `
+          <div class="le-nm-big-num le-nm-big-num-soft is-pop">${n}</div>
+          <p class="le-nm-name-tag">${escapeHtml(spoken)}</p>
+          ${visual}`;
+        say(spoken);
+        setFeedback("Wonderful! " + spoken, true);
+      }
+
+      /* --- 1) Interactive Number Explorer (1–10) --- */
+      function startNumberExplorer() {
         clearBoard();
         const min = sub.min || 1;
-        const max = sub.max || 5;
+        const max = sub.max || 10;
         roundEl.textContent = "Explore";
-        promptEl.textContent = "Tap a number to meet it";
-        say("Tap a number to meet it");
+        promptEl.textContent = "Let's explore numbers!";
+        say("Let's explore numbers!");
         stageEl.innerHTML = `
-          <div class="le-nm-num-pad" id="leMeetPad"></div>
-          <div class="le-nm-explore" id="leMeetPreview"></div>
-          <p class="le-nm-tap-hint">Tap each number · then play games</p>`;
-        const pad = stageEl.querySelector("#leMeetPad");
-        const seen = new Set();
+          <div class="le-nm-explorer">
+            <div class="le-nm-block-pad" id="leBlockPad"></div>
+            <div class="le-nm-explore" id="leExploreFocus">
+              <p class="le-nm-prompt-soft">Tap a colorful number block</p>
+            </div>
+          </div>`;
+        const pad = stageEl.querySelector("#leBlockPad");
+        const tones = ["peach", "mint", "sky", "lilac", "sun", "coral", "aqua", "violet", "sage", "rose"];
         for (let n = min; n <= max; n++) {
           const b = document.createElement("button");
           b.type = "button";
-          b.className = "le-nm-choice le-nm-pad-btn";
+          b.className = "le-nm-num-block tone-" + tones[(n - 1) % tones.length];
           b.textContent = String(n);
           b.addEventListener("click", () => {
             snd.pop();
-            seen.add(n);
-            b.classList.add("is-seen");
-            showNumberExplore(n, pickToken());
-            setFeedback(NUMBER_NAMES[n] || numberWord(n), true);
+            pad.querySelectorAll(".le-nm-num-block").forEach((x) => x.classList.remove("is-active"));
+            b.classList.add("is-active", "is-seen");
+            exploreSeen.add(n);
+            showExploreFocus(n, pickToken());
+            roundEl.textContent = exploreSeen.size + " / " + (max - min + 1);
+            mountExploreDone();
           });
           pad.appendChild(b);
         }
-        const ready = document.createElement("button");
-        ready.type = "button";
-        ready.className = "le-nm-choice le-nm-done";
-        ready.textContent = "Play games";
-        ready.addEventListener("click", () => {
-          if (locked) return;
-          snd.pop();
-          meetReady = true;
-          round = 0;
-          score = 0;
-          buildRound();
-        });
-        choicesEl.appendChild(ready);
       }
 
-      function buildMeetQuizRound() {
-        const min = sub.min || 1;
-        const max = sub.max || 5;
+      /* --- 2) Number Train Adventure (11–20) --- */
+      function startNumberTrain() {
+        clearBoard();
+        const min = sub.min || 11;
+        const max = sub.max || 20;
+        roundEl.textContent = "Explore";
+        promptEl.textContent = "Hop on the number train!";
+        say("Hop on the number train!");
+        stageEl.innerHTML = `
+          <div class="le-nm-train-wrap">
+            <div class="le-nm-train" id="leTrain">
+              <div class="le-nm-train-engine" aria-hidden="true">
+                <span class="le-nm-train-cab"></span>
+                <span class="le-nm-train-stack"></span>
+                <span class="le-nm-train-wheel"></span>
+                <span class="le-nm-train-wheel"></span>
+              </div>
+            </div>
+            <div class="le-nm-explore" id="leExploreFocus">
+              <p class="le-nm-prompt-soft">Tap a carriage to meet its number</p>
+            </div>
+          </div>`;
+        const train = stageEl.querySelector("#leTrain");
+        for (let n = min; n <= max; n++) {
+          const car = document.createElement("button");
+          car.type = "button";
+          car.className = "le-nm-train-car";
+          car.innerHTML = `<span class="le-nm-train-car-num">${n}</span><span class="le-nm-train-wheel"></span><span class="le-nm-train-wheel"></span>`;
+          car.addEventListener("click", () => {
+            snd.pop();
+            train.querySelectorAll(".le-nm-train-car").forEach((x) => x.classList.remove("is-active"));
+            car.classList.add("is-active", "is-seen");
+            exploreSeen.add(n);
+            showExploreFocus(n, pickToken());
+            roundEl.textContent = exploreSeen.size + " / " + (max - min + 1);
+            mountExploreDone();
+          });
+          train.appendChild(car);
+        }
+      }
+
+      /* --- 3) Number Balloon Adventure (21–30) --- */
+      function startNumberBalloons() {
+        clearBoard();
+        const min = sub.min || 21;
+        const max = sub.max || 30;
+        roundEl.textContent = "Explore";
+        promptEl.textContent = "Tap a number balloon!";
+        say("Tap a number balloon!");
+        const colors = ["#FF8FAB", "#FFD166", "#7ECDB5", "#A8D4F0", "#C9A0FF", "#FFB4A2", "#9BE7C4", "#F6A6FF", "#FFE29A", "#8FD3FF"];
+        stageEl.innerHTML = `
+          <div class="le-nm-balloon-sky" id="leBalloonSky"></div>
+          <div class="le-nm-explore" id="leExploreFocus">
+            <p class="le-nm-prompt-soft">Catch a balloon to meet its number</p>
+          </div>`;
+        const sky = stageEl.querySelector("#leBalloonSky");
+        for (let n = min; n <= max; n++) {
+          const i = n - min;
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "le-nm-balloon";
+          b.style.setProperty("--balloon", colors[i % colors.length]);
+          b.style.setProperty("--bx", (8 + (i % 5) * 18) + "%");
+          b.style.setProperty("--by", (8 + Math.floor(i / 5) * 38 + (i % 2) * 8) + "%");
+          b.style.setProperty("--delay", ((i % 5) * 0.35) + "s");
+          b.innerHTML = `<span class="le-nm-balloon-body">${n}</span><span class="le-nm-balloon-string"></span>`;
+          b.addEventListener("click", () => {
+            if (locked) return;
+            snd.pop();
+            b.classList.add("is-pop", "is-seen");
+            exploreSeen.add(n);
+            showExploreFocus(n, pickToken());
+            roundEl.textContent = exploreSeen.size + " / " + (max - min + 1);
+            mountExploreDone();
+          });
+          sky.appendChild(b);
+        }
+      }
+
+      /* --- 4) Number Detective — Find the Hidden Number --- */
+      function buildDetectiveRound() {
+        const early = round < 2;
+        const mid = round < 4;
+        const min = early ? 1 : (mid ? 1 : 11);
+        const max = early ? 10 : (mid ? 20 : 30);
         const n = randInt(min, max);
-        const kind = pickToken();
-        const mode = round % 3;
-        const choiceCount = sub.level === "A" ? 3 : 4;
-
-        if (mode === 0) {
-          promptEl.textContent = "How many do you see?";
-          say("How many do you see?");
-          stageEl.innerHTML = `<div class="le-nm-objects le-nm-token-row">${tokenRow(n, kind)}</div>`;
-          renderChoices(uniqueNumsInRange(n, min, max, choiceCount).map(v => ({ label: v, value: v })), n);
-          return;
-        }
-        if (mode === 1) {
-          promptEl.textContent = "Tap number " + n;
-          say("Tap number " + NUMBER_NAMES[n]);
-          stageEl.innerHTML = `<div class="le-nm-objects le-nm-token-row">${tokenRow(n, kind)}</div>
-            <p class="le-nm-prompt-soft">Match the group</p>`;
-          renderChoices(uniqueNumsInRange(n, min, max, choiceCount).map(v => ({ label: v, value: v })), n);
-          return;
-        }
-        promptEl.textContent = "Listen and tap";
-        say(NUMBER_NAMES[n]);
-        stageEl.innerHTML = `<div class="le-nm-listen-card">
-          <p class="le-nm-prompt-soft">Which number did you hear?</p>
-          <button type="button" class="le-nm-replay le-nm-replay-inline" id="leHearAgain">Hear again</button>
-        </div>`;
-        const again = stageEl.querySelector("#leHearAgain");
-        if (again) again.addEventListener("click", () => { snd.pop(); say(NUMBER_NAMES[n]); });
-        renderChoices(uniqueNumsInRange(n, min, max, choiceCount).map(v => ({ label: v, value: v })), n);
-      }
-
-      function buildFindRound() {
-        const progressMax = round < 2 ? 5 : Math.min(sub.max || 10, 10);
-        const choiceCount = round < 2 ? 3 : (sub.level === "A" ? 3 : 4);
-        const n = randInt(1, progressMax);
-        const mode = round % 3;
+        const listenOnly = round % 2 === 1;
+        const decoCount = early ? 5 : (mid ? 7 : 8);
+        const deco = shuffle(uniqueNumsInRange(n, Math.max(1, n - 6), Math.min(30, n + 6), decoCount));
         wrongTries = 0;
-
-        if (mode === 0) {
-          promptEl.textContent = "Find number " + n;
-          say("Find number " + NUMBER_NAMES[n]);
-          stageEl.innerHTML = `<div class="le-nm-target-chip">Find <strong>${n}</strong></div>`;
-        } else if (mode === 1) {
-          promptEl.textContent = "Listen and find the number";
-          say(NUMBER_NAMES[n]);
-          stageEl.innerHTML = `<div class="le-nm-listen-card">
-            <p class="le-nm-prompt-soft">Tap the number you hear</p>
+        promptEl.textContent = listenOnly ? "Listen carefully — find that number!" : "Can you find this number?";
+        say(listenOnly ? nameOf(n) : ("Can you find number " + nameOf(n) + "?"));
+        stageEl.innerHTML = `
+          <div class="le-nm-detective">
+            ${listenOnly
+              ? `<div class="le-nm-target-chip is-listen">🔎 Find the number you hear</div>`
+              : `<div class="le-nm-target-chip">Find <strong>${n}</strong></div>`}
+            <div class="le-nm-detective-scene" id="leDetectScene"></div>
             <button type="button" class="le-nm-replay le-nm-replay-inline" id="leHearAgain">Hear again</button>
           </div>`;
-          const again = stageEl.querySelector("#leHearAgain");
-          if (again) again.addEventListener("click", () => { snd.pop(); say(NUMBER_NAMES[n]); });
-        } else {
-          promptEl.textContent = "Find " + n + " in the picture";
-          say("Find number " + NUMBER_NAMES[n]);
-          const deco = shuffle(uniqueNums(n, progressMax, Math.min(6, progressMax)));
-          stageEl.innerHTML = `<div class="le-nm-picture-find" id="lePicFind"></div>`;
-          const box = stageEl.querySelector("#lePicFind");
-          deco.forEach((v) => {
-            const b = document.createElement("button");
-            b.type = "button";
-            b.className = "le-nm-float-num";
-            b.textContent = String(v);
-            b.style.setProperty("--fx", (Math.random() * 70) + "%");
-            b.style.setProperty("--fy", (Math.random() * 55) + "%");
-            b.addEventListener("click", () => {
-              if (locked) return;
-              if (v === n) {
-                b.classList.add("is-correct");
-                onCorrect();
-              } else {
-                b.classList.add("is-wrong");
-                onWrong(wrongTries >= 1 ? ("Look for " + n) : "Not that one");
-              }
-            });
-            box.appendChild(b);
+        const again = stageEl.querySelector("#leHearAgain");
+        if (again) again.addEventListener("click", () => { snd.pop(); say(nameOf(n)); });
+        const scene = stageEl.querySelector("#leDetectScene");
+        const props = ["cloud", "star", "bush", "ball", "block"];
+        deco.forEach((v, i) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "le-nm-hide-num prop-" + props[i % props.length];
+          b.textContent = String(v);
+          b.style.setProperty("--fx", (6 + Math.random() * 78) + "%");
+          b.style.setProperty("--fy", (10 + Math.random() * 62) + "%");
+          b.style.setProperty("--rot", ((Math.random() * 24) - 12) + "deg");
+          b.addEventListener("click", () => {
+            if (locked) return;
+            if (v === n) {
+              b.classList.add("is-found");
+              onCorrect("You found it!");
+            } else {
+              b.classList.add("is-wrong");
+              onWrong(wrongTries >= 1 ? ("Look for " + n) : "Keep searching!");
+            }
           });
-          choicesEl.innerHTML = "";
-          return;
-        }
-        renderChoices(uniqueNums(n, progressMax, choiceCount).map(v => ({ label: v, value: v })), n);
+          scene.appendChild(b);
+        });
+        choicesEl.innerHTML = "";
       }
 
-      function buildMatchSameRound() {
-        const pairCount = round < 2 ? 2 : (round < 3 ? 3 : 4);
-        const poolMax = Math.min(sub.max || 10, round < 2 ? 5 : 10);
+      /* --- 5) Number Memory Match — Flip & Remember --- */
+      function buildMemoryRound() {
+        const pairCount = round < 1 ? 2 : (round < 3 ? 3 : 4);
+        const poolMax = round < 2 ? 10 : 20;
         const values = shuffle(Array.from({ length: poolMax }, (_, i) => i + 1)).slice(0, pairCount);
-
-        if (round % 2 === 1) {
-          promptEl.textContent = "Drag each number to its twin";
-          say("Drag each number to its twin");
-          let matched = 0;
-          stageEl.innerHTML = `
-            <div class="le-nm-drag-board">
-              <div class="le-nm-drag-sources" id="leDragSrc"></div>
-              <div class="le-nm-drag-targets" id="leDragTgt"></div>
-            </div>
-            <p class="le-nm-tap-hint">Or tap a number, then tap its match</p>`;
-          const srcBox = stageEl.querySelector("#leDragSrc");
-          const tgtBox = stageEl.querySelector("#leDragTgt");
-          let selected = null;
-
-          function markMatch(srcEl, tgtEl) {
-            srcEl.classList.add("is-matched");
-            tgtEl.classList.add("is-matched");
-            srcEl.setAttribute("draggable", "false");
-            matched++;
-            say("Nice match!");
-            selected = null;
-            if (matched >= pairCount) onCorrect("Perfect match!");
-          }
-
-          shuffle(values).forEach((v) => {
-            const src = document.createElement("button");
-            src.type = "button";
-            src.className = "le-nm-choice le-nm-drag-item";
-            src.textContent = String(v);
-            src.setAttribute("draggable", "true");
-            src.setAttribute("data-value", String(v));
-            src.addEventListener("dragstart", (e) => {
-              e.dataTransfer.setData("text/plain", String(v));
-              src.classList.add("is-dragging");
-            });
-            src.addEventListener("dragend", () => src.classList.remove("is-dragging"));
-            src.addEventListener("click", () => {
-              if (locked || src.classList.contains("is-matched")) return;
-              snd.pop();
-              if (selected) selected.classList.remove("is-selected");
-              selected = src;
-              src.classList.add("is-selected");
-            });
-            srcBox.appendChild(src);
-          });
-
-          shuffle(values).forEach((v) => {
-            const tgt = document.createElement("button");
-            tgt.type = "button";
-            tgt.className = "le-nm-drag-target";
-            tgt.textContent = String(v);
-            tgt.setAttribute("data-value", String(v));
-            tgt.addEventListener("dragover", (e) => { e.preventDefault(); tgt.classList.add("is-over"); });
-            tgt.addEventListener("dragleave", () => tgt.classList.remove("is-over"));
-            tgt.addEventListener("drop", (e) => {
-              e.preventDefault();
-              tgt.classList.remove("is-over");
-              if (locked || tgt.classList.contains("is-matched")) return;
-              const val = e.dataTransfer.getData("text/plain");
-              const srcEl = srcBox.querySelector('[data-value="' + val + '"]:not(.is-matched)');
-              if (String(v) === val && srcEl) markMatch(srcEl, tgt);
-              else onWrong("Match the same number");
-            });
-            tgt.addEventListener("click", () => {
-              if (locked || tgt.classList.contains("is-matched") || !selected) return;
-              if (selected.getAttribute("data-value") === String(v)) markMatch(selected, tgt);
-              else onWrong("Match the same number");
-            });
-            tgtBox.appendChild(tgt);
-          });
-          return;
-        }
-
         const cards = shuffle(values.concat(values).map((v, idx) => ({ id: idx + "-" + v, value: v })));
         let first = null;
         let matched = 0;
         let busy = false;
 
-        promptEl.textContent = "Match the same numbers";
-        say("Match the same numbers");
+        promptEl.textContent = "Flip & remember!";
+        say("Flip and remember the numbers");
         stageEl.innerHTML = `<div class="le-nm-memory" id="leMemory"></div>`;
         const board = stageEl.querySelector("#leMemory");
 
@@ -714,6 +774,7 @@
             if (locked || busy || b.classList.contains("is-matched") || b.classList.contains("is-open")) return;
             snd.pop();
             b.classList.add("is-open");
+            say(nameOf(card.value));
             if (!first) {
               first = b;
               return;
@@ -740,95 +801,494 @@
           });
           board.appendChild(b);
         });
+        choicesEl.innerHTML = "";
       }
 
-      function buildNumberNamesRound() {
-        const max = round < 2 ? 5 : Math.min(sub.max || 10, 10);
-        const n = randInt(1, max);
-        const name = NUMBER_NAMES[n];
-        const mode = round % 4;
-        const choiceCount = round < 2 ? 3 : 4;
+      /* --- 6) Number Names & Sounds — Listen & Discover --- */
+      function buildListenRound() {
+        const bands = [
+          { min: 1, max: 10 },
+          { min: 1, max: 10 },
+          { min: 11, max: 20 },
+          { min: 11, max: 20 },
+          { min: 21, max: 30 },
+        ];
+        const band = bands[Math.min(round, bands.length - 1)];
+        const n = randInt(band.min, band.max);
+        const name = nameOf(n);
+        const showNames = round % 2 === 1;
+        wrongTries = 0;
 
-        if (mode === 0) {
-          promptEl.textContent = "Meet this number name";
-          stageEl.innerHTML = `
-            <div class="le-nm-explore">
+        promptEl.textContent = "Listen carefully!";
+        say(name);
+        stageEl.innerHTML = `
+          <div class="le-nm-listen-discover">
+            <div class="le-nm-listen-card">
+              <p class="le-nm-prompt-soft">${showNames ? "Which name did you hear?" : "Which number did you hear?"}</p>
+              <button type="button" class="le-nm-replay le-nm-replay-inline" id="leHearAgain">Hear again</button>
+            </div>
+            <div class="le-nm-listen-reveal" id="leListenReveal" hidden>
               <div class="le-nm-big-num le-nm-big-num-soft">${n}</div>
               <p class="le-nm-name-tag">${escapeHtml(name)}</p>
-              <button type="button" class="le-nm-replay le-nm-replay-inline" id="leHearAgain">Hear name</button>
-            </div>`;
-          say(n + ". " + name);
-          const again = stageEl.querySelector("#leHearAgain");
-          if (again) again.addEventListener("click", () => { snd.pop(); say(name); });
-          const next = document.createElement("button");
-          next.type = "button";
-          next.className = "le-nm-choice le-nm-done";
-          next.textContent = "Got it";
-          next.addEventListener("click", () => { if (!locked) onCorrect("Wonderful!"); });
-          choicesEl.appendChild(next);
-          return;
-        }
-
-        if (mode === 1) {
-          promptEl.textContent = "Match the number with its name";
-          say("Match the number with its name");
-          stageEl.innerHTML = `<div class="le-nm-big-num">${n}</div>`;
-          const opts = uniqueNums(n, max, choiceCount).map(v => ({ label: NUMBER_NAMES[v], value: v }));
-          renderChoices(opts, n);
-          return;
-        }
-
-        if (mode === 2) {
-          promptEl.textContent = "Listen and tap the number";
-          say(name);
-          stageEl.innerHTML = `<div class="le-nm-listen-card">
-            <p class="le-nm-prompt-soft">Which number is ${escapeHtml(name)}?</p>
-            <button type="button" class="le-nm-replay le-nm-replay-inline" id="leHearAgain">Hear again</button>
+            </div>
           </div>`;
-          const again = stageEl.querySelector("#leHearAgain");
-          if (again) again.addEventListener("click", () => { snd.pop(); say(name); });
-          renderChoices(uniqueNums(n, max, choiceCount).map(v => ({ label: v, value: v })), n);
-          return;
+        const again = stageEl.querySelector("#leHearAgain");
+        if (again) again.addEventListener("click", () => { snd.pop(); say(name); });
+
+        const opts = uniqueNumsNear(n, band.min, band.max, 3).map((v) => ({
+          label: showNames ? nameOf(v) : v,
+          value: v,
+        }));
+        renderChoices(opts, n, (ok) => {
+          if (ok) {
+            const reveal = stageEl.querySelector("#leListenReveal");
+            if (reveal) reveal.hidden = false;
+          }
+        });
+      }
+
+      /* --- 7) Number Builder — Build the Number --- */
+      function buildBuilderRound() {
+        const bands = [
+          { min: 1, max: 9 },
+          { min: 1, max: 10 },
+          { min: 11, max: 20 },
+          { min: 11, max: 20 },
+          { min: 21, max: 30 },
+        ];
+        const band = bands[Math.min(round, bands.length - 1)];
+        const n = randInt(band.min, band.max);
+        const digits = String(n).split("");
+        const missIdx = digits.length === 1 ? 0 : (Math.random() > 0.5 ? 0 : 1);
+        const need = digits[missIdx];
+        const wrongPool = shuffle(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].filter((d) => d !== need)).slice(0, 2);
+        const pieces = shuffle([need].concat(wrongPool));
+        wrongTries = 0;
+
+        promptEl.textContent = "Let's build the number!";
+        say("Let's build the number " + nameOf(n));
+        stageEl.innerHTML = `
+          <div class="le-nm-builder">
+            <p class="le-nm-prompt-soft">Fit the missing piece</p>
+            <div class="le-nm-builder-board" id="leBuildBoard">
+              ${digits.map((d, i) => (
+                i === missIdx
+                  ? `<span class="le-nm-builder-slot" data-need="${d}">?</span>`
+                  : `<span class="le-nm-builder-digit">${d}</span>`
+              )).join("")}
+            </div>
+            <div class="le-nm-builder-pieces" id="leBuildPieces"></div>
+          </div>`;
+        const slot = stageEl.querySelector(".le-nm-builder-slot");
+        const piecesBox = stageEl.querySelector("#leBuildPieces");
+        let selected = null;
+
+        function complete(pieceEl) {
+          if (locked) return;
+          slot.textContent = need;
+          slot.classList.add("is-filled");
+          pieceEl.classList.add("is-used");
+          say(nameOf(n));
+          onCorrect("Beautiful number!");
         }
 
-        promptEl.textContent = "Pick the correct number name";
-        say("What is the name for number " + n + "?");
-        stageEl.innerHTML = `<div class="le-nm-big-num">${n}</div>`;
-        renderChoices(uniqueNums(n, max, choiceCount).map(v => ({ label: NUMBER_NAMES[v], value: v })), n);
+        function tryPlace(digit, pieceEl) {
+          if (locked) return;
+          if (digit === need && pieceEl) complete(pieceEl);
+          else onWrong("Try a different piece");
+        }
+
+        pieces.forEach((d) => {
+          const p = document.createElement("button");
+          p.type = "button";
+          p.className = "le-nm-builder-piece";
+          p.textContent = d;
+          p.setAttribute("draggable", "true");
+          p.setAttribute("data-digit", d);
+          p.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData("text/plain", d);
+            p.classList.add("is-dragging");
+          });
+          p.addEventListener("dragend", () => p.classList.remove("is-dragging"));
+          // Touch-friendly: tap piece, then tap the empty slot
+          p.addEventListener("click", () => {
+            if (locked || p.classList.contains("is-used")) return;
+            snd.pop();
+            piecesBox.querySelectorAll(".le-nm-builder-piece").forEach((x) => x.classList.remove("is-selected"));
+            p.classList.add("is-selected");
+            selected = p;
+          });
+          // Pointer drag for tablets (fallback to tap-tap if cancelled)
+          p.addEventListener("pointerdown", (e) => {
+            if (locked || p.classList.contains("is-used") || e.pointerType === "mouse") return;
+            p.setPointerCapture(e.pointerId);
+            p.classList.add("is-dragging", "is-selected");
+            selected = p;
+          });
+          p.addEventListener("pointerup", (e) => {
+            if (!p.classList.contains("is-dragging")) return;
+            p.classList.remove("is-dragging");
+            const elAt = document.elementFromPoint(e.clientX, e.clientY);
+            if (elAt && (elAt === slot || slot.contains(elAt))) {
+              tryPlace(d, p);
+            }
+          });
+          piecesBox.appendChild(p);
+        });
+
+        slot.addEventListener("dragover", (e) => { e.preventDefault(); slot.classList.add("is-over"); });
+        slot.addEventListener("dragleave", () => slot.classList.remove("is-over"));
+        slot.addEventListener("drop", (e) => {
+          e.preventDefault();
+          slot.classList.remove("is-over");
+          const d = e.dataTransfer.getData("text/plain");
+          const pieceEl = piecesBox.querySelector('[data-digit="' + d + '"]:not(.is-used)');
+          tryPlace(d, pieceEl);
+        });
+        slot.addEventListener("click", () => {
+          if (locked || !selected) return;
+          tryPlace(selected.getAttribute("data-digit"), selected);
+        });
+        choicesEl.innerHTML = "";
+      }
+
+      /* ========== Counting Skills — 6 approved unique games ========== */
+
+      function cqRange() {
+        return { min: sub.min || 1, max: sub.max || 5 };
+      }
+
+      /** 1) Count 1–10 — Counting Garden (tap to count with highlights) */
+      function buildGardenRound() {
+        const { min, max } = cqRange();
+        const n = randInt(min, max);
+        const kinds = ["apple", "berry", "star"];
+        const kind = kinds[randInt(0, kinds.length - 1)];
+        const labels = { apple: "apples", berry: "berries", star: "flowers" };
+        let counted = 0;
+        wrongTries = 0;
+        promptEl.textContent = "Count the " + labels[kind] + " in the garden!";
+        say("Let's count the " + labels[kind] + " in the garden");
+        const buds = Array.from({ length: n }, (_, i) => {
+          const left = 6 + (i % 5) * 18 + Math.random() * 3;
+          const top = 14 + Math.floor(i / 5) * 32 + Math.random() * 5;
+          return `<button type="button" class="le-nm-garden-item le-nm-token le-nm-token-${kind}" data-i="${i}" style="left:${left}%;top:${top}%" aria-label="item"></button>`;
+        }).join("");
+        stageEl.innerHTML = `
+          <div class="le-nm-cq-garden">
+            <div class="le-nm-garden-scene" id="leGarden">${buds}</div>
+            <p class="le-nm-tap-hint">Tap each one · <span id="leGardenCount">0</span> / ${n}</p>
+            <div class="le-nm-total-chip" id="leGardenTotal" hidden>Total: <strong>${n}</strong></div>
+          </div>`;
+        const counter = stageEl.querySelector("#leGardenCount");
+        const totalChip = stageEl.querySelector("#leGardenTotal");
+        stageEl.querySelectorAll(".le-nm-garden-item").forEach((node) => {
+          node.addEventListener("click", () => {
+            if (locked || node.classList.contains("is-counted")) return;
+            node.classList.add("is-counted");
+            counted++;
+            counter.textContent = String(counted);
+            snd.pop();
+            say(nameOf(counted));
+            if (counted === n) {
+              totalChip.hidden = false;
+              promptEl.textContent = "How many altogether?";
+              say("How many altogether?");
+              renderChoices(uniqueNumsNear(n, min, max, 3).map(v => ({ label: v, value: v })), n);
+            }
+          });
+        });
+        choicesEl.innerHTML = "";
+      }
+
+      /** 2) Count 11–20 — Feed the Animals (drag/tap food into basket) */
+      function buildFeedRound() {
+        const { min, max } = cqRange();
+        const need = randInt(min, max);
+        const pool = need + randInt(2, 4);
+        const animals = [
+          { tone: "bunny", name: "bunny" },
+          { tone: "bear", name: "bear" },
+          { tone: "fox", name: "fox" },
+          { tone: "panda", name: "panda" },
+        ];
+        const animal = animals[randInt(0, animals.length - 1)];
+        let fed = 0;
+        wrongTries = 0;
+        promptEl.textContent = "Feed the " + animal.name + " " + need + " treats!";
+        say("Feed the " + animal.name + " " + nameOf(need) + " treats");
+        stageEl.innerHTML = `
+          <div class="le-nm-cq-feed">
+            <div class="le-nm-animal-card">
+              <span class="le-nm-animal-face is-${animal.tone}" aria-hidden="true"></span>
+              <p class="le-nm-prompt-soft">I want <strong>${need}</strong> treats!</p>
+              <div class="le-nm-feed-basket" id="leBasket" data-need="${need}">
+                <span class="le-nm-basket-count" id="leFedCount">0 / ${need}</span>
+              </div>
+            </div>
+            <div class="le-nm-feed-pool le-nm-token-row" id="leFeedPool">${tokenRow(pool, "apple")}</div>
+            <p class="le-nm-tap-hint">Tap a treat, then tap the basket</p>
+          </div>`;
+        const basket = stageEl.querySelector("#leBasket");
+        const fedEl = stageEl.querySelector("#leFedCount");
+        let selected = null;
+
+        function addTreat(piece) {
+          if (locked || !piece || piece.classList.contains("is-used") || fed >= need) return;
+          piece.classList.add("is-used");
+          fed++;
+          fedEl.textContent = fed + " / " + need;
+          const crumb = document.createElement("span");
+          crumb.className = "le-nm-token le-nm-token-apple le-nm-basket-treat";
+          basket.appendChild(crumb);
+          snd.pop();
+          say(nameOf(fed));
+          selected = null;
+          if (fed === need) {
+            promptEl.textContent = "Yum! How many treats did we give?";
+            say("How many treats?");
+            renderChoices(uniqueNumsNear(need, min, max, 3).map(v => ({ label: v, value: v })), need);
+          }
+        }
+
+        stageEl.querySelectorAll("#leFeedPool .le-nm-token").forEach((node) => {
+          node.classList.add("is-tappable");
+          node.setAttribute("draggable", "true");
+          node.addEventListener("click", () => {
+            if (locked || node.classList.contains("is-used")) return;
+            stageEl.querySelectorAll("#leFeedPool .le-nm-token").forEach((x) => x.classList.remove("is-selected"));
+            node.classList.add("is-selected");
+            selected = node;
+            snd.pop();
+          });
+          node.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData("text/plain", "treat");
+            selected = node;
+            node.classList.add("is-dragging");
+          });
+          node.addEventListener("dragend", () => node.classList.remove("is-dragging"));
+        });
+        basket.addEventListener("dragover", (e) => { e.preventDefault(); basket.classList.add("is-over"); });
+        basket.addEventListener("dragleave", () => basket.classList.remove("is-over"));
+        basket.addEventListener("drop", (e) => {
+          e.preventDefault();
+          basket.classList.remove("is-over");
+          addTreat(selected);
+        });
+        basket.addEventListener("click", () => addTreat(selected));
+        choicesEl.innerHTML = "";
+      }
+
+      /** 3) Count 21–30 — Underwater Counting Adventure */
+      function buildUnderwaterRound() {
+        const { min, max } = cqRange();
+        const n = randInt(min, max);
+        let counted = 0;
+        wrongTries = 0;
+        promptEl.textContent = "Count the sea creatures!";
+        say("Dive in! Count the sea creatures");
+        const creatures = Array.from({ length: n }, (_, i) => {
+          const left = 4 + (i % 6) * 15 + Math.random() * 2;
+          const top = 10 + Math.floor(i / 6) * 22 + Math.random() * 4;
+          const tone = ["fish", "bubble", "star"][i % 3];
+          return `<button type="button" class="le-nm-sea-item is-${tone}" data-i="${i}" style="left:${left}%;top:${top}%" aria-label="creature"></button>`;
+        }).join("");
+        stageEl.innerHTML = `
+          <div class="le-nm-cq-sea">
+            <div class="le-nm-sea-scene" id="leSea">${creatures}</div>
+            <p class="le-nm-tap-hint">Tap to count · <span id="leSeaCount">0</span> / ${n}</p>
+            <div class="le-nm-total-chip" id="leSeaTotal" hidden>Total: <strong>${n}</strong></div>
+          </div>`;
+        const counter = stageEl.querySelector("#leSeaCount");
+        const totalChip = stageEl.querySelector("#leSeaTotal");
+        stageEl.querySelectorAll(".le-nm-sea-item").forEach((node) => {
+          node.addEventListener("click", () => {
+            if (locked || node.classList.contains("is-counted")) return;
+            node.classList.add("is-counted");
+            counted++;
+            counter.textContent = String(counted);
+            snd.pop();
+            say(nameOf(counted));
+            if (counted === n) {
+              totalChip.hidden = false;
+              promptEl.textContent = "How many creatures did you find?";
+              say("How many creatures?");
+              renderChoices(uniqueNumsNear(n, min, max, 3).map(v => ({ label: v, value: v })), n);
+            }
+          });
+        });
+        choicesEl.innerHTML = "";
+      }
+
+      /** 4) One-by-One Counting — Tap Every Object */
+      function buildCqTapRound() {
+        const { min, max } = cqRange();
+        const softMax = round < 2 ? Math.min(max, 5) : Math.min(max, 10);
+        const n = randInt(min, softMax);
+        const kind = pickToken();
+        let tapped = 0;
+        wrongTries = 0;
+        promptEl.textContent = "Tap every object — one by one!";
+        say("Tap every object one by one");
+        stageEl.innerHTML = `
+          <div class="le-nm-cq-tap">
+            <div class="le-nm-objects le-nm-token-row" id="leTapObjs">${tokenRow(n, kind)}</div>
+            <p class="le-nm-tap-hint">Each object once · <span id="leTapCount">0</span> / ${n}</p>
+            <div class="le-nm-total-chip" id="leTapTotal" hidden>Final count: <strong>${n}</strong></div>
+          </div>`;
+        const counter = stageEl.querySelector("#leTapCount");
+        const totalChip = stageEl.querySelector("#leTapTotal");
+        stageEl.querySelectorAll(".le-nm-token").forEach((node) => {
+          node.classList.add("is-tappable");
+          node.addEventListener("click", () => {
+            if (locked || node.classList.contains("is-tapped")) return;
+            node.classList.add("is-tapped");
+            tapped++;
+            counter.textContent = String(tapped);
+            snd.pop();
+            say(nameOf(tapped));
+            if (tapped === n) {
+              totalChip.hidden = false;
+              onCorrect("Great one-by-one counting!");
+            }
+          });
+        });
+        choicesEl.innerHTML = "";
+      }
+
+      /** 5) Count Around Us — Counting Explorer (real-life scenes) */
+      function buildAroundRound() {
+        const scenes = [
+          { id: "park", title: "park", ask: "birds", prompt: "How many birds are in the park?", cls: "scene-park", itemCls: "is-bird" },
+          { id: "kitchen", title: "kitchen", ask: "apples", prompt: "How many apples are in the kitchen?", cls: "scene-kitchen", itemCls: "is-apple" },
+          { id: "bedroom", title: "bedroom", ask: "stars", prompt: "How many stars are in the bedroom?", cls: "scene-bedroom", itemCls: "is-star" },
+          { id: "playground", title: "playground", ask: "balls", prompt: "How many balls are in the playground?", cls: "scene-play", itemCls: "is-ball" },
+          { id: "garden", title: "garden", ask: "flowers", prompt: "How many flowers are in the garden?", cls: "scene-garden", itemCls: "is-flower" },
+        ];
+        const scene = scenes[round % scenes.length];
+        const { min, max } = cqRange();
+        const softMax = round < 2 ? Math.min(max, 8) : Math.min(max, 12);
+        const n = randInt(Math.max(min, 2), softMax);
+        wrongTries = 0;
+        promptEl.textContent = scene.prompt;
+        say(scene.prompt);
+        const items = Array.from({ length: n }, (_, i) => {
+          const left = 8 + (i % 4) * 22 + Math.random() * 4;
+          const top = 18 + Math.floor(i / 4) * 28 + Math.random() * 6;
+          return `<span class="le-nm-scene-item ${scene.itemCls}" style="left:${left}%;top:${top}%" aria-hidden="true"></span>`;
+        }).join("");
+        stageEl.innerHTML = `
+          <div class="le-nm-cq-around">
+            <p class="le-nm-scene-label">${escapeHtml(scene.title)}</p>
+            <div class="le-nm-life-scene ${scene.cls}">${items}</div>
+            <p class="le-nm-tap-hint">Look carefully, then choose the total</p>
+          </div>`;
+        renderChoices(uniqueNumsNear(n, 1, Math.max(softMax, n), 3).map(v => ({ label: v, value: v })), n);
+      }
+
+      /** 6) Count Sounds & Actions — Listen & Count */
+      function buildSoundsRound() {
+        const { min, max } = cqRange();
+        const softMax = round < 2 ? Math.min(max, 5) : Math.min(max, 8);
+        const n = randInt(Math.max(min, 2), softMax);
+        const actions = [
+          { id: "clap", label: "claps", speak: "clap" },
+          { id: "drum", label: "drum beats", speak: "drum" },
+          { id: "jump", label: "jumps", speak: "jump" },
+          { id: "knock", label: "knocks", speak: "knock" },
+        ];
+        const action = actions[round % actions.length];
+        let playing = false;
+        wrongTries = 0;
+
+        promptEl.textContent = "Listen carefully!";
+        stageEl.innerHTML = `
+          <div class="le-nm-cq-sounds">
+            <div class="le-nm-sound-card">
+              <p class="le-nm-prompt-soft">How many ${escapeHtml(action.label)}?</p>
+              <div class="le-nm-sound-visual" id="leSoundVisual" aria-hidden="true"></div>
+              <button type="button" class="le-nm-replay le-nm-replay-inline" id="lePlaySounds">Play sounds</button>
+            </div>
+            <div class="le-nm-sound-reveal" id="leSoundReveal" hidden>
+              <p class="le-nm-prompt-soft">You heard <strong>${n}</strong> ${escapeHtml(action.label)}</p>
+            </div>
+          </div>`;
+
+        async function playSequence() {
+          if (playing) return;
+          playing = true;
+          const visual = stageEl.querySelector("#leSoundVisual");
+          visual.innerHTML = "";
+          for (let i = 1; i <= n; i++) {
+            say(action.speak);
+            const beat = document.createElement("span");
+            beat.className = "le-nm-sound-beat is-" + action.id;
+            beat.textContent = String(i);
+            visual.appendChild(beat);
+            snd.pop();
+            await new Promise((r) => setTimeout(r, 650));
+          }
+          playing = false;
+          promptEl.textContent = "How many " + action.label + " did you hear?";
+          say("How many " + action.label + " did you hear?");
+        }
+
+        const playBtn = stageEl.querySelector("#lePlaySounds");
+        playBtn.addEventListener("click", () => { snd.pop(); playSequence(); });
+        // Auto-play once
+        setTimeout(playSequence, 400);
+
+        renderChoices(uniqueNumsNear(n, 1, softMax, 3).map(v => ({ label: v, value: v })), n, (ok) => {
+          if (ok) {
+            const reveal = stageEl.querySelector("#leSoundReveal");
+            if (reveal) reveal.hidden = false;
+          }
+        });
       }
 
       function buildRound() {
         clearBoard();
         const type = sub.type;
 
-        if (type === "meet_numbers" && !meetReady) {
-          startMeetExplore();
+        if (type === "nr_explorer") {
+          startNumberExplorer();
+          return;
+        }
+        if (type === "nr_train") {
+          startNumberTrain();
+          return;
+        }
+        if (type === "nr_balloons") {
+          startNumberBalloons();
           return;
         }
 
         roundEl.textContent = (round + 1) + " / " + ROUNDS;
         const max = sub.max || 5;
-        const emoji = pickObject();
 
-        if (type === "meet_numbers") {
-          buildMeetQuizRound();
+        if (type === "nr_detective") {
+          buildDetectiveRound();
+          return;
+        }
+        if (type === "nr_memory" || type === "match_same") {
+          buildMemoryRound();
+          return;
+        }
+        if (type === "nr_listen" || type === "number_names") {
+          buildListenRound();
+          return;
+        }
+        if (type === "nr_builder") {
+          buildBuilderRound();
           return;
         }
 
-        if (type === "find_number") {
-          buildFindRound();
-          return;
-        }
-
-        if (type === "match_same") {
-          buildMatchSameRound();
-          return;
-        }
-
-        if (type === "number_names") {
-          buildNumberNamesRound();
-          return;
-        }
+        if (type === "cq_garden") { buildGardenRound(); return; }
+        if (type === "cq_feed") { buildFeedRound(); return; }
+        if (type === "cq_underwater") { buildUnderwaterRound(); return; }
+        if (type === "cq_tap") { buildCqTapRound(); return; }
+        if (type === "cq_around") { buildAroundRound(); return; }
+        if (type === "cq_sounds") { buildSoundsRound(); return; }
 
         if (type === "pick_number") {
           const n = randInt(1, max);
@@ -840,15 +1300,27 @@
         }
 
         if (type === "count_objects" || type === "tap_count") {
-          const n = randInt(1, Math.min(max, type === "tap_count" ? 5 : max));
-          promptEl.textContent = "How many do you see?";
-          speak("How many?");
+          const min = sub.min || 1;
+          const tapMax = Math.min(max, 10);
+          const n = type === "tap_count"
+            ? randInt(min, tapMax)
+            : randInt(min, max);
+          const kind = pickToken();
+          const countPrompt = type === "tap_count"
+            ? "Tap each one to count"
+            : (sub.id === "cq_familiar"
+              ? "Count the toys"
+              : (sub.id === "cq_pictures"
+                ? "Count in the picture"
+                : (n > 10 ? "Count the groups — how many?" : "How many do you see?")));
+          promptEl.textContent = countPrompt;
+          say(type === "tap_count" ? "Tap each one" : "How many?");
           if (type === "tap_count") {
             let tapped = 0;
-            stageEl.innerHTML = `<div class="le-nm-objects" id="leTapObjs">${objectRow(n, emoji)}</div>
+            stageEl.innerHTML = `<div class="le-nm-objects le-nm-token-row" id="leTapObjs">${tokenRow(n, kind)}</div>
               <p class="le-nm-tap-hint">Tap each one · <span id="leTapCount">0</span>/${n}</p>`;
             const counter = stageEl.querySelector("#leTapCount");
-            stageEl.querySelectorAll(".le-nm-obj").forEach((node) => {
+            stageEl.querySelectorAll(".le-nm-token").forEach((node) => {
               node.classList.add("is-tappable");
               node.addEventListener("click", () => {
                 if (locked || node.classList.contains("is-tapped")) return;
@@ -861,18 +1333,51 @@
             });
             choicesEl.innerHTML = "";
           } else {
-            stageEl.innerHTML = `<div class="le-nm-objects">${objectRow(n, emoji)}</div>`;
-            renderChoices(uniqueNums(n, max, 3).map(v => ({ label: v, value: v })), n);
+            stageEl.innerHTML = qtyVisual(n, kind);
+            renderChoices(uniqueNumsNear(n, min, max, 3).map(v => ({ label: v, value: v })), n);
           }
           return;
         }
 
         if (type === "match_qty") {
-          const n = randInt(1, Math.min(max, 8));
+          const min = sub.min || 1;
+          const n = randInt(min, max);
+          const kind = pickToken();
           promptEl.textContent = "Match the number to the group";
-          speak("Match the number");
-          stageEl.innerHTML = `<div class="le-nm-objects">${objectRow(n, emoji)}</div>`;
-          renderChoices(uniqueNums(n, max, 3).map(v => ({ label: v, value: v })), n);
+          say("Match the number");
+          stageEl.innerHTML = qtyVisual(n, kind);
+          renderChoices(uniqueNumsNear(n, min, max, 3).map(v => ({ label: v, value: v })), n);
+          return;
+        }
+
+        if (type === "sort_qty") {
+          const target = randInt(1, Math.min(max, 5));
+          const distractors = [];
+          while (distractors.length < 2) {
+            const d = randInt(1, Math.min(max, 5));
+            if (d !== target && !distractors.includes(d)) distractors.push(d);
+          }
+          const groups = shuffle([
+            { side: "a", count: target },
+            { side: "b", count: distractors[0] },
+            { side: "c", count: distractors[1] },
+          ]);
+          promptEl.textContent = "Which group has " + target + "?";
+          say("Which group has " + NUMBER_NAMES[target]);
+          stageEl.innerHTML = `<div class="le-nm-compare le-nm-compare-3">
+            ${groups.map((g) => `
+              <button type="button" class="le-nm-group-pick" data-side="${g.side}">
+                <span class="le-nm-objects le-nm-token-row">${tokenRow(g.count, pickToken())}</span>
+              </button>`).join("")}
+          </div>`;
+          const answer = groups.find((g) => g.count === target).side;
+          stageEl.querySelectorAll(".le-nm-group-pick").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              if (locked) return;
+              if (btn.getAttribute("data-side") === answer) onCorrect();
+              else onWrong("Find the group of " + target);
+            });
+          });
           return;
         }
 
@@ -882,11 +1387,11 @@
           while (a === b) b = randInt(1, Math.min(max, 8));
           const askMore = Math.random() > 0.35;
           promptEl.textContent = askMore ? "Which group has more?" : "Which group has less?";
-          speak(promptEl.textContent);
+          say(promptEl.textContent);
           stageEl.innerHTML = `
             <div class="le-nm-compare">
-              <button type="button" class="le-nm-group-pick" data-side="a"><span class="le-nm-objects">${objectRow(a, emoji)}</span></button>
-              <button type="button" class="le-nm-group-pick" data-side="b"><span class="le-nm-objects">${objectRow(b, pickObject())}</span></button>
+              <button type="button" class="le-nm-group-pick" data-side="a"><span class="le-nm-objects le-nm-token-row">${tokenRow(a)}</span></button>
+              <button type="button" class="le-nm-group-pick" data-side="b"><span class="le-nm-objects le-nm-token-row">${tokenRow(b)}</span></button>
             </div>`;
           const answer = askMore ? (a > b ? "a" : "b") : (a < b ? "a" : "b");
           stageEl.querySelectorAll(".le-nm-group-pick").forEach((btn) => {
@@ -904,11 +1409,11 @@
           const same = Math.random() > 0.4;
           const other = same ? n : (n === 2 ? 3 : n - 1);
           promptEl.textContent = "Are the groups the same?";
-          speak(promptEl.textContent);
+          say(promptEl.textContent);
           stageEl.innerHTML = `
             <div class="le-nm-compare">
-              <div class="le-nm-group-view"><span class="le-nm-objects">${objectRow(n, emoji)}</span></div>
-              <div class="le-nm-group-view"><span class="le-nm-objects">${objectRow(other, pickObject())}</span></div>
+              <div class="le-nm-group-view"><span class="le-nm-objects le-nm-token-row">${tokenRow(n)}</span></div>
+              <div class="le-nm-group-view"><span class="le-nm-objects le-nm-token-row">${tokenRow(other)}</span></div>
             </div>`;
           renderChoices([
             { label: "Same", value: "same" },
@@ -923,13 +1428,14 @@
           let b = randInt(1, Math.max(1, sumMax - a));
           while (a + b > sumMax) b = randInt(1, Math.max(1, sumMax - a));
           const sum = a + b;
+          const kind = pickToken();
           promptEl.textContent = "How many altogether?";
-          speak("How many altogether?");
+          say("How many altogether?");
           stageEl.innerHTML = `
             <div class="le-nm-add">
-              <div class="le-nm-group-view"><span class="le-nm-objects">${objectRow(a, emoji)}</span></div>
+              <div class="le-nm-group-view"><span class="le-nm-objects le-nm-token-row">${tokenRow(a, kind)}</span></div>
               <span class="le-nm-plus">＋</span>
-              <div class="le-nm-group-view"><span class="le-nm-objects">${objectRow(b, pickObject())}</span></div>
+              <div class="le-nm-group-view"><span class="le-nm-objects le-nm-token-row">${tokenRow(b, kind)}</span></div>
             </div>`;
           renderChoices(uniqueNums(sum, sumMax, 3).map(v => ({ label: v, value: v })), sum);
           return;
@@ -937,14 +1443,15 @@
 
         if (type === "make_group") {
           const target = sub.target || 2;
+          const kind = pickToken();
           promptEl.textContent = "Make a group of " + target;
-          speak("Make a group of " + target);
+          say("Make a group of " + target);
           let selected = 0;
           const pool = target + 2;
-          stageEl.innerHTML = `<div class="le-nm-objects" id="leMakePool">${objectRow(pool, emoji)}</div>
+          stageEl.innerHTML = `<div class="le-nm-objects le-nm-token-row" id="leMakePool">${tokenRow(pool, kind)}</div>
             <p class="le-nm-tap-hint">Selected: <span id="leMakeCount">0</span> / ${target}</p>`;
           const counter = stageEl.querySelector("#leMakeCount");
-          stageEl.querySelectorAll(".le-nm-obj").forEach((node) => {
+          stageEl.querySelectorAll(".le-nm-token").forEach((node) => {
             node.classList.add("is-tappable");
             node.addEventListener("click", () => {
               if (locked) return;
@@ -965,39 +1472,49 @@
         }
 
         if (type === "next_number" || type === "before_after") {
-          const n = randInt(1, Math.max(2, max - 1));
-          if (type === "before_after" && Math.random() > 0.5 && n > 1) {
+          const min = sub.min || 1;
+          const n = randInt(Math.max(min, 1), Math.max(min + 1, max - 1));
+          if (type === "before_after" && Math.random() > 0.5 && n > min) {
             promptEl.textContent = "What comes before " + n + "?";
-            speak(promptEl.textContent);
-            renderChoices(uniqueNums(n - 1, max, 3).map(v => ({ label: v, value: v })), n - 1);
+            say(promptEl.textContent);
+            renderChoices(uniqueNumsNear(n - 1, min, max, 3).map(v => ({ label: v, value: v })), n - 1);
             stageEl.innerHTML = `<div class="le-nm-big-num">? → ${n}</div>`;
           } else {
-            promptEl.textContent = "What comes after " + n + "?";
-            speak(promptEl.textContent);
-            stageEl.innerHTML = `<div class="le-nm-big-num">${n} → ?</div>`;
-            renderChoices(uniqueNums(n + 1, max, 3).map(v => ({ label: v, value: v })), n + 1);
+            const ask = Math.min(n, max - 1);
+            promptEl.textContent = "What comes after " + ask + "?";
+            say(promptEl.textContent);
+            stageEl.innerHTML = `<div class="le-nm-big-num">${ask} → ?</div>`;
+            renderChoices(uniqueNumsNear(ask + 1, min, max, 3).map(v => ({ label: v, value: v })), ask + 1);
           }
           return;
         }
 
         if (type === "missing") {
-          const end = Math.min(max, randInt(4, max));
-          const miss = randInt(2, end - 1);
+          const min = sub.min || 1;
+          const span = Math.min(5, Math.max(3, max - min + 1));
+          const start = randInt(min, Math.max(min, max - span + 1));
+          const end = start + span - 1;
+          const miss = randInt(start + 1, end - 1);
           const seq = [];
-          for (let i = 1; i <= end; i++) seq.push(i === miss ? "?" : String(i));
+          for (let i = start; i <= end; i++) seq.push(i === miss ? "?" : String(i));
           promptEl.textContent = "Which number is missing?";
-          speak("Which number is missing?");
+          say("Which number is missing?");
           stageEl.innerHTML = `<div class="le-nm-seq">${seq.map(s => `<span class="le-nm-seq-item${s === "?" ? " miss" : ""}">${s}</span>`).join("")}</div>`;
-          renderChoices(uniqueNums(miss, max, 3).map(v => ({ label: v, value: v })), miss);
+          renderChoices(uniqueNumsNear(miss, start, end, 3).map(v => ({ label: v, value: v })), miss);
           return;
         }
 
         if (type === "arrange") {
-          const end = Math.min(max, sub.level === "A" ? 5 : 6);
-          const nums = shuffle(Array.from({ length: end }, (_, i) => i + 1));
-          let nextExpect = 1;
-          promptEl.textContent = "Tap numbers in order";
-          speak("Tap numbers in order");
+          const min = sub.min || 1;
+          const span = Math.min(sub.level === "A" ? 5 : 6, Math.max(3, max - min + 1));
+          const start = randInt(min, Math.max(min, max - span + 1));
+          const end = start + span - 1;
+          const nums = shuffle(Array.from({ length: span }, (_, i) => start + i));
+          let nextExpect = start;
+          promptEl.textContent = start === 1 && end <= 10
+            ? "Tap numbers in order"
+            : ("Tap " + start + " to " + end + " in order");
+          say("Tap numbers in order");
           stageEl.innerHTML = `<div class="le-nm-arrange" id="leArrange"></div>`;
           const box = stageEl.querySelector("#leArrange");
           nums.forEach((n) => {
@@ -1022,12 +1539,13 @@
 
         if (type === "qty_pattern") {
           const base = randInt(1, 3);
+          const kind = pickToken();
           promptEl.textContent = "What comes next in the pattern?";
-          speak("What comes next?");
+          say("What comes next?");
           stageEl.innerHTML = `<div class="le-nm-pattern">
-            <span class="le-nm-objects">${objectRow(base, emoji)}</span>
-            <span class="le-nm-objects">${objectRow(base, emoji)}</span>
-            <span class="le-nm-objects">${objectRow(base, emoji)}</span>
+            <span class="le-nm-objects le-nm-token-row">${tokenRow(base, kind)}</span>
+            <span class="le-nm-objects le-nm-token-row">${tokenRow(base, kind)}</span>
+            <span class="le-nm-objects le-nm-token-row">${tokenRow(base, kind)}</span>
             <span class="le-nm-seq-item miss">?</span>
           </div>`;
           renderChoices(uniqueNums(base, 5, 3).map(v => ({ label: v, value: v })), base);
@@ -1037,11 +1555,11 @@
         if (type === "one_many") {
           const many = Math.random() > 0.5;
           promptEl.textContent = many ? "Tap the MANY group" : "Tap the ONE";
-          speak(promptEl.textContent);
+          say(promptEl.textContent);
           stageEl.innerHTML = `
             <div class="le-nm-compare">
-              <button type="button" class="le-nm-group-pick" data-side="one"><span class="le-nm-objects">${objectRow(1, emoji)}</span></button>
-              <button type="button" class="le-nm-group-pick" data-side="many"><span class="le-nm-objects">${objectRow(randInt(3, 5), pickObject())}</span></button>
+              <button type="button" class="le-nm-group-pick" data-side="one"><span class="le-nm-objects le-nm-token-row">${tokenRow(1)}</span></button>
+              <button type="button" class="le-nm-group-pick" data-side="many"><span class="le-nm-objects le-nm-token-row">${tokenRow(randInt(3, 5))}</span></button>
             </div>`;
           const answer = many ? "many" : "one";
           stageEl.querySelectorAll(".le-nm-group-pick").forEach((btn) => {
@@ -1056,10 +1574,10 @@
 
         if (type === "none_zero") {
           promptEl.textContent = "Which plate has none?";
-          speak("Which plate has none?");
+          say("Which plate has none?");
           stageEl.innerHTML = `
             <div class="le-nm-compare">
-              <button type="button" class="le-nm-group-pick" data-side="some"><span class="le-nm-objects">${objectRow(randInt(1, 3), emoji)}</span></button>
+              <button type="button" class="le-nm-group-pick" data-side="some"><span class="le-nm-objects le-nm-token-row">${tokenRow(randInt(1, 3))}</span></button>
               <button type="button" class="le-nm-group-pick" data-side="none"><span class="le-nm-empty">Empty</span></button>
             </div>`;
           stageEl.querySelectorAll(".le-nm-group-pick").forEach((btn) => {
@@ -1075,11 +1593,11 @@
         if (type === "all_some") {
           const askAll = Math.random() > 0.5;
           promptEl.textContent = askAll ? "Tap ALL the stars" : "Tap SOME (not all)";
-          speak(promptEl.textContent);
+          say(promptEl.textContent);
           const total = 4;
           let selected = 0;
-          stageEl.innerHTML = `<div class="le-nm-objects" id="leAllSome">${objectRow(total, "⭐")}</div>`;
-          stageEl.querySelectorAll(".le-nm-obj").forEach((node) => {
+          stageEl.innerHTML = `<div class="le-nm-objects le-nm-token-row" id="leAllSome">${tokenRow(total, "star")}</div>`;
+          stageEl.querySelectorAll(".le-nm-token").forEach((node) => {
             node.classList.add("is-tappable");
             node.addEventListener("click", () => {
               if (locked) return;
@@ -1107,12 +1625,13 @@
         if (type === "part_whole") {
           const whole = randInt(3, Math.min(max, 5));
           const part = randInt(1, whole - 1);
+          const kind = pickToken();
           promptEl.textContent = "How many are in the WHOLE group?";
-          speak("How many in the whole group?");
+          say("How many in the whole group?");
           stageEl.innerHTML = `
             <div class="le-nm-part-whole">
-              <div class="le-nm-group-view"><p>Part</p><span class="le-nm-objects">${objectRow(part, emoji)}</span></div>
-              <div class="le-nm-group-view is-whole"><p>Whole</p><span class="le-nm-objects">${objectRow(whole, emoji)}</span></div>
+              <div class="le-nm-group-view"><p>Part</p><span class="le-nm-objects le-nm-token-row">${tokenRow(part, kind)}</span></div>
+              <div class="le-nm-group-view is-whole"><p>Whole</p><span class="le-nm-objects le-nm-token-row">${tokenRow(whole, kind)}</span></div>
             </div>`;
           renderChoices(uniqueNums(whole, max, 3).map(v => ({ label: v, value: v })), whole);
           return;
@@ -1121,7 +1640,7 @@
         if (type === "trace") {
           const n = randInt(1, Math.min(max, 10));
           promptEl.textContent = "Trace number " + n + " with your finger";
-          speak("Trace number " + n);
+          say("Trace number " + n);
           stageEl.innerHTML = `
             <div class="le-nm-trace-wrap">
               <div class="le-nm-trace-ghost">${n}</div>
@@ -1173,7 +1692,7 @@
         if (type === "number_memory") {
           const n = randInt(1, Math.min(max, 9));
           promptEl.textContent = "Remember this number!";
-          speak("Remember this number");
+          say("Remember this number");
           stageEl.innerHTML = `<div class="le-nm-big-num" id="leMemNum">${n}</div>`;
           setTimeout(() => {
             if (api.getCurrent && api.getCurrent() !== "leMathPlay") return;
@@ -1185,6 +1704,7 @@
 
         // fallback
         promptEl.textContent = "Find number 1";
+        say("Find number one");
         stageEl.innerHTML = `<div class="le-nm-big-num">1</div>`;
         renderChoices([{ label: 1, value: 1 }, { label: 2, value: 2 }, { label: 3, value: 3 }], 1);
       }
@@ -1228,9 +1748,7 @@
     };
 
     function uniqueNums(answer, max, count) {
-      const set = new Set([answer]);
-      while (set.size < count) set.add(randInt(1, Math.max(max, answer)));
-      return Array.from(set);
+      return uniqueNumsNear(answer, 1, Math.max(max, answer), count);
     }
 
     function uniqueNumsInRange(answer, min, max, count) {
@@ -1243,9 +1761,29 @@
       return Array.from(set);
     }
 
+    /** Nearby distractors so teens/twenties aren't mixed with tiny numbers. */
+    function uniqueNumsNear(answer, min, max, count) {
+      const lo = Math.min(min, max);
+      const hi = Math.max(min, max);
+      const set = new Set([answer]);
+      let delta = 1;
+      while (set.size < count && delta <= 30) {
+        if (answer - delta >= lo) set.add(answer - delta);
+        if (set.size >= count) break;
+        if (answer + delta <= hi) set.add(answer + delta);
+        delta++;
+      }
+      // Fallback fill if band is tiny
+      let guard = 0;
+      while (set.size < count && guard < 40) {
+        set.add(randInt(lo, hi));
+        guard++;
+      }
+      return Array.from(set);
+    }
+
     function numberWord(n) {
-      return ["zero","one","two","three","four","five","six","seven","eight","nine","ten",
-        "eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenty"][n] || String(n);
+      return NUMBER_NAMES[n] || String(n);
     }
 
     return { CURRICULUM };

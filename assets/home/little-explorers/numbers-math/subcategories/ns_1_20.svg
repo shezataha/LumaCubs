@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+
+<defs>
+  <linearGradient id="bgns120" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#EAF8F2"/>
+    <stop offset="100%" stop-color="#C8F0E0"/>
+  </linearGradient>
+  <filter id="shns120" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="3" stdDeviation="2.2" flood-color="#5B4A7A" flood-opacity="0.18"/>
+  </filter>
+</defs>
+<rect width="256" height="256" rx="56" fill="url(#bgns120)"/>
+<circle cx="48" cy="52" r="10" fill="#fff" opacity="0.35"/>
+<circle cx="210" cy="40" r="7" fill="#fff" opacity="0.28"/>
+<circle cx="222" cy="78" r="5" fill="#fff" opacity="0.22"/>
+<g filter="url(#shns120)"><g transform="translate(30,95)">
+    <ellipse cx="22" cy="50" rx="15.84" ry="6" fill="#5B4A7A" opacity="0.14"/>
+    <rect width="44" height="44" rx="12.32" fill="#7ECDB5"/>
+    <rect x="6" y="5" width="24.200000000000003" height="12.32" rx="10" fill="#fff" opacity="0.28"/>
+    <text x="22" y="30.799999999999997" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="23" font-weight="700" fill="#fff">16</text>
+  </g><g transform="translate(90,95)">
+    <ellipse cx="22" cy="50" rx="15.84" ry="6" fill="#5B4A7A" opacity="0.14"/>
+    <rect width="44" height="44" rx="12.32" fill="#A8D4F0"/>
+    <rect x="6" y="5" width="24.200000000000003" height="12.32" rx="10" fill="#fff" opacity="0.28"/>
+    <text x="22" y="30.799999999999997" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="23" font-weight="700" fill="#fff">17</text>
+  </g><g transform="translate(150,95)">
+    <ellipse cx="22" cy="50" rx="15.84" ry="6" fill="#5B4A7A" opacity="0.14"/>
+    <rect width="44" height="44" rx="12.32" fill="#C9A0FF"/>
+    <rect x="6" y="5" width="24.200000000000003" height="12.32" rx="10" fill="#fff" opacity="0.28"/>
+    <text x="22" y="30.799999999999997" text-anchor="middle" font-family="Verdana, Geneva, sans-serif" font-size="23" font-weight="700" fill="#fff">18</text>
+  </g><text x="210" y="128" font-family="Verdana" font-size="22" font-weight="700" fill="#FFD166">…</text></g>
+</svg>

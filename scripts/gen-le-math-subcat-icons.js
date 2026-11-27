@@ -121,10 +121,55 @@ function teddy(x, y) {
 const icons = {
   nr_1_5: card("nr15", "#FFE8D6", "#FFD0B8", nb(40, 90, "1", "#FFD166", 48) + nb(100, 70, "3", "#C9A0FF", 52) + nb(162, 95, "5", "#7ECDB5", 48)),
   nr_1_10: card("nr110", "#EAF4FF", "#C8E0F8", nb(28, 100, "1", "#FFD166", 40) + nb(72, 78, "4", "#FF8FAB", 44) + nb(120, 60, "7", "#A8D4F0", 48) + nb(172, 85, "10", "#7ECDB5", 46)),
+  nr_meet_1_10: card(
+    "nrm110",
+    "#FFE8D6",
+    "#FFD0B8",
+    nb(30, 95, "1", "#FFD166", 42) +
+      nb(78, 80, "4", "#FF8FAB", 46) +
+      nb(128, 95, "7", "#C9A0FF", 42) +
+      nb(178, 80, "10", "#7ECDB5", 46)
+  ),
   nr_pic_match: card("nrpm", "#FFF0F4", "#FFE0EA", apple(40, 90, 42) + apple(95, 110, 36) + nb(150, 78, "3", "#C9A0FF", 58)),
   nr_identify: card("nrid", "#F3EEFF", "#E0D4FF", nb(88, 70, "?", "#C9A0FF", 72) + star(40, 50, 24, "#FFD166") + star(180, 160, 22, "#FF8FAB") + star(48, 170, 18, "#7ECDB5")),
   nr_find: card("nrfd", "#EAF8F2", "#C8F0E0", magnifier(55, 55) + nb(150, 120, "4", "#FFD166", 52)),
   nr_names: card("nrnm", "#FFF8E8", "#FFE9B8", book(88, 70, 80, "#A8D4F0") + nb(40, 140, "2", "#FF8FAB", 40) + nb(170, 145, "5", "#7ECDB5", 40)),
+  nr_detective: card(
+    "nrdet",
+    "#EAF8F2",
+    "#C8F0E0",
+    magnifier(40, 50) +
+      nb(145, 70, "7", "#FFD166", 48) +
+      nb(170, 140, "3", "#FF8FAB", 36) +
+      star(55, 160, 22, "#C9A0FF")
+  ),
+  nr_memory_match: card(
+    "nrmem",
+    "#F3EEFF",
+    "#E0D4FF",
+    `<rect x="40" y="70" width="70" height="90" rx="16" fill="#C9A0FF"/>` +
+      `<rect x="146" y="70" width="70" height="90" rx="16" fill="#FFE29A"/>` +
+      `<text x="75" y="130" text-anchor="middle" font-family="Verdana" font-size="34" font-weight="700" fill="#fff">?</text>` +
+      `<text x="181" y="130" text-anchor="middle" font-family="Verdana" font-size="34" font-weight="700" fill="#7E5FB0">5</text>`
+  ),
+  nr_names_sounds: card(
+    "nrns",
+    "#FFF8E8",
+    "#FFE9B8",
+    book(70, 60, 90, "#A8D4F0") +
+      `<circle cx="175" cy="150" r="28" fill="#FF8FAB"/>` +
+      `<path d="M168 140 L168 160 L185 150 Z" fill="#fff"/>` +
+      nb(40, 150, "8", "#7ECDB5", 36)
+  ),
+  nr_builder: card(
+    "nrbuild",
+    "#EAF4FF",
+    "#C8E0F8",
+    nb(50, 80, "2", "#A8D4F0", 56) +
+      `<rect x="130" y="78" width="70" height="86" rx="18" fill="none" stroke="#C9A0FF" stroke-width="5" stroke-dasharray="10 8"/>` +
+      `<text x="165" y="138" text-anchor="middle" font-family="Verdana" font-size="40" font-weight="700" fill="#C9A0FF">?</text>` +
+      nb(150, 175, "8", "#FFD166", 34)
+  ),
 
   cq_1_5: card("cq15", "#EAF8F2", "#C8F0E0", apple(36, 100, 34) + apple(78, 115, 34) + apple(120, 100, 34) + apple(162, 115, 34) + apple(100, 55, 34)),
   cq_1_10: card(
@@ -152,6 +197,94 @@ const icons = {
     "#F6F0FC",
     "#E8D5F5",
     apple(40, 70, 30) + nb(40, 130, "1", "#C9A0FF", 36) + apple(110, 70, 30) + nb(110, 130, "2", "#FF8FAB", 36) + apple(180, 70, 30) + nb(180, 130, "3", "#7ECDB5", 36)
+  ),
+  cq_1_20: card(
+    "cq120",
+    "#EAF8F2",
+    "#C8F0E0",
+    nb(40, 70, "10", "#7ECDB5", 48) +
+      nb(110, 70, "10", "#A8D4F0", 48) +
+      `<text x="128" y="170" text-anchor="middle" font-family="Verdana" font-size="28" font-weight="700" fill="#5B4A7A">20</text>` +
+      star(190, 150, 22, "#FFD166")
+  ),
+  cq_1_30: card(
+    "cq130",
+    "#FFF0E8",
+    "#FFDCC8",
+    nb(28, 75, "10", "#FFD166", 42) +
+      nb(90, 75, "10", "#FF8FAB", 42) +
+      nb(152, 75, "10", "#C9A0FF", 42) +
+      `<text x="128" y="175" text-anchor="middle" font-family="Verdana" font-size="30" font-weight="700" fill="#5B4A7A">30</text>`
+  ),
+  cq_count_1_10: card(
+    "cqcnt10",
+    "#EAF8F2",
+    "#C8F0E0",
+    apple(40, 90, 34) + apple(90, 110, 34) + apple(140, 90, 34) + star(190, 120, 26, "#FFD166") +
+      `<text x="128" y="70" text-anchor="middle" font-family="Verdana" font-size="22" font-weight="700" fill="#5B4A7A">1–10</text>`
+  ),
+  cq_count_11_20: card(
+    "cqcnt20",
+    "#FFF0E8",
+    "#FFDCC8",
+    `<circle cx="70" cy="110" r="36" fill="#F5D0E8"/>` +
+      `<circle cx="58" cy="100" r="6" fill="#5B4A7A"/>` +
+      `<circle cx="82" cy="100" r="6" fill="#5B4A7A"/>` +
+      apple(140, 90, 30) + apple(180, 110, 30) + apple(155, 140, 28) +
+      `<text x="70" y="175" text-anchor="middle" font-family="Verdana" font-size="18" font-weight="700" fill="#7E5FB0">Feed</text>`
+  ),
+  cq_count_21_30: card(
+    "cqcnt30",
+    "#EAF4FF",
+    "#A8D4F0",
+    `<ellipse cx="70" cy="120" rx="34" ry="20" fill="#FFD166"/>` +
+      `<ellipse cx="130" cy="100" rx="28" ry="16" fill="#FF8FAB"/>` +
+      `<circle cx="180" cy="130" r="16" fill="#fff" opacity="0.7"/>` +
+      `<text x="128" y="185" text-anchor="middle" font-family="Verdana" font-size="20" font-weight="700" fill="#5B4A7A">21–30</text>`
+  ),
+  cq_one_by_one: card(
+    "cqobo",
+    "#F6F0FC",
+    "#E8D5F5",
+    apple(40, 70, 30) + nb(40, 130, "1", "#C9A0FF", 36) +
+      apple(110, 70, 30) + nb(110, 130, "2", "#FF8FAB", 36) +
+      apple(180, 70, 30) + nb(180, 130, "3", "#7ECDB5", 36)
+  ),
+  cq_around_us: card(
+    "cqaru",
+    "#FFF8E8",
+    "#FFE9B8",
+    `<rect x="40" y="55" width="176" height="130" rx="22" fill="#C8E8FF" opacity="0.7"/>` +
+      `<rect x="40" y="140" width="176" height="45" fill="#B8E0A8" opacity="0.85"/>` +
+      star(70, 80, 24) + star(120, 95, 22, "#FF8FAB") + star(170, 75, 24, "#A8D4F0")
+  ),
+  cq_sounds: card(
+    "cqsnd",
+    "#F3EEFF",
+    "#E0D4FF",
+    `<circle cx="90" cy="120" r="34" fill="#FF8FAB"/>` +
+      `<path d="M82 108 L82 132 L102 120 Z" fill="#fff"/>` +
+      nb(150, 95, "4", "#C9A0FF", 52) +
+      star(190, 160, 20, "#FFD166")
+  ),
+
+  nr_meet_11_20: card(
+    "nrm1120",
+    "#EAF4FF",
+    "#C8E0F8",
+    nb(40, 90, "11", "#A8D4F0", 48) + nb(105, 75, "15", "#7ECDB5", 52) + nb(170, 95, "20", "#C9A0FF", 48)
+  ),
+  nr_meet_21_30: card(
+    "nrm2130",
+    "#FFF8E8",
+    "#FFE9B8",
+    nb(36, 90, "21", "#FFD166", 48) + nb(100, 75, "25", "#FF8FAB", 52) + nb(168, 95, "30", "#7ECDB5", 48)
+  ),
+  nr_find_bigger: card(
+    "nrfbig",
+    "#F3EEFF",
+    "#E0D4FF",
+    magnifier(45, 55) + nb(145, 110, "24", "#C9A0FF", 58)
   ),
 
   nt_1_5: card(
@@ -351,6 +484,15 @@ const icons = {
       nb(142, 125, "9", "#7ECDB5", 32) +
       nb(178, 125, "10", "#A8D4F0", 34)
   ),
+  ns_1_20: card(
+    "ns120",
+    "#EAF8F2",
+    "#C8F0E0",
+    nb(30, 95, "16", "#7ECDB5", 44) +
+      nb(90, 95, "17", "#A8D4F0", 44) +
+      nb(150, 95, "18", "#C9A0FF", 44) +
+      `<text x="210" y="128" font-family="Verdana" font-size="22" font-weight="700" fill="#FFD166">…</text>`
+  ),
   ns_forward: card(
     "nsfwd",
     "#EAF8F2",
@@ -379,6 +521,18 @@ const icons = {
     "#FFF0E8",
     "#FFDCC8",
     nb(20, 95, "6", "#FFD166", 40) + nb(68, 95, "7", "#FF8FAB", 40) + nb(116, 95, "?", "#C9A0FF", 40) + nb(164, 95, "9", "#7ECDB5", 40) + nb(205, 110, "10", "#A8D4F0", 36)
+  ),
+  mp_miss_20: card(
+    "mpm20",
+    "#F0F7FF",
+    "#D6E8FF",
+    nb(20, 95, "14", "#A8D4F0", 40) + nb(72, 95, "15", "#7ECDB5", 40) + nb(124, 95, "?", "#FFD166", 40) + nb(176, 95, "17", "#FF8FAB", 40)
+  ),
+  mp_miss_30: card(
+    "mpm30",
+    "#F6F0FC",
+    "#E8D5F5",
+    nb(20, 95, "25", "#C9A0FF", 40) + nb(72, 95, "26", "#FF8FAB", 40) + nb(124, 95, "?", "#FFD166", 40) + nb(176, 95, "28", "#7ECDB5", 40)
   ),
   mp_complete: card(
     "mpcomp",

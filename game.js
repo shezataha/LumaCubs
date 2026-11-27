@@ -78,7 +78,7 @@
 
   const FALLBACK_MATH_CATEGORIES = [
     { id: 101, code: "number_recognition_number_sense", title: "Number Recognition & Number Sense", description: "Spot, name, and understand numbers", accent_color: "#FFD8C2", age_label: "Ages 2–8" },
-    { id: 102, code: "counting_quantity", title: "Counting & Quantity", description: "Count objects and build quantity sense", accent_color: "#C8F0E0", age_label: "Ages 2–8" },
+    { id: 102, code: "counting_quantity", title: "Counting Skills", description: "Count objects and build quantity sense from 1 to 30", accent_color: "#C8F0E0", age_label: "Ages 2–8" },
     { id: 103, code: "number_tracing_writing", title: "Number Tracing & Writing", description: "Trace and write numbers with care", accent_color: "#E8D5F5", age_label: "Ages 2–8" },
     { id: 104, code: "number_comparison", title: "Number Comparison", description: "Compare numbers: more, less, and equal", accent_color: "#A8D4F0", age_label: "Ages 4–8" },
     { id: 105, code: "addition", title: "Addition", description: "Put groups together to make more", accent_color: "#FFB4C8", age_label: "Ages 4–8" },
@@ -634,7 +634,10 @@
       else go("leNumbersMath");
     }
     else if (current === "leMathCat") go("leNumbersMath");
-    else if (current === "leNumbersMath") go("littleExplorers");
+    else if (current === "leNumbersMath") {
+      if (ageHubReturn) go(ageHubReturn);
+      else go("littleExplorers");
+    }
     else if (current === "segment") {
       if (ageHubReturn) go(ageHubReturn);
       else if (parentSession && parentSession.childId) go("ageDashboard");
@@ -1620,6 +1623,9 @@
       const explore = (data.explore_segments || []).map(normalizeSegment);
       const mathRec = data.recommended_math_categories || [];
       const mathExplore = data.explore_math_categories || [];
+      const childAgeCode = (data.child && (data.child.age_group_code || data.child.resolved_age_group_code)) || "";
+      const isLittleExplorer = childAgeCode === "little_explorers"
+        || Number(data.child && (data.child.resolved_age_group_id || data.child.age_group_id)) === 1;
 
       wrap.innerHTML = "";
       wrap.appendChild(el("section", "age-dash-hero", `
@@ -1636,6 +1642,21 @@
           <button type="button" class="p-btn plain" id="dashSwitchChild">Switch child</button>
         </div>`));
 
+      function openAgeDashSegment(seg) {
+        snd.pop();
+        trackPlatformProgress("segment." + (seg.code || seg.id), "started");
+        if (isLittleExplorer && seg.code === "numbers_math" && typeof VIEWS.leNumbersMath === "function") {
+          ageHubReturn = "ageDashboard";
+          go("leNumbersMath");
+          return;
+        }
+        if (isLittleExplorer) {
+          openLittleExplorersSegment(seg);
+          return;
+        }
+        go("segment", seg);
+      }
+
       function appendSegmentSection(title, subtitle, items, placementClass) {
         const section = el("section", "age-dash-section");
         section.appendChild(el("div", "home-section-label", `<h3>${title}</h3><p>${subtitle}</p>`));
@@ -1649,11 +1670,7 @@
               <span class="segment-title">${escapeHtml(seg.title || seg.code)}</span>
               <span class="segment-meta">${placementClass === "is-explore" ? "Explore" : "Recommended"}</span>`);
             card.type = "button";
-            card.addEventListener("click", () => {
-              snd.pop();
-              trackPlatformProgress("segment." + (seg.code || seg.id), "started");
-              go("segment", seg);
-            });
+            card.addEventListener("click", () => openAgeDashSegment(seg));
             grid.appendChild(card);
           });
         }
@@ -1688,6 +1705,11 @@
           card.addEventListener("click", () => {
             snd.pop();
             trackPlatformProgress("category." + (cat.code || cat.id), "started");
+            if (isLittleExplorer && typeof VIEWS.leNumbersMath === "function") {
+              ageHubReturn = "ageDashboard";
+              go("leNumbersMath");
+              return;
+            }
             go("mathCategory", { segment: mathSeg, category: cat });
           });
           mathGrid.appendChild(card);
