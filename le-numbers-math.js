@@ -99,11 +99,12 @@
       accent: "#FFE29A",
       art: ART + "introduction_to_addition.jpg",
       subs: [
-        { id: "ia_objects", title: "Addition using objects", level: "B", type: "add_groups", max: 5 },
-        { id: "ia_visual", title: "Add two groups visually", level: "A", type: "add_groups", max: 4 },
-        { id: "ia_picture", title: "Picture-based addition", level: "B", type: "add_groups", max: 5 },
-        { id: "ia_within_5", title: "Simple addition within 5", level: "B", type: "add_groups", max: 5 },
-        { id: "ia_within_10", title: "Introduction to adding within 10", level: "B", type: "add_groups", max: 10 },
+        { id: "ia_together", title: "Bring Them Together", level: "A", type: "ia_together", min: 1, max: 5, art: SUB_ART + "ia_together.svg" },
+        { id: "ia_one_more", title: "Add One More", level: "A", type: "ia_one_more", min: 1, max: 5, art: SUB_ART + "ia_one_more.svg" },
+        { id: "ia_train", title: "Addition Train", level: "A", type: "ia_train", min: 1, max: 6, art: SUB_ART + "ia_train.svg" },
+        { id: "ia_magic", title: "Magic Number Show", level: "B", type: "ia_magic", min: 1, max: 8, art: SUB_ART + "ia_magic.svg" },
+        { id: "ia_story", title: "Addition Story Adventures", level: "B", type: "ia_story", min: 1, max: 8, art: SUB_ART + "ia_story.svg" },
+        { id: "ia_build", title: "Build the Addition", level: "B", type: "ia_build", min: 1, max: 10, art: SUB_ART + "ia_build.svg" },
       ],
     },
     {
@@ -1883,6 +1884,21 @@
           carrot: `<path d="M32 14l10 36H22z" fill="#FF8FAB"/><path d="M32 14c-6-10 0-12 0-12M32 14c6-10 0-12 0-12M26 12c0-8 12-8 12 0" stroke="#4F9B78" stroke-width="3" fill="none"/><path d="M26 30h12M28 40h8" stroke="#E86A8A" stroke-width="2"/>`,
           tomato: `<circle cx="32" cy="36" r="18" fill="#FF6B6B"/><path d="M32 18c-4 0-8 4-6 8 4-2 8-2 12 0 2-4-2-8-6-8z" fill="#E84A4A"/><path d="M28 14c0-6 8-6 8 0M32 10v8" stroke="#4F9B78" stroke-width="3" stroke-linecap="round"/>${shine}`,
           berry: `<circle cx="24" cy="34" r="10" fill="#C9A0FF"/><circle cx="40" cy="34" r="10" fill="#A878E0"/><circle cx="32" cy="24" r="10" fill="#E8D5F5"/><rect x="30" y="10" width="4" height="10" rx="2" fill="#4F9B78"/><ellipse cx="38" cy="14" rx="6" ry="3" fill="#7ECDB5"/>`,
+          strawberry: `<path d="M32 12c-4 0-8 4-10 10-4 12 6 30 10 34 4-4 14-22 10-34-2-6-6-10-10-10z" fill="#FF6B6B"/><path d="M22 14c4-8 16-8 20 0-6 2-14 2-20 0z" fill="#4F9B78"/><circle cx="26" cy="28" r="1.6" fill="#FFD166"/><circle cx="34" cy="34" r="1.6" fill="#FFD166"/><circle cx="30" cy="42" r="1.6" fill="#FFD166"/>`,
+          orange: `<circle cx="32" cy="34" r="18" fill="#FFB86B"/><circle cx="32" cy="34" r="18" fill="none" stroke="#E89A4A" stroke-width="2"/><path d="M32 16c-2 6 2 10 0 14" stroke="#E89A4A" stroke-width="2" fill="none"/><ellipse cx="38" cy="16" rx="6" ry="3" fill="#7ECDB5"/><rect x="30" y="12" width="4" height="8" rx="2" fill="#8B5A2B"/>${shine}`,
+          grape: `<circle cx="32" cy="22" r="7" fill="#C9A0FF"/><circle cx="24" cy="30" r="7" fill="#A878E0"/><circle cx="40" cy="30" r="7" fill="#A878E0"/><circle cx="28" cy="40" r="7" fill="#8A5CC8"/><circle cx="36" cy="40" r="7" fill="#8A5CC8"/><rect x="30" y="8" width="4" height="10" rx="2" fill="#4F9B78"/>`,
+          rabbit: `<ellipse cx="32" cy="40" rx="16" ry="14" fill="#FFE8DA"/><circle cx="32" cy="26" r="12" fill="#FFE8DA"/><ellipse cx="22" cy="10" rx="5" ry="12" fill="#FFD0B8"/><ellipse cx="42" cy="10" rx="5" ry="12" fill="#FFD0B8"/><circle cx="28" cy="24" r="2" fill="#5B4A7A"/><circle cx="36" cy="24" r="2" fill="#5B4A7A"/><ellipse cx="32" cy="30" rx="3" ry="2" fill="#FF8FAB"/>`,
+          cat: `<ellipse cx="32" cy="40" rx="16" ry="13" fill="#FFD166"/><circle cx="32" cy="26" r="12" fill="#FFD166"/><path d="M20 18l-6-12 12 6M44 18l6-12-12 6" fill="#FFD166"/><circle cx="27" cy="24" r="2" fill="#5B4A7A"/><circle cx="37" cy="24" r="2" fill="#5B4A7A"/><path d="M28 30c2 2 6 2 8 0" stroke="#E86A8A" stroke-width="2" fill="none"/>`,
+          elephant: `<ellipse cx="30" cy="36" rx="18" ry="14" fill="#C9B8D8"/><circle cx="46" cy="28" r="10" fill="#C9B8D8"/><path d="M50 32c8 8 4 20-2 22" stroke="#A898C0" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="48" cy="26" r="2" fill="#5B4A7A"/><ellipse cx="18" cy="48" rx="5" ry="7" fill="#A898C0"/><ellipse cx="36" cy="48" rx="5" ry="7" fill="#A898C0"/>`,
+          magician: `<circle cx="32" cy="22" r="12" fill="#FFD0B8"/><path d="M16 24c4-14 28-14 32 0" fill="#5B4A7A"/><rect x="18" y="34" width="28" height="22" rx="8" fill="#7E5FB0"/><rect x="22" y="12" width="20" height="8" rx="2" fill="#5B4A7A"/><circle cx="28" cy="20" r="1.8" fill="#5B4A7A"/><circle cx="36" cy="20" r="1.8" fill="#5B4A7A"/><path d="M28 26c2 2 6 2 8 0" stroke="#E86A8A" stroke-width="1.6" fill="none"/>`,
+          hat: `<ellipse cx="32" cy="48" rx="24" ry="8" fill="#5B4A7A"/><path d="M20 46h24l-4-28H24z" fill="#3D3550"/><rect x="18" y="18" width="28" height="8" rx="3" fill="#FFD166"/><circle cx="40" cy="12" r="5" fill="#FF8FAB"/>`,
+          wand: `<rect x="30" y="18" width="4" height="36" rx="2" fill="#C4956A"/><path d="M32 8l3 8 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1z" fill="#FFD166"/>`,
+          traineng: `<rect x="8" y="28" width="40" height="18" rx="4" fill="#FF8FAB"/><rect x="10" y="14" width="18" height="16" rx="4" fill="#FFD166"/><rect x="14" y="18" width="10" height="8" rx="2" fill="#A8D4F0"/><circle cx="18" cy="50" r="6" fill="#5B4A7A"/><circle cx="38" cy="50" r="6" fill="#5B4A7A"/><rect x="48" y="32" width="10" height="12" rx="2" fill="#7ECDB5"/>`,
+          sparkle: `<path d="M32 8l4 16 16 4-16 4-4 16-4-16-16-4 16-4z" fill="#FFD166"/><circle cx="32" cy="32" r="4" fill="#fff" opacity=".5"/>`,
+          cookie: `<circle cx="32" cy="32" r="20" fill="#E8B86D"/><circle cx="24" cy="26" r="3" fill="#8B5A2B"/><circle cx="36" cy="24" r="2.5" fill="#8B5A2B"/><circle cx="30" cy="36" r="3" fill="#8B5A2B"/><circle cx="40" cy="38" r="2.5" fill="#8B5A2B"/>`,
+          plus: `<circle cx="32" cy="32" r="22" fill="#7ECDB5"/><rect x="28" y="16" width="8" height="32" rx="3" fill="#fff"/><rect x="16" y="28" width="32" height="8" rx="3" fill="#fff"/>`,
+          equals: `<circle cx="32" cy="32" r="22" fill="#C9A0FF"/><rect x="16" y="22" width="32" height="8" rx="3" fill="#fff"/><rect x="16" y="34" width="32" height="8" rx="3" fill="#fff"/>`,
+          numblock: `<rect x="8" y="8" width="48" height="48" rx="12" fill="#A8D4F0"/><rect x="12" y="12" width="24" height="12" rx="4" fill="#fff" opacity=".35"/>`,
           bee: `<ellipse cx="32" cy="34" rx="14" ry="10" fill="#FFD166"/><path d="M22 34h20M22 28h20M22 40h20" stroke="#5B4A7A" stroke-width="3"/><circle cx="44" cy="30" r="6" fill="#5B4A7A"/><circle cx="46" cy="28" r="1.5" fill="#fff"/><ellipse cx="18" cy="22" rx="10" ry="8" fill="#A8D4F0" opacity=".75"/><ellipse cx="30" cy="18" rx="10" ry="8" fill="#EAF4FF" opacity=".75"/>`,
           ladybug: `<ellipse cx="32" cy="36" rx="18" ry="14" fill="#FF6B6B"/><ellipse cx="32" cy="36" rx="2" ry="14" fill="#5B4A7A"/><circle cx="24" cy="32" r="3" fill="#5B4A7A"/><circle cx="40" cy="32" r="3" fill="#5B4A7A"/><circle cx="28" cy="42" r="2.5" fill="#5B4A7A"/><circle cx="36" cy="42" r="2.5" fill="#5B4A7A"/><circle cx="32" cy="20" r="8" fill="#5B4A7A"/><circle cx="29" cy="18" r="1.5" fill="#fff"/><circle cx="35" cy="18" r="1.5" fill="#fff"/>`,
           soil: `<ellipse cx="32" cy="40" rx="26" ry="12" fill="#8B5A2B"/><ellipse cx="32" cy="36" rx="22" ry="8" fill="#C9845A"/><ellipse cx="22" cy="36" rx="4" ry="2" fill="#6B4423" opacity=".5"/><ellipse cx="40" cy="38" rx="5" ry="2" fill="#6B4423" opacity=".4"/>`,
@@ -3092,6 +3108,556 @@
         choicesEl.innerHTML = "";
       }
 
+      /* ========== Introduction to Addition — 6 unique experiences ========== */
+
+      function iaRange() {
+        const lo = Math.max(1, sub.min || 1);
+        const hi = Math.min(10, sub.max || 5);
+        const soft = round < 2 ? Math.min(hi, Math.max(lo + 1, lo + Math.floor((hi - lo) * 0.45))) : hi;
+        return { min: lo, max: Math.max(lo, soft), hardMax: hi };
+      }
+
+      function iaSumPair(sumMax) {
+        const maxSum = Math.max(2, sumMax);
+        let a = randInt(1, Math.max(1, Math.floor(maxSum / 2)));
+        let b = randInt(1, Math.max(1, maxSum - a));
+        while (a + b > maxSum) b = randInt(1, Math.max(1, maxSum - a));
+        if (a + b < 2) b = 1;
+        return { a, b, sum: a + b };
+      }
+
+      function iaNum(n, size) {
+        const s = size || 56;
+        return `<span class="le-nm-ia-num" style="width:${s}px;height:${s}px;font-size:${Math.round(s * 0.48)}px">${n}</span>`;
+      }
+
+      function iaObjs(kind, count, size, cls) {
+        return Array.from({ length: count }, (_, i) =>
+          `<span class="le-nm-ia-obj ${cls || ""}" data-i="${i}">${qcIcon(kind, size || 52, i % 6)}</span>`
+        ).join("");
+      }
+
+      function iaRevealTotal(sum, msg) {
+        confetti(12);
+        stageEl.insertAdjacentHTML("beforeend",
+          `<div class="le-nm-ia-total-pop" id="leIaTotal">${iaNum(sum, 88)}<p>${msg || "Altogether!"}</p></div>`);
+        say(nameOf(sum));
+        setTimeout(() => onCorrect(msg || ("Altogether " + sum + "!")), 1100);
+      }
+
+      /** 1) Bring Them Together — drag two fruit groups into one basket */
+      function buildIaTogetherRound() {
+        const { max, hardMax } = iaRange();
+        const fruits = ["apple", "banana", "strawberry", "orange", "grape"];
+        const kind = fruits[randInt(0, fruits.length - 1)];
+        const { a, b, sum } = iaSumPair(Math.min(max, 5));
+        wrongTries = 0;
+        let putA = false;
+        let putB = false;
+        promptEl.textContent = "Let's bring them together!";
+        say("Let's bring them together");
+        stageEl.innerHTML = `
+          <div class="le-nm-ia le-nm-ia-together">
+            <div class="le-nm-ia-scene is-fruit">
+              <div class="le-nm-ia-mascot" aria-hidden="true">${qcIcon("doll", 52)}</div>
+              <div class="le-nm-ia-groups">
+                <div class="le-nm-ia-side is-left" id="leIaGroupA" data-side="a" draggable="true">
+                  <span class="le-nm-ia-badge">${a}</span>
+                  <div class="le-nm-ia-pile">${iaObjs(kind, a, 54)}</div>
+                </div>
+                <div class="le-nm-ia-basket is-drop" id="leIaBasket">
+                  ${qcIcon("basket", 64)}
+                  <div class="le-nm-ia-basket-items" id="leIaItems"></div>
+                  <span class="le-nm-ia-basket-label">Basket</span>
+                </div>
+                <div class="le-nm-ia-side is-right" id="leIaGroupB" data-side="b" draggable="true">
+                  <span class="le-nm-ia-badge">${b}</span>
+                  <div class="le-nm-ia-pile">${iaObjs(kind, b, 54)}</div>
+                </div>
+              </div>
+            </div>
+            <p class="le-nm-tap-hint">Drag or tap each group into the basket</p>
+          </div>`;
+        choicesEl.innerHTML = "";
+        const basket = stageEl.querySelector("#leIaBasket");
+        const items = stageEl.querySelector("#leIaItems");
+        let selected = null;
+
+        function dropSide(side) {
+          if (locked) return;
+          if (side === "a" && putA) return;
+          if (side === "b" && putB) return;
+          const group = stageEl.querySelector(side === "a" ? "#leIaGroupA" : "#leIaGroupB");
+          const count = side === "a" ? a : b;
+          group.classList.add("is-empty");
+          items.insertAdjacentHTML("beforeend", iaObjs(kind, count, 40, "is-in"));
+          items.querySelectorAll(".le-nm-ia-obj.is-in:not(.is-popped)").forEach((n, i) => {
+            n.classList.add("is-popped");
+            setTimeout(() => qcBounce(n), i * 60);
+          });
+          if (side === "a") putA = true; else putB = true;
+          snd.pop();
+          say(nameOf(count));
+          selected = null;
+          if (putA && putB) {
+            basket.classList.add("is-full");
+            promptEl.textContent = "Counting altogether…";
+            let said = 0;
+            const bits = items.querySelectorAll(".le-nm-ia-obj");
+            const tick = () => {
+              if (said >= bits.length) {
+                iaRevealTotal(sum, sum + " altogether!");
+                return;
+              }
+              bits[said].classList.add("is-counted");
+              say(nameOf(said + 1));
+              said++;
+              setTimeout(tick, 420);
+            };
+            setTimeout(tick, 350);
+          }
+        }
+
+        stageEl.querySelectorAll(".le-nm-ia-side").forEach((sideEl) => {
+          sideEl.addEventListener("click", () => {
+            if (locked || sideEl.classList.contains("is-empty")) return;
+            selected = sideEl.getAttribute("data-side");
+            stageEl.querySelectorAll(".le-nm-ia-side").forEach((s) => s.classList.remove("is-selected"));
+            sideEl.classList.add("is-selected");
+            snd.pop();
+          });
+          sideEl.addEventListener("dragstart", (e) => {
+            if (sideEl.classList.contains("is-empty")) { e.preventDefault(); return; }
+            selected = sideEl.getAttribute("data-side");
+            sideEl.classList.add("is-dragging");
+            try { e.dataTransfer.setData("text/plain", selected); } catch (err) { /* ignore */ }
+          });
+          sideEl.addEventListener("dragend", () => sideEl.classList.remove("is-dragging"));
+        });
+        basket.addEventListener("click", () => { if (selected) dropSide(selected); });
+        basket.addEventListener("dragover", (e) => { e.preventDefault(); basket.classList.add("is-over"); });
+        basket.addEventListener("dragleave", () => basket.classList.remove("is-over"));
+        basket.addEventListener("drop", (e) => {
+          e.preventDefault();
+          basket.classList.remove("is-over");
+          if (selected) dropSide(selected);
+        });
+      }
+
+      /** 2) Add One More — add exactly one object to a collection */
+      function buildIaOneMoreRound() {
+        const { min, max } = iaRange();
+        const kinds = [
+          { id: "carrot", who: "rabbit" },
+          { id: "apple", who: "teddy" },
+          { id: "flower", who: "rabbit" },
+          { id: "berry", who: "cat" },
+        ];
+        const pick = kinds[randInt(0, kinds.length - 1)];
+        const n = randInt(Math.max(1, min), Math.min(max, 4));
+        const total = n + 1;
+        wrongTries = 0;
+        promptEl.textContent = "Add one more!";
+        say("Add one more");
+        stageEl.innerHTML = `
+          <div class="le-nm-ia le-nm-ia-onemore">
+            <div class="le-nm-ia-scene is-animal">
+              <div class="le-nm-ia-hero">
+                ${qcIcon(pick.who, 64)}
+                <div class="le-nm-ia-collection" id="leIaColl">
+                  <span class="le-nm-ia-badge" id="leIaBadge">${n}</span>
+                  ${iaObjs(pick.id, n, 50)}
+                </div>
+              </div>
+              <div class="le-nm-ia-choices-row" id="leIaPool">
+                ${Array.from({ length: 4 }, (_, i) => {
+                  const k = i === 0 ? pick.id : (i === 1 ? "flower" : (i === 2 ? "carrot" : "apple"));
+                  return `<button type="button" class="le-nm-ia-pick" data-kind="${k}" aria-label="${k}">${qcIcon(k, 58, i)}</button>`;
+                }).join("")}
+              </div>
+            </div>
+            <p class="le-nm-tap-hint">Tap exactly one ${pick.id} to add</p>
+          </div>`;
+        choicesEl.innerHTML = "";
+        const coll = stageEl.querySelector("#leIaColl");
+        const badge = stageEl.querySelector("#leIaBadge");
+        stageEl.querySelectorAll(".le-nm-ia-pick").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (locked) return;
+            if (btn.getAttribute("data-kind") !== pick.id) {
+              snd.wrong();
+              btn.classList.add("is-shake");
+              setTimeout(() => btn.classList.remove("is-shake"), 400);
+              onWrong("Add one " + pick.id + "!");
+              return;
+            }
+            locked = true;
+            btn.classList.add("is-used");
+            stageEl.querySelectorAll(".le-nm-ia-pick").forEach((p) => p.classList.add("is-used"));
+            const bit = document.createElement("span");
+            bit.className = "le-nm-ia-obj is-new";
+            bit.innerHTML = qcIcon(pick.id, 50);
+            coll.appendChild(bit);
+            qcBounce(bit);
+            badge.textContent = String(total);
+            badge.classList.add("is-bump");
+            snd.pop();
+            say(nameOf(n) + ". Add one. " + nameOf(total));
+            promptEl.textContent = n + " and one more is " + total + "!";
+            setTimeout(() => iaRevealTotal(total, "Now " + total + "!"), 700);
+          });
+        });
+      }
+
+      /** 3) Addition Train — passengers board at stations */
+      function buildIaTrainRound() {
+        const { max } = iaRange();
+        const animals = ["rabbit", "teddy", "cat", "elephant"];
+        const start = randInt(1, 2);
+        const add1 = randInt(1, Math.min(2, max - start - 1));
+        const add2 = randInt(1, Math.max(1, Math.min(2, max - start - add1)));
+        const sum = start + add1 + add2;
+        wrongTries = 0;
+        let boarded1 = 0;
+        let boarded2 = 0;
+        let phase = "station1";
+        const startKind = animals[randInt(0, animals.length - 1)];
+
+        function passHtml(kind, count, extraCls) {
+          return Array.from({ length: count }, (_, i) =>
+            `<button type="button" class="le-nm-ia-pass ${extraCls || ""}" data-kind="${kind}" data-i="${i}" aria-label="passenger">${qcIcon(kind, 48, i)}</button>`
+          ).join("");
+        }
+
+        promptEl.textContent = "The train is ready — passengers wait at the station!";
+        say("Help passengers board the train");
+        stageEl.innerHTML = `
+          <div class="le-nm-ia le-nm-ia-train">
+            <div class="le-nm-ia-scene is-rail">
+              <div class="le-nm-ia-station-sign" id="leIaStation">Station 1</div>
+              <div class="le-nm-ia-traincar" id="leIaCar">
+                ${qcIcon("traineng", 70)}
+                <div class="le-nm-ia-carriages" id="leIaPassengers">${passHtml(startKind, start, "is-onboard")}</div>
+                <span class="le-nm-ia-badge" id="leIaBadge">${start}</span>
+              </div>
+              <div class="le-nm-ia-track" aria-hidden="true"></div>
+              <div class="le-nm-ia-platform" id="leIaPlatform">
+                ${passHtml(animals[1], add1, "is-waiting")}
+              </div>
+            </div>
+            <p class="le-nm-tap-hint" id="leIaHint">Tap waiting passengers to board · ${start} on the train</p>
+          </div>`;
+        choicesEl.innerHTML = "";
+        const platform = stageEl.querySelector("#leIaPlatform");
+        const passengers = stageEl.querySelector("#leIaPassengers");
+        const badge = stageEl.querySelector("#leIaBadge");
+        const hint = stageEl.querySelector("#leIaHint");
+        const station = stageEl.querySelector("#leIaStation");
+
+        function updateBadge(n) {
+          badge.textContent = String(n);
+          badge.classList.remove("is-bump");
+          void badge.offsetWidth;
+          badge.classList.add("is-bump");
+        }
+
+        function bindWaiting() {
+          platform.querySelectorAll(".le-nm-ia-pass.is-waiting").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              if (locked || btn.classList.contains("is-used")) return;
+              if (phase === "station1") {
+                btn.classList.add("is-used");
+                passengers.insertAdjacentHTML("beforeend",
+                  `<span class="le-nm-ia-pass is-onboard">${qcIcon(btn.getAttribute("data-kind"), 48)}</span>`);
+                boarded1++;
+                updateBadge(start + boarded1);
+                snd.pop();
+                say(nameOf(start + boarded1));
+                if (boarded1 >= add1) {
+                  phase = "travel";
+                  locked = true;
+                  hint.textContent = "Choo choo! Next station…";
+                  say("Next station");
+                  stageEl.querySelector(".le-nm-ia-traincar").classList.add("is-moving");
+                  setTimeout(() => {
+                    stageEl.querySelector(".le-nm-ia-traincar").classList.remove("is-moving");
+                    phase = "station2";
+                    locked = false;
+                    station.textContent = "Station 2";
+                    platform.innerHTML = passHtml(animals[2], add2, "is-waiting");
+                    hint.textContent = "More friends! Tap them to board";
+                    say("More passengers");
+                    bindWaiting();
+                  }, 900);
+                }
+              } else if (phase === "station2") {
+                btn.classList.add("is-used");
+                passengers.insertAdjacentHTML("beforeend",
+                  `<span class="le-nm-ia-pass is-onboard">${qcIcon(btn.getAttribute("data-kind"), 48)}</span>`);
+                boarded2++;
+                updateBadge(start + add1 + boarded2);
+                snd.pop();
+                say(nameOf(start + add1 + boarded2));
+                if (boarded2 >= add2) {
+                  phase = "done";
+                  locked = true;
+                  station.textContent = "Destination!";
+                  hint.textContent = "All aboard — let's count everyone!";
+                  say("Let's count everyone");
+                  setTimeout(() => {
+                    locked = false;
+                    iaRevealTotal(sum, sum + " passengers!");
+                  }, 600);
+                }
+              }
+            });
+          });
+        }
+        bindWaiting();
+      }
+
+      /** 4) Magic Number Show — magician makes more objects appear */
+      function buildIaMagicRound() {
+        const { max, hardMax } = iaRange();
+        const props = ["balloon", "star", "teddy", "flower", "sparkle"];
+        // reuse star via sparkle/flower; star may not exist - use sparkle
+        const kind = ["balloon", "teddy", "flower", "cupcake"][randInt(0, 3)];
+        const { a, b, sum } = iaSumPair(Math.min(max, 6));
+        wrongTries = 0;
+        let revealed = false;
+        promptEl.textContent = "Count the magic objects, then tap the hat!";
+        say("Count, then tap the magic hat");
+        stageEl.innerHTML = `
+          <div class="le-nm-ia le-nm-ia-magic">
+            <div class="le-nm-ia-scene is-stage">
+              <div class="le-nm-ia-curtains" aria-hidden="true"></div>
+              <div class="le-nm-ia-magician">${qcIcon("magician", 72)}</div>
+              <div class="le-nm-ia-stage-floor" id="leIaStage">
+                ${iaObjs(kind, a, 54, "is-start")}
+              </div>
+              <button type="button" class="le-nm-ia-hat" id="leIaHat" aria-label="magic hat">
+                ${qcIcon("hat", 72)}${qcIcon("wand", 40)}
+              </button>
+            </div>
+            <p class="le-nm-tap-hint" id="leIaHint">First there are ${a}. Tap the hat for more magic!</p>
+          </div>`;
+        choicesEl.innerHTML = "";
+        const stageFloor = stageEl.querySelector("#leIaStage");
+        const hint = stageEl.querySelector("#leIaHint");
+        stageEl.querySelector("#leIaHat").addEventListener("click", () => {
+          if (locked || revealed) return;
+          revealed = true;
+          locked = true;
+          snd.pop();
+          say("Abracadabra!");
+          stageEl.querySelector("#leIaHat").classList.add("is-cast");
+          let i = 0;
+          const addNext = () => {
+            if (i >= b) {
+              hint.textContent = "How many altogether now?";
+              promptEl.textContent = "How many do you see now?";
+              say("How many altogether?");
+              locked = false;
+              renderChoices(uniqueNumsNear(sum, 1, hardMax, 3).map(v => ({ label: v, value: v })), sum);
+              return;
+            }
+            const el = document.createElement("span");
+            el.className = "le-nm-ia-obj is-magic";
+            el.innerHTML = qcIcon(kind, 54, i + 2);
+            stageFloor.appendChild(el);
+            qcBounce(el);
+            snd.pop();
+            i++;
+            setTimeout(addNext, 380);
+          };
+          setTimeout(addNext, 280);
+        });
+      }
+
+      /** 5) Addition Story Adventures — narration-driven short stories */
+      function buildIaStoryRound() {
+        const { max, hardMax } = iaRange();
+        const { a, b, sum } = iaSumPair(Math.min(max, 6));
+        const stories = [
+          {
+            setting: "party",
+            who: "rabbit",
+            friend: "teddy",
+            item: "cupcake",
+            open: "A little rabbit has cupcakes for a party.",
+            add: "A teddy friend brings more cupcakes!",
+          },
+          {
+            setting: "picnic",
+            who: "cat",
+            friend: "rabbit",
+            item: "cookie",
+            open: "A kitty packs cookies for a picnic.",
+            add: "A bunny friend brings more cookies!",
+          },
+          {
+            setting: "garden",
+            who: "bird",
+            friend: "butterfly",
+            item: "berry",
+            open: "A bird finds berries in the garden.",
+            add: "A butterfly shows even more berries!",
+          },
+          {
+            setting: "park",
+            who: "teddy",
+            friend: "cat",
+            item: "balloon",
+            open: "A teddy holds balloons at the park.",
+            add: "A cat friend brings more balloons!",
+          },
+        ];
+        // bird may not exist - use plane or doll. Check - no bird. Use rabbit for bird stories or add bird quickly.
+        const story = stories[randInt(0, stories.length - 1)];
+        if (story.who === "bird") story.who = "rabbit";
+        wrongTries = 0;
+        let step = 0;
+        promptEl.textContent = "Story time!";
+        say(story.open);
+
+        function render() {
+          if (step === 0) {
+            stageEl.innerHTML = `
+              <div class="le-nm-ia le-nm-ia-story is-${story.setting}">
+                <div class="le-nm-ia-scene is-story">
+                  <div class="le-nm-ia-story-cast">${qcIcon(story.who, 64)}</div>
+                  <div class="le-nm-ia-story-objs">${iaObjs(story.item, a, 52)}</div>
+                  <p class="le-nm-ia-story-line">${story.open} <strong>${a}</strong></p>
+                  <button type="button" class="le-nm-ia-next" id="leIaNext">What happens next?</button>
+                </div>
+              </div>`;
+            choicesEl.innerHTML = "";
+            stageEl.querySelector("#leIaNext").addEventListener("click", () => {
+              step = 1;
+              snd.pop();
+              say(story.add);
+              render();
+            });
+          } else if (step === 1) {
+            stageEl.innerHTML = `
+              <div class="le-nm-ia le-nm-ia-story is-${story.setting}">
+                <div class="le-nm-ia-scene is-story">
+                  <div class="le-nm-ia-story-cast">${qcIcon(story.who, 56)}${qcIcon(story.friend, 56)}</div>
+                  <div class="le-nm-ia-story-objs">
+                    ${iaObjs(story.item, a, 48, "is-start")}
+                    <span class="le-nm-ia-plus-lite">${qcIcon("plus", 36)}</span>
+                    ${iaObjs(story.item, b, 48, "is-new")}
+                  </div>
+                  <p class="le-nm-ia-story-line">${story.add} <strong>+ ${b}</strong></p>
+                  <button type="button" class="le-nm-ia-next" id="leIaNext">How many altogether?</button>
+                </div>
+              </div>`;
+            choicesEl.innerHTML = "";
+            stageEl.querySelectorAll(".le-nm-ia-obj.is-new").forEach((n, i) => setTimeout(() => qcBounce(n), i * 80));
+            stageEl.querySelector("#leIaNext").addEventListener("click", () => {
+              step = 2;
+              snd.pop();
+              promptEl.textContent = "How many " + story.item + "s altogether?";
+              say("How many altogether?");
+              stageEl.innerHTML = `
+                <div class="le-nm-ia le-nm-ia-story is-${story.setting}">
+                  <div class="le-nm-ia-scene is-story">
+                    <div class="le-nm-ia-story-cast">${qcIcon(story.who, 52)}${qcIcon(story.friend, 52)}</div>
+                    <div class="le-nm-ia-story-objs">${iaObjs(story.item, sum, 52)}</div>
+                    <p class="le-nm-ia-story-line">${a} + ${b} = ?</p>
+                  </div>
+                </div>`;
+              renderChoices(uniqueNumsNear(sum, 1, hardMax, 3).map(v => ({ label: v, value: v })), sum);
+            });
+          }
+        }
+        render();
+      }
+
+      /** 6) Build the Addition — drag the answer number block into the equation */
+      function buildIaBuildRound() {
+        const { max, hardMax } = iaRange();
+        const kind = ["block", "apple", "star", "ball"][randInt(0, 3)];
+        // star may not exist - use sparkle
+        const objKind = kind === "star" ? "sparkle" : kind;
+        const { a, b, sum } = iaSumPair(Math.min(max, 8));
+        wrongTries = 0;
+        const options = uniqueNumsNear(sum, 1, hardMax, 3);
+        promptEl.textContent = "Build the addition — find the missing number!";
+        say("Find the missing number");
+        stageEl.innerHTML = `
+          <div class="le-nm-ia le-nm-ia-build">
+            <div class="le-nm-ia-scene is-workshop">
+              <div class="le-nm-ia-mascot">${qcIcon("teddy", 52)}</div>
+              <div class="le-nm-ia-visual-eq">
+                <div class="le-nm-ia-eq-group">${iaObjs(objKind, a, 40)}</div>
+                <span>${qcIcon("plus", 40)}</span>
+                <div class="le-nm-ia-eq-group">${iaObjs(objKind, b, 40)}</div>
+              </div>
+              <div class="le-nm-ia-equation">
+                ${iaNum(a, 64)}
+                <span class="le-nm-ia-sym">${qcIcon("plus", 44)}</span>
+                ${iaNum(b, 64)}
+                <span class="le-nm-ia-sym">${qcIcon("equals", 44)}</span>
+                <div class="le-nm-ia-answer-slot is-drop" id="leIaSlot" aria-label="answer slot"></div>
+              </div>
+              <div class="le-nm-ia-blocks" id="leIaBlocks">
+                ${options.map((n) =>
+                  `<button type="button" class="le-nm-ia-block" data-n="${n}" draggable="true" aria-label="${n}">${iaNum(n, 64)}</button>`
+                ).join("")}
+              </div>
+            </div>
+            <p class="le-nm-tap-hint">Drag or tap the correct number block into the empty space</p>
+          </div>`;
+        choicesEl.innerHTML = "";
+        const slot = stageEl.querySelector("#leIaSlot");
+        let selected = null;
+
+        function place(n, btn) {
+          if (locked) return;
+          if (Number(n) !== sum) {
+            snd.wrong();
+            if (btn) {
+              btn.classList.add("is-shake");
+              setTimeout(() => btn.classList.remove("is-shake"), 400);
+            }
+            onWrong("Count both groups again!");
+            return;
+          }
+          locked = true;
+          slot.classList.add("is-filled");
+          slot.innerHTML = iaNum(sum, 64);
+          if (btn) btn.classList.add("is-used");
+          qcBounce(slot);
+          snd.correct();
+          promptEl.textContent = a + " + " + b + " = " + sum + "!";
+          say(nameOf(a) + " plus " + nameOf(b) + " equals " + nameOf(sum));
+          confetti(12);
+          setTimeout(() => onCorrect("Perfect equation!"), 900);
+        }
+
+        stageEl.querySelectorAll(".le-nm-ia-block").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (locked) return;
+            selected = btn;
+            stageEl.querySelectorAll(".le-nm-ia-block").forEach((b) => b.classList.remove("is-selected"));
+            btn.classList.add("is-selected");
+            place(btn.getAttribute("data-n"), btn);
+          });
+          btn.addEventListener("dragstart", (e) => {
+            selected = btn;
+            try { e.dataTransfer.setData("text/plain", btn.getAttribute("data-n")); } catch (err) { /* ignore */ }
+          });
+        });
+        slot.addEventListener("dragover", (e) => { e.preventDefault(); slot.classList.add("is-over"); });
+        slot.addEventListener("dragleave", () => slot.classList.remove("is-over"));
+        slot.addEventListener("drop", (e) => {
+          e.preventDefault();
+          slot.classList.remove("is-over");
+          if (selected) place(selected.getAttribute("data-n"), selected);
+        });
+      }
+
       function buildRound() {
         clearBoard();
         const type = sub.type;
@@ -3148,6 +3714,13 @@
         if (type === "qc_g_grow") { buildGardenWatchGrowRound(); return; }
         if (type === "qc_aquarium") { buildAquariumRound(); return; }
         if (type === "qc_party") { buildPartyRound(); return; }
+
+        if (type === "ia_together") { buildIaTogetherRound(); return; }
+        if (type === "ia_one_more") { buildIaOneMoreRound(); return; }
+        if (type === "ia_train") { buildIaTrainRound(); return; }
+        if (type === "ia_magic") { buildIaMagicRound(); return; }
+        if (type === "ia_story") { buildIaStoryRound(); return; }
+        if (type === "ia_build") { buildIaBuildRound(); return; }
 
         if (type === "nt_guided" || type === "nt_follow" || type === "nt_complete" || type === "nt_freehand" || type === "trace") {
           buildNumberTraceRound(type === "trace" ? "nt_guided" : type);
