@@ -1230,7 +1230,7 @@
         </div>
       </section>
 
-      <!-- 3. Learning Made Magical (includes all 3 age adventures) -->
+      <!-- 3. Learning Made Magical (all 3 age groups live inside this section) -->
       <section class="home-parent" id="home-about" aria-label="Learning made magical">
         <div class="home-parent-intro">
           <div class="home-parent-art">
@@ -1242,11 +1242,8 @@
             <button type="button" class="home-btn home-btn-secondary" id="homeAboutExplore">Start Exploring</button>
           </div>
         </div>
-        <div class="home-ages home-ages-inside" id="home-ages" aria-label="Choose your learning adventure">
-          <div class="home-section-head">
-            <h3>Choose Your Learning Adventure</h3>
-            <p>Every child has a magical journey of discovery!</p>
-          </div>
+        <div class="home-ages home-ages-inside" id="home-ages" aria-label="Age learning groups">
+          <p class="home-ages-prompt">Pick your learning adventure</p>
           <div class="home-age-grid" aria-label="Age learning sections"></div>
         </div>
       </section>
@@ -1278,13 +1275,13 @@
       card.className = "age-home-card tone-" + section.tone + (isSelected ? " is-selected" : "");
       card.href = "#age/" + section.slug;
       card.setAttribute("data-age-section", section.id);
-      card.setAttribute("aria-label", section.name + ", " + section.ages + ". Start learning");
+      card.setAttribute("aria-label", section.name + ", " + section.ages + ". Open learning dashboard");
       card.style.setProperty("--age-card-delay", (index * 70) + "ms");
       card.innerHTML = `
-        <span class="age-home-art">
+        <span class="age-home-art" aria-hidden="true">
           <img
             src="${escapeHtml(section.illustration)}"
-            alt="${escapeHtml(section.name)} illustration"
+            alt=""
             width="640"
             height="480"
             loading="lazy"
@@ -1296,7 +1293,7 @@
           <span class="age-home-ages">${escapeHtml(section.ages)}</span>
           <span class="age-home-name">${escapeHtml(section.name)}</span>
           <span class="age-home-desc">${escapeHtml(section.description)}</span>
-          <span class="age-home-cta">Start Learning</span>
+          <span class="age-home-cta" aria-hidden="true">Start Learning</span>
         </span>
       `;
       card.addEventListener("click", (e) => {

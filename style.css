@@ -4214,11 +4214,11 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   line-height: 1.4;
 }
 
-/* ---- Age cards ---- */
+/* ---- Age cards (inside Learning Made Magical) ---- */
 .home-age-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  gap: 18px;
   align-items: stretch;
 }
 
@@ -4226,21 +4226,22 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   --age-accent: #FFD8C2;
   --age-accent-deep: #FFB894;
   --age-wash: #FFF4EC;
-  --age-glow: rgba(255, 184, 148, 0.35);
+  --age-glow: rgba(255, 184, 148, 0.32);
   position: relative;
   display: flex;
   flex-direction: column;
+  height: 100%;
   text-decoration: none;
   color: inherit;
-  border-radius: 34px;
+  border-radius: 28px;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 80% 55% at 50% -10%, var(--age-glow), transparent 60%),
-    linear-gradient(180deg, #FFFCF8 0%, var(--age-wash) 100%);
+    radial-gradient(ellipse 90% 60% at 50% -8%, var(--age-glow), transparent 58%),
+    linear-gradient(165deg, #FFFEFB 0%, var(--age-wash) 100%);
   border: 1.5px solid rgba(255, 255, 255, 0.98);
   box-shadow:
-    0 14px 32px rgba(74, 68, 88, 0.10),
-    0 2px 0 rgba(255, 255, 255, 0.9) inset;
+    0 12px 28px rgba(74, 68, 88, 0.09),
+    0 1px 0 rgba(255, 255, 255, 0.95) inset;
   cursor: pointer;
   transform: translateY(0) scale(1);
   transition:
@@ -4260,17 +4261,17 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   border-radius: inherit;
   pointer-events: none;
   background:
-    radial-gradient(circle at 18% 12%, rgba(255,255,255,0.55), transparent 28%),
-    radial-gradient(circle at 88% 18%, rgba(255,255,255,0.28), transparent 22%);
-  opacity: 0.9;
+    radial-gradient(circle at 16% 10%, rgba(255,255,255,0.6), transparent 30%),
+    radial-gradient(circle at 90% 16%, rgba(255,255,255,0.28), transparent 24%);
+  opacity: 0.85;
   z-index: 1;
 }
 
 .age-home-card.tone-peach {
-  --age-accent: #FFD8C2;
-  --age-accent-deep: #FFB894;
-  --age-wash: #FFF1E6;
-  --age-glow: rgba(255, 184, 148, 0.42);
+  --age-accent: #FFD4B8;
+  --age-accent-deep: #F5A97A;
+  --age-wash: #FFF0E6;
+  --age-glow: rgba(245, 169, 122, 0.38);
 }
 .age-home-card.tone-mint {
   --age-accent: #C8F0E0;
@@ -4279,16 +4280,16 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   --age-glow: rgba(142, 217, 190, 0.35);
 }
 .age-home-card.tone-lilac {
-  --age-accent: #E0D0F5;
-  --age-accent-deep: #C9B1E8;
-  --age-wash: #F5EEFC;
-  --age-glow: rgba(201, 177, 232, 0.45);
+  --age-accent: #E2D4F6;
+  --age-accent-deep: #B89AD9;
+  --age-wash: #F4EDFB;
+  --age-glow: rgba(184, 154, 217, 0.4);
 }
 .age-home-card.tone-sky {
-  --age-accent: #C8E8F5;
-  --age-accent-deep: #8EC8E0;
-  --age-wash: #ECF7FC;
-  --age-glow: rgba(142, 200, 224, 0.42);
+  --age-accent: #C9E8F6;
+  --age-accent-deep: #7EBDD8;
+  --age-wash: #EAF5FB;
+  --age-glow: rgba(126, 189, 216, 0.4);
 }
 .age-home-card.tone-sun {
   --age-accent: #FFE29A;
@@ -4299,34 +4300,34 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
 
 .age-home-card:hover,
 .age-home-card:focus-visible {
-  transform: translateY(-10px) scale(1.022);
+  transform: translateY(-8px) scale(1.018);
   box-shadow:
-    0 22px 44px rgba(74, 68, 88, 0.16),
-    0 0 0 1px color-mix(in srgb, var(--age-accent-deep) 55%, white),
-    0 0 28px var(--age-glow);
-  border-color: var(--age-accent-deep);
+    0 20px 40px rgba(74, 68, 88, 0.14),
+    0 0 0 1px color-mix(in srgb, var(--age-accent-deep) 45%, white),
+    0 0 24px var(--age-glow);
+  border-color: color-mix(in srgb, var(--age-accent-deep) 70%, white);
   outline: none;
 }
 
 .age-home-card:active {
-  transform: translateY(-3px) scale(0.992);
+  transform: translateY(-2px) scale(0.994);
 }
 
 .age-home-card.is-selected {
   box-shadow:
     0 0 0 3px rgba(255, 255, 255, 0.95),
-    0 0 0 6px var(--age-accent-deep),
-    0 20px 40px rgba(74, 68, 88, 0.14);
+    0 0 0 5px var(--age-accent-deep),
+    0 18px 36px rgba(74, 68, 88, 0.12);
 }
 
 .age-home-art {
   position: relative;
   z-index: 2;
   display: block;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 5 / 4;
   background:
-    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.55), transparent 42%),
-    var(--age-accent);
+    radial-gradient(circle at 30% 18%, rgba(255,255,255,0.62), transparent 44%),
+    linear-gradient(180deg, color-mix(in srgb, var(--age-accent) 75%, white), var(--age-accent));
   overflow: hidden;
 }
 
@@ -4334,8 +4335,8 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   content: "";
   position: absolute;
   inset: auto 0 0 0;
-  height: 28%;
-  background: linear-gradient(180deg, transparent, rgba(255, 252, 248, 0.55));
+  height: 32%;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--age-wash) 88%, white));
   pointer-events: none;
   z-index: 1;
 }
@@ -4345,14 +4346,14 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 42%;
+  object-position: center 40%;
   transition: transform 0.55s var(--ease), filter 0.35s ease;
-  filter: saturate(1.05) contrast(1.02);
+  filter: saturate(1.06) contrast(1.03);
 }
 
 .age-home-card:hover .age-home-art img,
 .age-home-card:focus-visible .age-home-art img {
-  transform: scale(1.06);
+  transform: scale(1.055);
   filter: saturate(1.1) contrast(1.04) brightness(1.02);
 }
 
@@ -4361,58 +4362,62 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 18px 18px 20px;
+  gap: 7px;
+  flex: 1;
+  padding: 16px 16px 18px;
   text-align: left;
 }
 
 .age-home-ages {
   display: inline-flex;
   align-self: flex-start;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #5C4F6E;
-  background: color-mix(in srgb, var(--age-accent) 70%, white);
+  color: #5A4E68;
+  background: color-mix(in srgb, var(--age-accent) 62%, white);
+  border: 1px solid rgba(255,255,255,0.85);
   border-radius: 999px;
-  padding: 6px 12px;
-  box-shadow: 0 2px 8px rgba(74, 68, 88, 0.06);
+  padding: 5px 11px;
+  box-shadow: 0 2px 6px rgba(74, 68, 88, 0.05);
 }
 
 .age-home-name {
   font-family: var(--font-display);
-  font-size: clamp(20px, 2.4vw, 26px);
+  font-size: clamp(19px, 2.2vw, 24px);
   font-weight: 700;
   line-height: 1.15;
   color: var(--ink);
 }
 
 .age-home-desc {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.45;
   color: var(--ink-soft);
+  flex: 1;
 }
 
 .age-home-cta {
-  margin-top: 8px;
+  margin-top: 10px;
   align-self: flex-start;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 900;
+  letter-spacing: 0.01em;
   color: #4A4458;
-  background: linear-gradient(180deg, #FFFCF8, var(--age-accent));
+  background: linear-gradient(180deg, #FFFEFB, var(--age-accent));
   border: 1.5px solid rgba(255,255,255,0.95);
   border-radius: 999px;
-  padding: 11px 18px;
-  box-shadow: 0 6px 14px rgba(74, 68, 88, 0.10);
+  padding: 10px 16px;
+  box-shadow: 0 5px 12px rgba(74, 68, 88, 0.08);
   transition: transform 0.22s var(--spring), background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .age-home-card:hover .age-home-cta {
-  transform: translateX(4px) scale(1.03);
+  transform: translateX(3px) scale(1.03);
   background: linear-gradient(180deg, #fff, var(--age-accent-deep));
-  box-shadow: 0 8px 18px rgba(74, 68, 88, 0.14);
+  box-shadow: 0 7px 16px rgba(74, 68, 88, 0.12);
 }
 
 /* ---- Parent / about (Learning Made Magical) ---- */
@@ -4466,14 +4471,17 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
 }
 .home-ages-inside {
   width: 100%;
-  padding-top: 6px;
-  border-top: 1.5px solid rgba(255,255,255,0.7);
+  padding-top: 10px;
+  border-top: 1.5px solid rgba(255,255,255,0.72);
+  scroll-margin-top: 18px;
 }
-.home-ages-inside .home-section-head {
-  margin-bottom: 12px;
-}
-.home-ages-inside .home-section-head h3 {
-  font-size: clamp(20px, 3vw, 24px);
+.home-ages-prompt {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: clamp(15px, 2vw, 17px);
+  font-weight: 700;
+  color: var(--ink-soft);
+  letter-spacing: 0.01em;
 }
 
 /* ---- Footer ---- */
@@ -4562,6 +4570,8 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
     grid-template-columns: 1fr;
   }
   .home-parent-copy p { margin-left: auto; margin-right: auto; }
+  .home-ages-prompt { text-align: center; }
+  .age-home-body { text-align: left; }
 }
 
 @media (min-width: 700px) and (max-width: 920px) {
