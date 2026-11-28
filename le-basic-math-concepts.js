@@ -401,9 +401,17 @@
             runExercise(btn.getAttribute("data-ex"));
           });
         });
+        // Do NOT auto-call onCorrect here — that finishes the activity and kicks the child out.
+        // When everything is done, offer an optional finish button so they can keep replaying.
         if (allDone()) {
-          confetti(14);
-          setTimeout(() => onCorrect("You discovered every math idea!"), 700);
+          confetti(10);
+          say("You discovered every math idea! Keep playing, or finish when you are ready.");
+          choicesEl.innerHTML = `
+            <button type="button" class="le-nm-choice le-nm-done" id="leBmcFinish">Finish adventure</button>`;
+          choicesEl.querySelector("#leBmcFinish").addEventListener("click", () => {
+            snd.pop();
+            onCorrect("You discovered every math idea!");
+          });
         }
       }
 
@@ -412,12 +420,22 @@
         confetti(10);
         say("Wonderful exploring!");
         lock(true);
+        const finishBtn = allDone()
+          ? `<button type="button" class="le-nm-choice le-nm-done" id="leBmcFinish">Finish adventure</button>`
+          : "";
         choicesEl.innerHTML = `
           <button type="button" class="le-nm-choice le-nm-done" id="leBmcAgain">Replay</button>
-          <button type="button" class="le-nm-choice" id="leBmcHub">More adventures</button>`;
+          <button type="button" class="le-nm-choice" id="leBmcHub">More adventures</button>
+          ${finishBtn}`;
         choicesEl.querySelector("#leBmcAgain").addEventListener("click", () => { snd.pop(); lock(false); runExercise(exId); });
         choicesEl.querySelector("#leBmcHub").addEventListener("click", () => { snd.pop(); lock(false); showHub(); });
-        if (allDone()) setTimeout(() => onCorrect("Amazing math explorer!"), 500);
+        const fin = choicesEl.querySelector("#leBmcFinish");
+        if (fin) {
+          fin.addEventListener("click", () => {
+            snd.pop();
+            onCorrect("Amazing math explorer!");
+          });
+        }
       }
 
       function showConceptDemo(exId, onReady) {

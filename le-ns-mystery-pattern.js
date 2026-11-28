@@ -190,9 +190,18 @@
 
       function unlockParentIfReady(list, doneMsg) {
         if (!allDone(list)) return;
-        confetti(16);
-        say(doneMsg);
-        setTimeout(() => onCorrect(doneMsg), 700);
+        // Offer finish — do not auto-exit (onCorrect ends the whole activity)
+        confetti(10);
+        say(doneMsg + " Keep playing, or finish when you are ready.");
+        choicesEl.innerHTML = `
+          <button type="button" class="le-nm-choice le-nm-done" id="leMpFinish">Finish adventure</button>`;
+        const fin = choicesEl.querySelector("#leMpFinish");
+        if (fin) {
+          fin.addEventListener("click", () => {
+            snd.pop();
+            onCorrect(doneMsg);
+          });
+        }
       }
 
       /* ========== MYSTERY HUB ========== */
@@ -244,15 +253,24 @@
         confetti(10);
         say(msg || "Amazing detective work!");
         if (typeof setLocked === "function") setLocked(true);
-        choicesEl.innerHTML = `<button type="button" class="le-nm-choice le-nm-done" id="leMpBackHub">More cases</button>`;
+        const finish = allDone(MYSTERY_EX)
+          ? `<button type="button" class="le-nm-choice le-nm-done" id="leMpFinish">Finish adventure</button>`
+          : "";
+        choicesEl.innerHTML = `
+          <button type="button" class="le-nm-choice le-nm-done" id="leMpBackHub">More cases</button>
+          ${finish}`;
         choicesEl.querySelector("#leMpBackHub").addEventListener("click", () => {
           snd.pop();
           if (typeof setLocked === "function") setLocked(false);
           mysteryHub();
         });
-        setTimeout(() => {
-          if (allDone(MYSTERY_EX)) unlockParentIfReady(MYSTERY_EX, "All mysteries solved!");
-        }, 400);
+        const fin = choicesEl.querySelector("#leMpFinish");
+        if (fin) {
+          fin.addEventListener("click", () => {
+            snd.pop();
+            onCorrect("All mysteries solved!");
+          });
+        }
       }
 
       function runMysteryExercise(exId) {
@@ -641,13 +659,24 @@
         confetti(10);
         say("Fantastic! You solved the pattern!");
         if (typeof setLocked === "function") setLocked(true);
-        choicesEl.innerHTML = `<button type="button" class="le-nm-choice le-nm-done" id="leMpBackHub">More labs</button>`;
+        const finish = allDone(PATTERN_EX)
+          ? `<button type="button" class="le-nm-choice le-nm-done" id="leMpFinish">Finish adventure</button>`
+          : "";
+        choicesEl.innerHTML = `
+          <button type="button" class="le-nm-choice le-nm-done" id="leMpBackHub">More labs</button>
+          ${finish}`;
         choicesEl.querySelector("#leMpBackHub").addEventListener("click", () => {
           snd.pop();
           if (typeof setLocked === "function") setLocked(false);
           patternHub();
         });
-        setTimeout(() => unlockParentIfReady(PATTERN_EX, "Laboratory complete!"), 400);
+        const fin = choicesEl.querySelector("#leMpFinish");
+        if (fin) {
+          fin.addEventListener("click", () => {
+            snd.pop();
+            onCorrect("Laboratory complete!");
+          });
+        }
       }
 
       function runPatternExercise(exId) {

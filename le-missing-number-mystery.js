@@ -283,9 +283,16 @@
             runExercise(btn.getAttribute("data-ex"));
           });
         });
+        // Do NOT auto-call onCorrect — that exits the activity immediately.
         if (allDone()) {
-          confetti(14);
-          setTimeout(() => onCorrect("You solved every mystery!"), 600);
+          confetti(10);
+          say("You solved every mystery! Keep playing, or finish when you are ready.");
+          choicesEl.innerHTML = `
+            <button type="button" class="le-nm-choice le-nm-done" id="leMnFinish">Finish adventure</button>`;
+          choicesEl.querySelector("#leMnFinish").addEventListener("click", () => {
+            snd.pop();
+            onCorrect("You solved every mystery!");
+          });
         }
       }
 
@@ -295,12 +302,22 @@
         confetti(10);
         say("You solved the mystery!");
         lock(true);
+        const finishBtn = allDone()
+          ? `<button type="button" class="le-nm-choice le-nm-done" id="leMnFinish">Finish adventure</button>`
+          : "";
         choicesEl.innerHTML = `
           <button type="button" class="le-nm-choice le-nm-done" id="leMnAgain">Replay</button>
-          <button type="button" class="le-nm-choice" id="leMnHub">More cases</button>`;
+          <button type="button" class="le-nm-choice" id="leMnHub">More cases</button>
+          ${finishBtn}`;
         choicesEl.querySelector("#leMnAgain").addEventListener("click", () => { snd.pop(); lock(false); runExercise(exId); });
         choicesEl.querySelector("#leMnHub").addEventListener("click", () => { snd.pop(); lock(false); showHub(); });
-        if (allDone()) setTimeout(() => onCorrect("Amazing detective work!"), 500);
+        const fin = choicesEl.querySelector("#leMnFinish");
+        if (fin) {
+          fin.addEventListener("click", () => {
+            snd.pop();
+            onCorrect("Amazing detective work!");
+          });
+        }
       }
 
       function runExercise(exId) {

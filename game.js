@@ -849,94 +849,161 @@
     if (!video) return;
 
     const bigPlayBtn = root.querySelector("#homeVidBigPlay");
+    const soundBtn = root.querySelector("#homeVidSound");
     const statusEl = root.querySelector("#homeVidStatus");
     const stage = root.querySelector(".home-video-stage");
     let userStarted = false;
+    let sectionsRevealed = false;
+    let autoplayTried = false;
 
-    function setStatus(text) {
-      if (statusEl) statusEl.textContent = text || "";
+    function setStatus(text, visible) {
+      if (!statusEl) return;
+      statusEl.textContent = text || "";
+      statusEl.classList.toggle("is-visible", !!(visible && text));
     }
 
     function syncPlayUi() {
       const playing = !video.paused && !video.ended;
+      const needsSound = playing && video.muted && !userStarted;
       if (bigPlayBtn) {
-        bigPlayBtn.hidden = playing;
-        bigPlayBtn.setAttribute("aria-hidden", playing ? "true" : "false");
+        // Big play only when video is not actively playing
+        const showPlay = !playing;
+        bigPlayBtn.hidden = !showPlay;
+        bigPlayBtn.setAttribute("aria-hidden", showPlay ? "false" : "true");
+      }
+      if (soundBtn) {
+        soundBtn.hidden = !needsSound;
+        soundBtn.setAttribute("aria-hidden", needsSound ? "false" : "true");
       }
       if (stage) {
         stage.classList.toggle("is-playing", playing);
         stage.classList.toggle("is-ended", !!video.ended);
+        stage.classList.toggle("is-muted-autoplay", needsSound);
       }
     }
 
-    video.muted = true;
+    function revealHomeSections() {
+      if (sectionsRevealed || !root) return;
+      sectionsRevealed = true;
+      root.classList.remove("is-welcome-playing");
+      root.classList.add("is-welcome-done");
+      if (soundBtn) {
+        soundBtn.hidden = true;
+        soundBtn.setAttribute("aria-hidden", "true");
+      }
+      // Never restart the welcome video when sections appear
+      try { video.pause(); } catch (e) { /* */ }
+      syncPlayUi();
+    }
+
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "");
+    video.playsInline = true;
     syncPlayUi();
-    setStatus("Loading magical welcome…");
+    setStatus("Loading magical welcome…", true);
 
     video.addEventListener("loadeddata", () => {
-      setStatus("");
       if (stage) stage.classList.remove("is-loading", "is-error");
+      if (!video.paused) setStatus("", false);
     });
-    video.addEventListener("waiting", () => setStatus("Loading…"));
+    video.addEventListener("waiting", () => {
+      if (!sectionsRevealed) setStatus("Loading…", true);
+    });
     video.addEventListener("playing", () => {
-      setStatus("");
+      if (stage) stage.classList.remove("is-loading");
+      if (video.muted && !userStarted) setStatus("Tap for sound", true);
+      else setStatus("", false);
       syncPlayUi();
     });
     video.addEventListener("pause", syncPlayUi);
     video.addEventListener("ended", () => {
       syncPlayUi();
-      setStatus("Tap video to watch again");
+      setStatus("", false);
+      revealHomeSections();
     });
     video.addEventListener("error", () => {
       if (stage) {
         stage.classList.add("is-error");
         stage.classList.remove("is-loading");
       }
-      setStatus("Video could not load — showing welcome art");
+      setStatus("Video could not load — showing welcome art", true);
+      revealHomeSections();
     });
 
-    // Soft muted autoplay (sound only after user tap)
-    const tryMutedAutoplay = () => {
-      const p = video.play();
-      if (p && typeof p.then === "function") {
-        p.then(syncPlayUi).catch(() => {
-          video.pause();
+    function tryAutoplay() {
+      if (autoplayTried || sectionsRevealed) return;
+      autoplayTried = true;
+
+      // 1) Prefer autoplay with audio
+      video.muted = false;
+      const loud = video.play();
+      const onLoudOk = () => {
+        userStarted = true;
+        setStatus("", false);
+        syncPlayUi();
+      };
+      const onLoudFail = () => {
+        // 2) Browser blocked sound — muted autoplay + clear sound button
+        video.muted = true;
+        const quiet = video.play();
+        if (quiet && typeof quiet.then === "function") {
+          quiet.then(() => {
+            setStatus("Tap for sound", true);
+            syncPlayUi();
+          }).catch(() => {
+            syncPlayUi();
+            setStatus("Tap to play welcome video", true);
+          });
+        } else {
           syncPlayUi();
-          setStatus("Tap video to play");
-        });
+          setStatus("Tap to play welcome video", true);
+        }
+      };
+
+      if (loud && typeof loud.then === "function") {
+        loud.then(onLoudOk).catch(onLoudFail);
+      } else {
+        onLoudFail();
       }
-    };
+    }
+
     if (stage) stage.classList.add("is-loading");
-    if (video.readyState >= 2) tryMutedAutoplay();
-    else video.addEventListener("canplay", tryMutedAutoplay, { once: true });
+    if (video.readyState >= 2) tryAutoplay();
+    else {
+      video.addEventListener("canplay", tryAutoplay, { once: true });
+      // Safety: if media never becomes ready, still reveal sections
+      setTimeout(() => {
+        if (!sectionsRevealed && (video.readyState < 2 || (video.paused && video.currentTime === 0 && !autoplayTried))) {
+          tryAutoplay();
+        }
+        if (!sectionsRevealed && video.error) revealHomeSections();
+      }, 4000);
+    }
 
     function enableSoundAndPlay() {
       userStarted = true;
       video.muted = false;
+      // Only rewind if the welcome already finished and user wants a replay
       if (video.ended) video.currentTime = 0;
       const p = video.play();
       if (p && typeof p.catch === "function") {
         p.then(() => {
-          // Some browsers still block unmuted play — retry muted then unmute after play
-          if (video.muted) {
-            video.muted = false;
-          }
+          setStatus("", false);
           syncPlayUi();
         }).catch(() => {
           video.muted = true;
           video.play().then(() => {
             video.muted = false;
+            setStatus("", false);
             syncPlayUi();
-          }).catch(() => setStatus("Tap again for sound"));
+          }).catch(() => setStatus("Tap again for sound", true));
         });
       }
       syncPlayUi();
     }
 
     function togglePlay() {
-      // First tap: always unlock audio (never pause muted autoplay)
+      // While muted autoplay runs, first tap only unlocks audio
       if (!userStarted || video.muted) {
         enableSoundAndPlay();
         return;
@@ -945,7 +1012,7 @@
         if (video.ended) video.currentTime = 0;
         video.muted = false;
         const p = video.play();
-        if (p && typeof p.catch === "function") p.catch(() => setStatus("Tap again to play"));
+        if (p && typeof p.catch === "function") p.catch(() => setStatus("Tap again to play", true));
       } else {
         video.pause();
       }
@@ -958,8 +1025,20 @@
         togglePlay();
       });
     }
+    if (soundBtn) {
+      soundBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        enableSoundAndPlay();
+      });
+    }
     video.addEventListener("click", (e) => {
       e.stopPropagation();
+      // After sections are shown, allow replay; during welcome, unlock sound / play
+      if (sectionsRevealed && video.ended) {
+        video.currentTime = 0;
+        enableSoundAndPlay();
+        return;
+      }
       togglePlay();
     });
 
@@ -1049,7 +1128,7 @@
 
     const saved = LS.get("selectedHomeAge", null);
 
-    const wrap = el("div", "home-age-page home-premium");
+    const wrap = el("div", "home-age-page home-premium is-welcome-playing");
     wrap.innerHTML = `
       <section class="home-hero home-hero-video-first" aria-label="Welcome to LumaCubs">
         <div class="home-hero-magic" aria-hidden="true">
@@ -1064,18 +1143,8 @@
           <span class="home-flower f2"></span>
         </div>
 
-        <div class="home-hero-top">
-          <p class="home-hero-brand">LumaCubs</p>
-          <h2 class="home-hero-title">Welcome to LumaCubs</h2>
-          <p class="home-hero-tagline">Explore, Play, Discover &amp; Grow!</p>
-        </div>
-
-        <div class="home-hero-stage">
-          <button type="button" class="home-char home-char-teddy" data-home-char="teddy" aria-label="Golden teddy bear says hello">
-            <img src="${HOME_TEDDY}" alt="" width="180" height="200" draggable="false" decoding="async">
-            <span class="home-char-bubble" data-char-bubble="teddy" role="status"></span>
-          </button>
-
+        <!-- 1. Welcome video at the very top -->
+        <div class="home-hero-stage home-hero-stage-video-top">
           <div class="home-video-shell">
             <div class="home-video-stage is-loading">
               <div class="home-video-frame">
@@ -1097,34 +1166,43 @@
                 <button type="button" class="home-video-bigplay" id="homeVidBigPlay" aria-label="Play welcome video">
                   <span class="home-video-bigplay-icon" aria-hidden="true">▶</span>
                 </button>
+                <button type="button" class="home-video-sound" id="homeVidSound" hidden aria-hidden="true" aria-label="Enable welcome video sound">
+                  <span class="home-video-sound-icon" aria-hidden="true">🔊</span>
+                  <span class="home-video-sound-label">Tap for sound</span>
+                </button>
               </div>
-              <p class="home-video-status home-video-status-sr" id="homeVidStatus" role="status"></p>
+              <p class="home-video-status" id="homeVidStatus" role="status"></p>
             </div>
           </div>
-
-          <button type="button" class="home-char home-char-bunny" data-home-char="bunny" aria-label="Purple bunny says hello">
-            <img src="${HOME_BUNNY}" alt="" width="160" height="190" draggable="false" decoding="async">
-            <span class="home-char-bubble" data-char-bubble="bunny" role="status"></span>
-          </button>
         </div>
 
-        <div class="home-hero-copy">
-          <p class="home-hero-desc">${greeting}</p>
-          <div class="home-hero-cta">
-            <button type="button" class="home-btn home-btn-primary" id="homeExploreLearning">Explore Learning</button>
-            <button type="button" class="home-btn home-btn-secondary" id="homeMeetFriends">Meet Our Friends</button>
+        <div class="home-hero-after-video">
+          <div class="home-hero-top">
+            <p class="home-hero-brand">LumaCubs</p>
+            <h2 class="home-hero-title">Welcome to LumaCubs</h2>
+            <p class="home-hero-tagline">Explore, Play, Discover &amp; Grow!</p>
+          </div>
+          <div class="home-hero-mascots" aria-hidden="true">
+            <button type="button" class="home-char home-char-teddy" data-home-char="teddy" aria-label="Golden teddy bear says hello">
+              <img src="${HOME_TEDDY}" alt="" width="180" height="200" draggable="false" decoding="async">
+              <span class="home-char-bubble" data-char-bubble="teddy" role="status"></span>
+            </button>
+            <button type="button" class="home-char home-char-bunny" data-home-char="bunny" aria-label="Purple bunny says hello">
+              <img src="${HOME_BUNNY}" alt="" width="160" height="190" draggable="false" decoding="async">
+              <span class="home-char-bubble" data-char-bubble="bunny" role="status"></span>
+            </button>
+          </div>
+          <div class="home-hero-copy">
+            <p class="home-hero-desc">${greeting}</p>
+            <div class="home-hero-cta">
+              <button type="button" class="home-btn home-btn-primary" id="homeExploreLearning">Explore Learning</button>
+              <button type="button" class="home-btn home-btn-secondary" id="homeMeetFriends">Meet Our Friends</button>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="home-ages" id="home-ages" aria-label="Choose your learning adventure">
-        <div class="home-section-head">
-          <h3>Choose Your Learning Adventure</h3>
-          <p>Every child has a magical journey of discovery!</p>
-        </div>
-        <div class="home-age-grid" aria-label="Age learning sections"></div>
-      </section>
-
+      <!-- 2. Meet Our Friends (revealed after video) -->
       <section class="home-friends" id="home-friends" aria-label="Meet our friends">
         <div class="home-section-head">
           <h3>Meet Our Friends</h3>
@@ -1136,6 +1214,8 @@
               <img src="${HOME_TEDDY_ART}" alt="Golden teddy bear in the magical garden" width="420" height="480" loading="lazy" decoding="async" draggable="false">
             </span>
             <span class="home-friend-name">Golden Teddy</span>
+            <span class="home-friend-role">Brave explorer</span>
+            <span class="home-friend-personality">Warm, curious and always ready for a hug and a new adventure.</span>
             <span class="home-friend-hint">Tap me to wave!</span>
           </button>
           <button type="button" class="home-friend-card" data-home-char="bunny" aria-label="Say hi to purple bunny">
@@ -1143,20 +1223,32 @@
               <img src="${HOME_BUNNY_ART}" alt="Purple bunny in the magical garden" width="420" height="480" loading="lazy" decoding="async" draggable="false">
             </span>
             <span class="home-friend-name">Purple Bunny</span>
+            <span class="home-friend-role">Playful guide</span>
+            <span class="home-friend-personality">Bouncy, cheerful and loves hopping into songs, games and discoveries.</span>
             <span class="home-friend-hint">Tap me to hop!</span>
           </button>
         </div>
       </section>
 
+      <!-- 3. Learning Made Magical -->
       <section class="home-parent" id="home-about" aria-label="Learning made magical">
-        <div class="home-parent-art" aria-hidden="true">
-          <img src="assets/home/little-explorers/hero.jpg" alt="" width="320" height="240" loading="lazy" decoding="async">
+        <div class="home-parent-art">
+          <img src="${HOME_TEDDY_ART}" alt="Golden teddy bear inviting little learners to explore" width="420" height="480" loading="lazy" decoding="async">
         </div>
         <div class="home-parent-copy">
           <h3>Learning Made Magical</h3>
           <p>Fun-filled interactive adventures designed to help little minds explore, learn and grow.</p>
           <button type="button" class="home-btn home-btn-secondary" id="homeAboutExplore">Start Exploring</button>
         </div>
+      </section>
+
+      <!-- Age adventures (kept for Start Exploring / learning entry) -->
+      <section class="home-ages" id="home-ages" aria-label="Choose your learning adventure">
+        <div class="home-section-head">
+          <h3>Choose Your Learning Adventure</h3>
+          <p>Every child has a magical journey of discovery!</p>
+        </div>
+        <div class="home-age-grid" aria-label="Age learning sections"></div>
       </section>
 
       <footer class="home-footer">
