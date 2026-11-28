@@ -1230,25 +1230,25 @@
         </div>
       </section>
 
-      <!-- 3. Learning Made Magical -->
+      <!-- 3. Learning Made Magical (includes all 3 age adventures) -->
       <section class="home-parent" id="home-about" aria-label="Learning made magical">
-        <div class="home-parent-art">
-          <img src="${HOME_TEDDY_ART}" alt="Golden teddy bear inviting little learners to explore" width="420" height="480" loading="lazy" decoding="async">
+        <div class="home-parent-intro">
+          <div class="home-parent-art">
+            <img src="${HOME_TEDDY_ART}" alt="Golden teddy bear inviting little learners to explore" width="420" height="480" loading="lazy" decoding="async">
+          </div>
+          <div class="home-parent-copy">
+            <h3>Learning Made Magical</h3>
+            <p>Fun-filled interactive adventures designed to help little minds explore, learn and grow.</p>
+            <button type="button" class="home-btn home-btn-secondary" id="homeAboutExplore">Start Exploring</button>
+          </div>
         </div>
-        <div class="home-parent-copy">
-          <h3>Learning Made Magical</h3>
-          <p>Fun-filled interactive adventures designed to help little minds explore, learn and grow.</p>
-          <button type="button" class="home-btn home-btn-secondary" id="homeAboutExplore">Start Exploring</button>
+        <div class="home-ages home-ages-inside" id="home-ages" aria-label="Choose your learning adventure">
+          <div class="home-section-head">
+            <h3>Choose Your Learning Adventure</h3>
+            <p>Every child has a magical journey of discovery!</p>
+          </div>
+          <div class="home-age-grid" aria-label="Age learning sections"></div>
         </div>
-      </section>
-
-      <!-- Age adventures (kept for Start Exploring / learning entry) -->
-      <section class="home-ages" id="home-ages" aria-label="Choose your learning adventure">
-        <div class="home-section-head">
-          <h3>Choose Your Learning Adventure</h3>
-          <p>Every child has a magical journey of discovery!</p>
-        </div>
-        <div class="home-age-grid" aria-label="Age learning sections"></div>
       </section>
 
       <footer class="home-footer">
@@ -1329,13 +1329,13 @@
     wrap.querySelector("#homeAboutExplore").addEventListener("click", () => {
       snd.pop();
       scrollHomeTo("#home-ages");
+      speak("Choose your learning adventure");
     });
     wrap.querySelectorAll("[data-home-nav]").forEach((btn) => {
       btn.addEventListener("click", () => {
         snd.pop();
         const target = btn.getAttribute("data-home-nav");
-        if (target === "ages") scrollHomeTo("#home-ages");
-        else if (target === "about") scrollHomeTo("#home-about");
+        if (target === "ages" || target === "about") scrollHomeTo("#home-about");
         else window.scrollTo({ top: 0, behavior: "smooth" });
       });
     });
