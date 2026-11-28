@@ -180,18 +180,19 @@
     {
       id: "math_games_brain_play",
       title: "Math Games & Brain Play",
-      blurb: "Play and learn with numbers!",
+      blurb: "Mazes, puzzles, memory and brain adventures!",
       tone: "rose",
       accent: "#FFD0DC",
       art: ART + "math_games_brain_play.jpg",
       subs: [
-        { id: "mg_match", title: "Number matching game", level: "A", type: "match_qty", max: 5 },
-        { id: "mg_count_tap", title: "Count and tap", level: "A", type: "tap_count", max: 5 },
-        { id: "mg_find", title: "Find the correct number", level: "A", type: "pick_number", max: 5 },
-        { id: "mg_puzzle", title: "Number puzzle", level: "B", type: "arrange", max: 5 },
-        { id: "mg_count", title: "Count the objects", level: "B", type: "count_objects", max: 10 },
-        { id: "mg_quiz", title: "Simple math quiz", level: "B", type: "add_groups", max: 5 },
-        { id: "mg_memory", title: "Number memory game", level: "B", type: "number_memory", max: 6 },
+        {
+          id: "mg_brain_world",
+          title: "Maths Game & Brain Play",
+          level: "A",
+          type: "mg_hub",
+          blurb: "8 magical brain games: maze, puzzle, balance, memory and more!",
+          art: ART + "math_games_brain_play.jpg",
+        },
       ],
     },
   ];
@@ -440,7 +441,8 @@
       const isNumberSeq = /^ns_/.test(sub.type);
       const isNsHub = sub.type === "ns_mystery" || sub.type === "ns_pattern";
       const isBmcHub = sub.type === "bmc_hub";
-      const ROUNDS = isExploreOnly || isNsHub || isBmcHub ? 1 : (isMemory ? 4 : ((isSorting || isNumberSeq) ? (sub.level === "A" ? 4 : 5) : (sub.level === "A" ? 4 : 5)));
+      const isMgHub = sub.type === "mg_hub";
+      const ROUNDS = isExploreOnly || isNsHub || isBmcHub || isMgHub ? 1 : (isMemory ? 4 : ((isSorting || isNumberSeq) ? (sub.level === "A" ? 4 : 5) : (sub.level === "A" ? 4 : 5)));
       let round = 0;
       let score = 0;
       let locked = false;
@@ -448,7 +450,7 @@
       let wrongTries = 0;
       let exploreSeen = new Set();
 
-      if ((isSorting || isNumberSeq || isBmcHub) && typeof trackPlatformProgress === "function") {
+      if ((isSorting || isNumberSeq || isBmcHub || isMgHub) && typeof trackPlatformProgress === "function") {
         trackPlatformProgress("le.numbers_math." + sub.id, "started");
       }
 
@@ -3825,6 +3827,31 @@
             });
           }
           page._bmcBuilder();
+          return;
+        }
+
+        // Math Games & Brain Play adventure hub
+        if (type === "mg_hub" && window.LUMACUBS_MG && typeof window.LUMACUBS_MG.create === "function") {
+          if (!page._mgBuilder) {
+            page._mgBuilder = window.LUMACUBS_MG.create({
+              stageEl,
+              promptEl,
+              choicesEl,
+              say,
+              onCorrect,
+              onWrong,
+              snd,
+              confetti,
+              sub,
+              getLocked: () => locked,
+              setLocked: (v) => { locked = !!v; },
+              getAgeHubReturn,
+              trackPlatformProgress,
+              LS,
+              roundEl,
+            });
+          }
+          page._mgBuilder();
           return;
         }
 
