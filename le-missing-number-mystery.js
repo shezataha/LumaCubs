@@ -122,15 +122,22 @@
     return () => mo.disconnect();
   }
 
+  /* Three range levels inside ONE Missing Number Mystery subcategory */
+  const LEVELS = [
+    { id: "r1_10", title: "Missing Numbers 1–10", blurb: "Simple sequences with one missing number.", lo: 1, hi: 10, art: "lvl1" },
+    { id: "r11_20", title: "Missing Numbers 11–20", blurb: "New places to hide — try two gaps!", lo: 11, hi: 20, art: "lvl2" },
+    { id: "r21_30", title: "Missing Numbers 21–30", blurb: "Longer sequences and bigger mysteries!", lo: 21, hi: 30, art: "lvl3" },
+  ];
+
   const EXERCISES = [
-    { id: "case", title: "The Missing Number Case", blurb: "Tap the missing number on the clue board!", art: "case" },
-    { id: "stones", title: "Find the Empty Spot", blurb: "Drag a stone onto the forest path!", art: "stones" },
-    { id: "bridge", title: "The Broken Number Bridge", blurb: "Repair the bridge so teddy can cross!", art: "bridge" },
-    { id: "boxes", title: "Mystery Number Boxes", blurb: "Open boxes, then place the number!", art: "boxes" },
-    { id: "stations", title: "Missing Number Train Station", blurb: "Fix the missing station sign!", art: "stations" },
-    { id: "rescue", title: "Number Sequence Rescue", blurb: "Build platforms to rescue a friend!", art: "rescue" },
-    { id: "multi", title: "Multiple Missing Numbers", blurb: "Fill every empty puzzle slot!", art: "multi" },
-    { id: "final", title: "Detective Final Mission", blurb: "Solve every clue and open the chest!", art: "final" },
+    { id: "case", title: "Detective Clue Board", blurb: "Find the missing number using visual clues!", art: "case" },
+    { id: "stones", title: "Number Tile Workshop", blurb: "Drag the correct number tile into place!", art: "stones" },
+    { id: "bridge", title: "Garden Path Puzzle", blurb: "Complete the numbered stepping stones!", art: "bridge" },
+    { id: "boxes", title: "Mystery Box Discovery", blurb: "Open boxes to reveal missing numbers!", art: "boxes" },
+    { id: "stations", title: "Number Neighbour Challenge", blurb: "Find the missing neighbouring number!", art: "stations" },
+    { id: "rescue", title: "Number Window Puzzle", blurb: "Complete sequences across number windows!", art: "rescue" },
+    { id: "multi", title: "Multiple Gap Challenge", blurb: "Fill two or more missing positions!", art: "multi" },
+    { id: "final", title: "Final Mystery Mission", blurb: "Combine challenges from your number range!", art: "final" },
   ];
 
   function teddySVG(size) {
@@ -159,62 +166,115 @@
       } = ctx;
 
       let seenIntro = false;
-      let cluesUnlocked = 0;
+      let currentLevel = null;
 
       function nameOf(n) { return (NUMBER_NAMES && NUMBER_NAMES[n]) || String(n); }
       function tier() {
         const hub = typeof getAgeHubReturn === "function" ? getAgeHubReturn() : "littleExplorers";
-        let t = 0;
-        if (hub === "curiousLearners") t = 1;
-        if (hub === "smartAchievers") t = 2;
-        return t;
+        if (hub === "curiousLearners") return 1;
+        if (hub === "smartAchievers") return 2;
+        return 0;
       }
       function progKey() { return "leMathProgress"; }
       function getProg() {
         if (LS && typeof LS.get === "function") return LS.get(progKey(), {}) || {};
         try { return JSON.parse(localStorage.getItem("mad:" + progKey()) || "{}"); } catch (e) { return {}; }
       }
-      function setExStars(exId, stars) {
-        const p = getProg();
-        const key = sub.id + "__" + exId;
-        p[key] = Math.max(p[key] || 0, stars || 1);
+      function saveProg(p) {
         if (LS && typeof LS.set === "function") LS.set(progKey(), p);
         else try { localStorage.setItem("mad:" + progKey(), JSON.stringify(p)); } catch (e) { /* */ }
+      }
+      function exProgKey(levelId, exId) { return sub.id + "__" + levelId + "__" + exId; }
+      function legacyExKey(exId) { return sub.id + "__" + exId; }
+      function setExStars(levelId, exId, stars) {
+        const p = getProg();
+        const key = exProgKey(levelId, exId);
+        p[key] = Math.max(p[key] || 0, stars || 1);
+        /* Level completion stamp */
+        const lvlKey = sub.id + "__" + levelId;
+        const doneCount = EXERCISES.filter((ex) => (p[exProgKey(levelId, ex.id)] || 0) > 0).length;
+        p[lvlKey] = Math.max(p[lvlKey] || 0, doneCount >= EXERCISES.length ? 3 : (doneCount >= 4 ? 2 : 1));
+        saveProg(p);
         if (typeof trackPlatformProgress === "function") {
           trackPlatformProgress("le.numbers_math." + key, "completed");
+          trackPlatformProgress("le.numbers_math." + lvlKey, "progress");
         }
       }
-      function exStars(exId) { return getProg()[sub.id + "__" + exId] || 0; }
-      function allDone() { return EXERCISES.every((ex) => exStars(ex.id) > 0); }
+      function exStars(levelId, exId) {
+        const p = getProg();
+        const v = p[exProgKey(levelId, exId)];
+        if (v) return v;
+        /* Migrate legacy flat keys into Level 1 only */
+        if (levelId === "r1_10") return p[legacyExKey(exId)] || 0;
+        return 0;
+      }
+      function levelStars(levelId) { return getProg()[sub.id + "__" + levelId] || 0; }
+      function levelComplete(levelId) { return EXERCISES.every((ex) => exStars(levelId, ex.id) > 0); }
+      function recommendedLevels() {
+        const t = tier();
+        if (t === 0) return ["r1_10"];
+        if (t === 1) return ["r1_10", "r11_20"];
+        return ["r1_10", "r11_20", "r21_30"];
+      }
+      function allRecommendedDone() {
+        return recommendedLevels().every((id) => levelComplete(id));
+      }
 
-      function ageCfg(exId) {
+      /* Config is ALWAYS locked to the selected level range — never mixes ranges */
+      function levelCfg(levelId, exId) {
+        const lvl = LEVELS.find((l) => l.id === levelId) || LEVELS[0];
         const t = tier();
         const roundN = exId === "final" ? (t === 0 ? 3 : 4) : (t === 0 ? 3 : t === 1 ? 4 : 5);
-        // Little explorers: start gentler with 1–5, then expand to 10 across rounds via start bias
-        if (t === 0) return { lo: 1, hi: 10, softHi: 5, choices: 2, miss: 1, len: 4, rounds: roundN };
-        if (t === 1) return { lo: 1, hi: 20, softHi: 12, choices: 3, miss: 1, len: 5, rounds: roundN };
-        return { lo: 1, hi: 30, softHi: 20, choices: 3, miss: 2, len: 6, rounds: roundN };
+        if (lvl.id === "r1_10") {
+          return { lo: 1, hi: 10, choices: t === 0 ? 2 : 3, miss: 1, len: t === 0 ? 4 : 5, rounds: roundN, allowEndGap: t > 0, allowMulti: false };
+        }
+        if (lvl.id === "r11_20") {
+          return { lo: 11, hi: 20, choices: 3, miss: t === 0 ? 1 : 2, len: 5, rounds: roundN, allowEndGap: true, allowMulti: true };
+        }
+        return { lo: 21, hi: 30, choices: 3, miss: 2, len: t === 2 ? 6 : 5, rounds: roundN, allowEndGap: true, allowMulti: true };
       }
 
       function makeSeq(cfg, opts) {
         const o = Object.assign({}, cfg, opts || {});
-        const hi = o.useSoft ? Math.min(o.hi, o.softHi || o.hi) : o.hi;
-        const len = Math.min(o.len, hi - o.lo + 1);
-        const start = randInt(o.lo, Math.max(o.lo, hi - len + 1));
+        /* Soft = easier pattern inside the SAME range (never expands or mixes ranges) */
+        const lo = o.lo;
+        const hi = o.hi;
+        let len = Math.min(o.len || 4, hi - lo + 1);
+        if (o.soft) len = Math.min(len, o.softLen || Math.max(3, len - 1));
+        len = Math.max(3, len);
+        const start = randInt(lo, Math.max(lo, hi - len + 1));
         const seq = range(start, start + len - 1);
-        const missCount = Math.min(o.miss, Math.max(1, len - 2));
-        const missIdx = [];
-        while (missIdx.length < missCount) {
-          const i = randInt(1, seq.length - 2);
-          if (!missIdx.includes(i)) missIdx.push(i);
+        /* Safety: every term must stay inside [lo, hi] */
+        if (seq[0] < lo || seq[seq.length - 1] > hi) {
+          return makeSeq(cfg, Object.assign({}, opts, { len: Math.min(3, hi - lo + 1) }));
         }
+        let missCount = Math.min(o.miss || 1, Math.max(1, len - 1));
+        if (o.soft) missCount = 1;
+        if (!o.allowMulti && !o.forceMulti) missCount = 1;
+        missCount = Math.min(missCount, len - 1);
+        const missIdx = [];
+        const canEnd = !!o.allowEndGap && !o.soft;
+        const minI = canEnd ? 0 : 1;
+        const maxI = canEnd ? len - 1 : Math.max(1, len - 2);
+        while (missIdx.length < missCount) {
+          const i = randInt(minI, maxI);
+          if (!missIdx.includes(i)) missIdx.push(i);
+          if (missIdx.length < missCount && missIdx.length >= (maxI - minI + 1)) break;
+        }
+        if (!missIdx.length) missIdx.push(Math.min(1, len - 1));
         missIdx.sort((a, b) => a - b);
-        return { seq, missIdx, answers: missIdx.map((i) => seq[i]), start, cfg: o };
+        return { seq, missIdx, answers: missIdx.map((i) => seq[i]), start, cfg: Object.assign({}, o, { lo, hi }) };
       }
 
       function choices(answer, cfg) {
         let set = uniqueNear(answer, cfg.lo, cfg.hi, cfg.choices);
         if (!set.includes(answer)) set[0] = answer;
+        /* Never offer numbers outside the level range */
+        set = set.filter((n) => n >= cfg.lo && n <= cfg.hi);
+        while (set.length < cfg.choices) {
+          const n = randInt(cfg.lo, cfg.hi);
+          if (!set.includes(n)) set.push(n);
+        }
         return shuffle(set).slice(0, cfg.choices);
       }
 
@@ -234,38 +294,94 @@
               <div class="le-nm-mn-sparkles" aria-hidden="true"><span></span><span></span><span></span></div>
             </div>
             <h3>Missing Number Mystery</h3>
-            <p>Join Detective Teddy! Find missing numbers, collect clues, and open the mystery treasure chest.</p>
+            <p>Join Detective Teddy! Solve mysteries in three number ranges: 1–10, 11–20 and 21–30.</p>
             <button type="button" class="le-nm-choice le-nm-done" id="leMnStart">Start Adventure</button>
           </div>`;
         stageEl.querySelector("#leMnStart").addEventListener("click", () => {
           snd.pop();
           seenIntro = true;
-          say("Can you find the missing number?");
-          showHub();
+          say("Choose your number mystery level!");
+          showLevelSelect();
         });
       }
 
-      /* ---------- Hub ---------- */
-      function showHub() {
+      /* ---------- Level select (3 ranges) ---------- */
+      function showLevelSelect() {
         if (!seenIntro) { showIntro(); return; }
-        if (roundEl) roundEl.textContent = "Cases";
-        promptEl.textContent = "Choose a mystery case!";
-        say("Look carefully at the clues!");
+        currentLevel = null;
+        if (roundEl) roundEl.textContent = "Levels";
+        promptEl.textContent = "Choose a number range!";
+        say("Which mystery level shall we solve?");
         choicesEl.innerHTML = "";
         lock(false);
-        const done = EXERCISES.filter((ex) => exStars(ex.id) > 0).length;
+        const rec = recommendedLevels();
         stageEl.innerHTML = `
           <div class="le-nm-mn le-nm-mn-hub">
             <div class="le-nm-mn-hub-hero">
               ${teddySVG(64)}
               <div>
-                <h3>Detective Headquarters</h3>
-                <p>${done}/${EXERCISES.length} cases solved · clues ready for the final mission</p>
+                <h3>Mystery Number Levels</h3>
+                <p>All three ranges stay in this adventure — pick a level to play its 8 cases.</p>
+              </div>
+            </div>
+            <div class="le-nm-mn-level-grid">
+              ${LEVELS.map((lvl, i) => {
+                const done = EXERCISES.filter((ex) => exStars(lvl.id, ex.id) > 0).length;
+                const complete = levelComplete(lvl.id);
+                const isRec = rec.includes(lvl.id);
+                return `<button type="button" class="le-nm-mn-level-card${complete ? " is-done" : ""}${isRec ? " is-recommended" : ""}" data-level="${lvl.id}">
+                  <span class="le-nm-mn-level-badge">Level ${i + 1}</span>
+                  <span class="le-nm-mn-card-art is-${lvl.art}" aria-hidden="true"></span>
+                  <span class="le-nm-mn-card-copy">
+                    <strong>${lvl.title}</strong>
+                    <em>${lvl.blurb}</em>
+                    <span>${complete ? "★ Level complete" : (done + "/" + EXERCISES.length + " cases · " + (isRec ? "Recommended" : "Open to explore"))}</span>
+                  </span>
+                </button>`;
+              }).join("")}
+            </div>
+          </div>`;
+        stageEl.querySelectorAll(".le-nm-mn-level-card").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            snd.pop();
+            showHub(btn.getAttribute("data-level"));
+          });
+        });
+        if (allRecommendedDone()) {
+          confetti(10);
+          say("You solved every recommended mystery! Keep exploring, or finish when you are ready.");
+          choicesEl.innerHTML = `
+            <button type="button" class="le-nm-choice le-nm-done" id="leMnFinish">Finish adventure</button>`;
+          choicesEl.querySelector("#leMnFinish").addEventListener("click", () => {
+            snd.pop();
+            onCorrect("You solved every mystery!");
+          });
+        }
+      }
+
+      /* ---------- Exercise hub (inside a level) ---------- */
+      function showHub(levelId) {
+        if (!seenIntro) { showIntro(); return; }
+        const lvl = LEVELS.find((l) => l.id === levelId) || LEVELS[0];
+        currentLevel = lvl.id;
+        if (roundEl) roundEl.textContent = lvl.title.replace("Missing Numbers ", "");
+        promptEl.textContent = "Choose a mystery case!";
+        say("Look carefully at the clues!");
+        choicesEl.innerHTML = "";
+        lock(false);
+        const done = EXERCISES.filter((ex) => exStars(lvl.id, ex.id) > 0).length;
+        stageEl.innerHTML = `
+          <div class="le-nm-mn le-nm-mn-hub">
+            <div class="le-nm-mn-hub-hero">
+              ${teddySVG(64)}
+              <div>
+                <h3>${lvl.title}</h3>
+                <p>${done}/${EXERCISES.length} cases solved · numbers stay between ${lvl.lo} and ${lvl.hi}</p>
               </div>
             </div>
             <div class="le-nm-mn-grid">
               ${EXERCISES.map((ex, i) => {
-                const st = exStars(ex.id);
+                const st = exStars(lvl.id, ex.id);
                 return `<button type="button" class="le-nm-mn-card${st ? " is-done" : ""}" data-ex="${ex.id}">
                   <span class="le-nm-mn-card-art is-${ex.art}" aria-hidden="true"></span>
                   <span class="le-nm-mn-card-copy">
@@ -276,17 +392,20 @@
                 </button>`;
               }).join("")}
             </div>
+            <button type="button" class="le-nm-mn-back-levels" id="leMnLevels">← All number levels</button>
           </div>`;
+        stageEl.querySelector("#leMnLevels").addEventListener("click", () => {
+          snd.pop();
+          showLevelSelect();
+        });
         stageEl.querySelectorAll(".le-nm-mn-card").forEach((btn) => {
           btn.addEventListener("click", () => {
             snd.pop();
             runExercise(btn.getAttribute("data-ex"));
           });
         });
-        // Do NOT auto-call onCorrect — that exits the activity immediately.
-        if (allDone()) {
-          confetti(10);
-          say("You solved every mystery! Keep playing, or finish when you are ready.");
+        if (levelComplete(lvl.id) && allRecommendedDone()) {
+          confetti(8);
           choicesEl.innerHTML = `
             <button type="button" class="le-nm-choice le-nm-done" id="leMnFinish">Finish adventure</button>`;
           choicesEl.querySelector("#leMnFinish").addEventListener("click", () => {
@@ -297,20 +416,22 @@
       }
 
       function endExercise(exId, stars) {
-        setExStars(exId, stars);
-        cluesUnlocked = Math.min(8, cluesUnlocked + 1);
+        const levelId = currentLevel || "r1_10";
+        setExStars(levelId, exId, stars);
         confetti(10);
         say("You solved the mystery!");
         lock(true);
-        const finishBtn = allDone()
+        const finishBtn = allRecommendedDone()
           ? `<button type="button" class="le-nm-choice le-nm-done" id="leMnFinish">Finish adventure</button>`
           : "";
         choicesEl.innerHTML = `
           <button type="button" class="le-nm-choice le-nm-done" id="leMnAgain">Replay</button>
           <button type="button" class="le-nm-choice" id="leMnHub">More cases</button>
+          <button type="button" class="le-nm-choice" id="leMnLevelsEnd">Number levels</button>
           ${finishBtn}`;
         choicesEl.querySelector("#leMnAgain").addEventListener("click", () => { snd.pop(); lock(false); runExercise(exId); });
-        choicesEl.querySelector("#leMnHub").addEventListener("click", () => { snd.pop(); lock(false); showHub(); });
+        choicesEl.querySelector("#leMnHub").addEventListener("click", () => { snd.pop(); lock(false); showHub(levelId); });
+        choicesEl.querySelector("#leMnLevelsEnd").addEventListener("click", () => { snd.pop(); lock(false); showLevelSelect(); });
         const fin = choicesEl.querySelector("#leMnFinish");
         if (fin) {
           fin.addEventListener("click", () => {
@@ -321,7 +442,8 @@
       }
 
       function runExercise(exId) {
-        const cfg = ageCfg(exId);
+        const levelId = currentLevel || "r1_10";
+        const cfg = levelCfg(levelId, exId);
         let round = 0;
         let score = 0;
         if (roundEl) roundEl.textContent = "1 / " + cfg.rounds;
@@ -356,9 +478,9 @@
         (map[exId] || exCase)(cfg, soft, onWin);
       }
 
-      /* ===== Exercise 1: Case ===== */
+      /* ===== 1. Detective Clue Board ===== */
       function exCase(cfg, soft, onWin) {
-        const data = makeSeq(cfg, { miss: 1, useSoft: soft });
+        const data = makeSeq(cfg, { miss: 1, soft });
         const answer = data.answers[0];
         const miss = data.missIdx[0];
         const opts = choices(answer, cfg);
@@ -368,6 +490,7 @@
           <div class="le-nm-mn le-nm-mn-case">
             <div class="le-nm-mn-deco is-case" aria-hidden="true"><span class="le-nm-mn-foot"></span><span class="le-nm-mn-foot"></span><span class="le-nm-mn-pin"></span></div>
             <div class="le-nm-mn-scene-top">${teddySVG(56)}<span class="le-nm-mn-glass-badge" aria-hidden="true"></span></div>
+            <div class="le-nm-mn-range-chip">${cfg.lo}–${cfg.hi}</div>
             <div class="le-nm-mn-board">
               ${data.seq.map((n, i) => i === miss
                 ? `<span class="le-nm-mn-slot is-miss">?</span>`
@@ -394,24 +517,25 @@
             cell.classList.remove("is-miss");
             stageEl.querySelector("#leMnClue").hidden = false;
             stageEl.querySelector(".le-nm-mn-case").classList.add("is-win");
-            say("Amazing detective work!");
+            say("Amazing detective work! " + nameOf(n));
             onWin();
           });
         });
       }
 
-      /* ===== Exercise 2: Stones ===== */
+      /* ===== 2. Number Tile Workshop ===== */
       function exStones(cfg, soft, onWin) {
-        const data = makeSeq(cfg, { miss: 1, useSoft: soft });
+        const data = makeSeq(cfg, { miss: 1, soft });
         const answer = data.answers[0];
         const miss = data.missIdx[0];
         const pool = choices(answer, cfg);
-        promptEl.textContent = "Drag the correct stone into the empty spot!";
+        promptEl.textContent = "Drag the correct number tile into place!";
         say("Which number belongs here?");
         stageEl.innerHTML = `
           <div class="le-nm-mn le-nm-mn-stones">
             <div class="le-nm-mn-forest" aria-hidden="true"></div>
             <div class="le-nm-mn-deco is-river" aria-hidden="true"></div>
+            <div class="le-nm-mn-range-chip">${cfg.lo}–${cfg.hi}</div>
             <div class="le-nm-mn-path">
               ${data.seq.map((n, i) => i === miss
                 ? `<div class="le-nm-mn-stone-slot le-nm-ns-slot is-empty" data-expect="${answer}"><span>?</span></div>`
@@ -421,12 +545,12 @@
             <div class="le-nm-mn-pool">
               ${pool.map((n) => `<button type="button" class="le-nm-ns-num le-nm-mn-drag" data-num="${n}" draggable="true">${n}</button>`).join("")}
             </div>
-            <p class="le-nm-tap-hint">Drag or tap a stone, then the empty spot</p>
+            <p class="le-nm-tap-hint">Drag or tap a tile, then the empty spot</p>
           </div>`;
         bindNumDrag(stageEl, ".le-nm-mn-drag", ".le-nm-mn-stone-slot", (slot, item) => {
           if (getLocked()) return false;
           const got = Number(item.getAttribute("data-num"));
-          if (got !== answer) { onWrong("Try another stepping stone!"); return false; }
+          if (got !== answer) { onWrong("Try another number tile!"); return false; }
           item.classList.add("is-placed");
           slot.classList.add("is-filled");
           slot.innerHTML = "";
@@ -440,19 +564,22 @@
         });
       }
 
-      /* ===== Exercise 3: Bridge ===== */
+      /* ===== 3. Garden Path Puzzle ===== */
       function exBridge(cfg, soft, onWin) {
-        const missWant = tier() === 0 ? 1 : Math.min(2, soft ? 1 : cfg.miss);
-        const data = makeSeq(cfg, { miss: missWant, useSoft: soft });
+        const missWant = soft || !cfg.allowMulti ? 1 : Math.min(2, cfg.miss);
+        const data = makeSeq(cfg, { miss: missWant, soft, allowMulti: cfg.allowMulti });
         let focus = 0;
-        promptEl.textContent = "Repair the broken number bridge!";
+        promptEl.textContent = "Complete the garden path of numbers!";
         say("Which number belongs here?");
         const poolNums = shuffle(data.answers.concat(choices(data.answers[0], cfg)))
-          .filter((v, i, a) => a.indexOf(v) === i).slice(0, cfg.choices + data.answers.length - 1);
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .filter((n) => n >= cfg.lo && n <= cfg.hi)
+          .slice(0, cfg.choices + data.answers.length - 1);
         stageEl.innerHTML = `
           <div class="le-nm-mn le-nm-mn-bridge">
             <div class="le-nm-mn-deco is-falls" aria-hidden="true"><span></span><span></span></div>
             <div class="le-nm-mn-water" aria-hidden="true"></div>
+            <div class="le-nm-mn-range-chip">${cfg.lo}–${cfg.hi}</div>
             <div class="le-nm-mn-bridge-row">
               ${data.seq.map((n, i) => data.missIdx.includes(i)
                 ? `<div class="le-nm-mn-plank le-nm-ns-slot is-gap" data-expect="${n}" data-ord="${data.missIdx.indexOf(i)}"><span>?</span></div>`
@@ -462,7 +589,7 @@
             <div class="le-nm-mn-pool">
               ${poolNums.map((n) => `<button type="button" class="le-nm-ns-num le-nm-mn-drag" data-num="${n}" draggable="true">${n}</button>`).join("")}
             </div>
-            <p class="le-nm-tap-hint">Place missing planks left to right</p>
+            <p class="le-nm-tap-hint">Place missing stepping stones left to right</p>
           </div>`;
         let placed = 0;
         bindNumDrag(stageEl, ".le-nm-mn-drag", ".le-nm-mn-plank.is-gap", (slot, item) => {
@@ -470,8 +597,8 @@
           const expect = Number(slot.getAttribute("data-expect"));
           const ord = Number(slot.getAttribute("data-ord"));
           const got = Number(item.getAttribute("data-num"));
-          if (ord !== focus) { onWrong("Fix the next broken section first!"); return false; }
-          if (got !== expect) { onWrong("That plank doesn't fit!"); return false; }
+          if (ord !== focus) { onWrong("Fix the next garden stone first!"); return false; }
+          if (got !== expect) { onWrong("That number doesn't fit the path!"); return false; }
           item.classList.add("is-placed");
           slot.classList.add("is-filled");
           slot.innerHTML = "";
@@ -488,15 +615,16 @@
         });
       }
 
-      /* ===== Exercise 4: Boxes ===== */
+      /* ===== 4. Mystery Box Discovery ===== */
       function exBoxes(cfg, soft, onWin) {
-        const data = makeSeq(cfg, { miss: 1, useSoft: soft });
+        const data = makeSeq(cfg, { miss: 1, soft });
         const answer = data.answers[0];
         const opts = choices(answer, cfg);
         promptEl.textContent = "Open the mystery boxes, then pick the number!";
         say("Look carefully at the clues!");
         stageEl.innerHTML = `
           <div class="le-nm-mn le-nm-mn-boxes">
+            <div class="le-nm-mn-range-chip">${cfg.lo}–${cfg.hi}</div>
             <div class="le-nm-mn-board mini">
               ${data.seq.map((n, i) => i === data.missIdx[0]
                 ? `<span class="le-nm-mn-slot is-miss" data-expect="${answer}">?</span>`
@@ -523,7 +651,7 @@
           slot.classList.add("is-solved");
           slot.classList.remove("is-miss");
           stageEl.querySelector(".le-nm-mn-boxes").classList.add("is-sparkle");
-          say("Treasure unlocked!");
+          say("Treasure unlocked! " + nameOf(n));
           onWin();
         }
         stageEl.querySelectorAll(".le-nm-mn-box").forEach((box) => {
@@ -540,36 +668,47 @@
         });
       }
 
-      /* ===== Exercise 5: Stations ===== */
+      /* ===== 5. Number Neighbour Challenge ===== */
       function exStations(cfg, soft, onWin) {
-        const data = makeSeq(cfg, { miss: 1, useSoft: soft });
+        const data = makeSeq(cfg, { miss: 1, soft, allowEndGap: false });
+        const miss = data.missIdx[0];
         const answer = data.answers[0];
+        const left = miss > 0 ? data.seq[miss - 1] : null;
+        const right = miss < data.seq.length - 1 ? data.seq[miss + 1] : null;
         const opts = choices(answer, cfg);
-        promptEl.textContent = "Which station number is missing?";
-        say("Which number belongs here?");
+        promptEl.textContent = "Which neighbouring number is missing?";
+        say(left != null && right != null
+          ? ("What number sits between " + nameOf(left) + " and " + nameOf(right) + "?")
+          : "Which number belongs here?");
         stageEl.innerHTML = `
           <div class="le-nm-mn le-nm-mn-stations">
             <div class="le-nm-mn-deco is-rail" aria-hidden="true"><span class="le-nm-mn-signal"></span></div>
-            <div class="le-nm-mn-train" aria-hidden="true"></div>
+            <div class="le-nm-mn-range-chip">${cfg.lo}–${cfg.hi}</div>
+            <div class="le-nm-mn-neighbour-hint">
+              ${left != null ? `<span class="le-nm-mn-slot is-neighbour">${left}</span>` : `<span class="le-nm-mn-slot is-ghost">·</span>`}
+              <span class="le-nm-mn-slot is-miss">?</span>
+              ${right != null ? `<span class="le-nm-mn-slot is-neighbour">${right}</span>` : `<span class="le-nm-mn-slot is-ghost">·</span>`}
+            </div>
             <div class="le-nm-mn-station-row">
-              ${data.seq.map((n, i) => i === data.missIdx[0]
+              ${data.seq.map((n, i) => i === miss
                 ? `<div class="le-nm-mn-station is-miss">?</div>`
-                : `<div class="le-nm-mn-station">${n}</div>`).join("")}
+                : `<div class="le-nm-mn-station${i === miss - 1 || i === miss + 1 ? " is-neighbour" : ""}">${n}</div>`).join("")}
             </div>
             <div class="le-nm-mn-clues">
               ${opts.map((n) => `<button type="button" class="le-nm-mn-clue" data-num="${n}">${n}</button>`).join("")}
             </div>
-            <p class="le-nm-tap-hint">Tap the correct station number — the train will move!</p>
+            <p class="le-nm-tap-hint">Tap the number that fits between its neighbours</p>
           </div>`;
         stageEl.querySelectorAll(".le-nm-mn-clue").forEach((btn) => {
           btn.addEventListener("click", () => {
             if (getLocked()) return;
             const n = Number(btn.getAttribute("data-num"));
-            if (n !== answer) { btn.classList.add("is-wrong"); onWrong("Check the station order!"); return; }
-            const miss = stageEl.querySelector(".le-nm-mn-station.is-miss");
-            miss.textContent = String(n);
-            miss.classList.add("is-solved");
-            miss.classList.remove("is-miss");
+            if (n !== answer) { btn.classList.add("is-wrong"); onWrong("Check the neighbours!"); return; }
+            stageEl.querySelectorAll(".le-nm-mn-station.is-miss, .le-nm-mn-slot.is-miss").forEach((missEl) => {
+              missEl.textContent = String(n);
+              missEl.classList.add("is-solved");
+              missEl.classList.remove("is-miss");
+            });
             stageEl.querySelector(".le-nm-mn-stations").classList.add("is-moving");
             say(nameOf(n));
             onWin();
@@ -577,36 +716,39 @@
         });
       }
 
-      /* ===== Exercise 6: Rescue ===== */
+      /* ===== 6. Number Window Puzzle ===== */
       function exRescue(cfg, soft, onWin) {
-        const missWant = tier() === 0 ? 1 : Math.min(2, soft ? 1 : cfg.miss);
-        const data = makeSeq(cfg, { miss: missWant, useSoft: soft });
+        const missWant = soft || !cfg.allowMulti ? 1 : Math.min(2, cfg.miss);
+        const data = makeSeq(cfg, { miss: missWant, soft, allowMulti: cfg.allowMulti });
         let focus = 0;
-        promptEl.textContent = "Build the path and rescue your friend!";
+        promptEl.textContent = "Complete the number windows!";
         say("Can you find the missing number?");
-        const poolNums = shuffle(data.answers.concat(uniqueNear(data.answers[0], data.cfg.lo, data.cfg.hi, 2)))
-          .filter((v, i, a) => a.indexOf(v) === i).slice(0, cfg.choices + 1);
+        const poolNums = shuffle(data.answers.concat(uniqueNear(data.answers[0], cfg.lo, cfg.hi, 2)))
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .filter((n) => n >= cfg.lo && n <= cfg.hi)
+          .slice(0, cfg.choices + 1);
         stageEl.innerHTML = `
           <div class="le-nm-mn le-nm-mn-rescue">
             <div class="le-nm-mn-island" aria-hidden="true"></div>
             <div class="le-nm-mn-friend" id="leMnFriend" aria-hidden="true"></div>
-            <div class="le-nm-mn-platforms">
+            <div class="le-nm-mn-range-chip">${cfg.lo}–${cfg.hi}</div>
+            <div class="le-nm-mn-platforms le-nm-mn-windows">
               ${data.seq.map((n, i) => data.missIdx.includes(i)
-                ? `<div class="le-nm-mn-plat le-nm-ns-slot is-gap" data-expect="${n}" data-ord="${data.missIdx.indexOf(i)}">?</div>`
-                : `<div class="le-nm-mn-plat is-ok">${n}</div>`).join("")}
+                ? `<div class="le-nm-mn-plat le-nm-ns-slot is-gap is-window" data-expect="${n}" data-ord="${data.missIdx.indexOf(i)}">?</div>`
+                : `<div class="le-nm-mn-plat is-ok is-window">${n}</div>`).join("")}
             </div>
             <div class="le-nm-mn-pool">
               ${poolNums.map((n) => `<button type="button" class="le-nm-ns-num le-nm-mn-drag" data-num="${n}" draggable="true">${n}</button>`).join("")}
             </div>
-            <p class="le-nm-tap-hint">Fill missing platforms from left to right</p>
+            <p class="le-nm-tap-hint">Fill missing windows from left to right</p>
           </div>`;
         let placed = 0;
         bindNumDrag(stageEl, ".le-nm-mn-drag", ".le-nm-mn-plat.is-gap", (slot, item) => {
           if (getLocked()) return false;
-          if (Number(slot.getAttribute("data-ord")) !== focus) { onWrong("Rescue the next gap first!"); return false; }
+          if (Number(slot.getAttribute("data-ord")) !== focus) { onWrong("Fill the next window first!"); return false; }
           const got = Number(item.getAttribute("data-num"));
           const expect = Number(slot.getAttribute("data-expect"));
-          if (got !== expect) { onWrong("That platform number is wrong!"); return false; }
+          if (got !== expect) { onWrong("That number does not belong in this window!"); return false; }
           item.classList.add("is-placed");
           slot.classList.add("is-filled");
           slot.innerHTML = "";
@@ -623,17 +765,23 @@
         });
       }
 
-      /* ===== Exercise 7: Multi missing (drag tiles) ===== */
+      /* ===== 7. Multiple Gap Challenge ===== */
       function exMulti(cfg, soft, onWin) {
-        const missWant = Math.max(2, Math.min(tier() === 0 ? 2 : (soft ? 2 : 3), cfg.len - 2));
-        const data = makeSeq(Object.assign({}, cfg, { len: Math.max(5, cfg.len) }), { miss: missWant, useSoft: soft });
+        const maxMiss = cfg.allowMulti ? (soft ? 2 : Math.min(3, cfg.miss + 1)) : 2;
+        const missWant = Math.max(2, Math.min(maxMiss, Math.max(2, cfg.len - 2)));
+        const data = makeSeq(Object.assign({}, cfg, { len: Math.max(5, cfg.len), allowMulti: true }), {
+          miss: missWant, soft: false, forceMulti: true, allowEndGap: cfg.allowEndGap,
+        });
         let focus = 0;
         promptEl.textContent = "Fill every empty spot in order!";
         say("Find the missing numbers!");
-        const poolNums = shuffle(data.answers.concat(uniqueNear(data.answers[0], data.cfg.lo, data.cfg.hi, cfg.choices)))
-          .filter((v, i, a) => a.indexOf(v) === i).slice(0, cfg.choices + data.answers.length);
+        const poolNums = shuffle(data.answers.concat(uniqueNear(data.answers[0], cfg.lo, cfg.hi, cfg.choices)))
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .filter((n) => n >= cfg.lo && n <= cfg.hi)
+          .slice(0, cfg.choices + data.answers.length);
         stageEl.innerHTML = `
           <div class="le-nm-mn le-nm-mn-multi">
+            <div class="le-nm-mn-range-chip">${cfg.lo}–${cfg.hi}</div>
             <div class="le-nm-mn-board">
               ${data.seq.map((n, i) => data.missIdx.includes(i)
                 ? `<div class="le-nm-mn-slot is-miss le-nm-ns-slot" data-expect="${n}" data-ord="${data.missIdx.indexOf(i)}">?</div>`
@@ -645,7 +793,6 @@
             <p class="le-nm-tap-hint">Drag tiles into each empty slot from left to right</p>
           </div>`;
         let placed = 0;
-        // highlight current
         function highlight() {
           stageEl.querySelectorAll(".le-nm-mn-slot.is-miss").forEach((el) => {
             el.classList.toggle("is-focus", Number(el.getAttribute("data-ord")) === focus);
@@ -676,10 +823,15 @@
         });
       }
 
-      /* ===== Exercise 8: Final mission ===== */
+      /* ===== 8. Final Mystery Mission ===== */
       function exFinal(cfg, soft, onWin) {
-        // Escalate: soft rounds = 1 missing; later rounds allow 2 (age-gated)
-        const data = makeSeq(cfg, { miss: soft ? 1 : Math.min(2, cfg.miss), useSoft: soft, len: soft ? 4 : Math.max(5, cfg.len) });
+        const missWant = soft || !cfg.allowMulti ? 1 : Math.min(2, cfg.miss);
+        const data = makeSeq(cfg, {
+          miss: missWant,
+          soft,
+          allowMulti: cfg.allowMulti,
+          len: soft ? Math.min(4, cfg.len) : Math.max(5, cfg.len),
+        });
         let focus = 0;
         promptEl.textContent = "Final mission — unlock the treasure chest!";
         say("Welcome, little detective! Solve the final clues!");
@@ -691,6 +843,7 @@
             <div class="le-nm-mn le-nm-mn-final">
               <div class="le-nm-mn-map" aria-hidden="true"></div>
               <div class="le-nm-mn-chest" id="leMnChest" aria-hidden="true"></div>
+              <div class="le-nm-mn-range-chip">${cfg.lo}–${cfg.hi}</div>
               <div class="le-nm-mn-board">
                 ${data.seq.map((n, i) => i === data.missIdx[0]
                   ? `<span class="le-nm-mn-slot is-miss">?</span>`
@@ -711,19 +864,21 @@
               cell.classList.add("is-solved");
               stageEl.querySelector("#leMnChest").classList.add("is-open");
               stageEl.querySelector(".le-nm-mn-final").classList.add("is-win");
-              say("You solved the mystery!");
+              say("You solved the mystery! " + nameOf(n));
               onWin();
             });
           });
           return;
         }
-        // multi-missing final
-        const poolNums = shuffle(data.answers.concat(uniqueNear(data.answers[0], data.cfg.lo, data.cfg.hi, cfg.choices)))
-          .filter((v, i, a) => a.indexOf(v) === i).slice(0, cfg.choices + data.answers.length);
+        const poolNums = shuffle(data.answers.concat(uniqueNear(data.answers[0], cfg.lo, cfg.hi, cfg.choices)))
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .filter((n) => n >= cfg.lo && n <= cfg.hi)
+          .slice(0, cfg.choices + data.answers.length);
         stageEl.innerHTML = `
           <div class="le-nm-mn le-nm-mn-final">
             <div class="le-nm-mn-map" aria-hidden="true"></div>
             <div class="le-nm-mn-chest" id="leMnChest" aria-hidden="true"></div>
+            <div class="le-nm-mn-range-chip">${cfg.lo}–${cfg.hi}</div>
             <div class="le-nm-mn-board">
               ${data.seq.map((n, i) => data.missIdx.includes(i)
                 ? `<div class="le-nm-mn-slot is-miss le-nm-ns-slot" data-expect="${n}" data-ord="${data.missIdx.indexOf(i)}">?</div>`
