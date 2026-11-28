@@ -3875,11 +3875,12 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   pointer-events: none;
 }
 
-/* Welcome sequence: video only until it ends */
-.home-age-page.is-welcome-playing .home-hero-after-video,
-.home-age-page.is-welcome-playing .home-friends,
-.home-age-page.is-welcome-playing .home-parent,
-.home-age-page.is-welcome-playing .home-footer {
+/* Welcome sequence: post-video sections stay hidden until is-welcome-done.
+   Default hide (not only .is-welcome-playing) prevents flash before JS class applies. */
+.home-hero-after-video,
+.home-friends,
+.home-parent,
+.home-footer {
   display: none !important;
 }
 
@@ -3892,16 +3893,30 @@ button:focus-visible { outline: 3px solid var(--lavender-deep); outline-offset: 
   padding-top: clamp(8px, 2vw, 16px);
   padding-bottom: clamp(12px, 3vw, 24px);
 }
+.home-age-page.is-welcome-playing .home-video-bigplay:not(.is-autoplay-failed) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
 
-.home-age-page.is-welcome-done .home-hero-after-video,
-.home-age-page.is-welcome-done .home-friends,
-.home-age-page.is-welcome-done .home-parent,
-.home-age-page.is-welcome-done .home-footer {
+.home-age-page.is-welcome-done .home-hero-after-video {
+  display: flex !important;
   animation: homeSectionReveal 0.65s ease both;
 }
-.home-age-page.is-welcome-done .home-friends { animation-delay: 0.05s; }
-.home-age-page.is-welcome-done .home-parent { animation-delay: 0.12s; }
-.home-age-page.is-welcome-done .home-footer { animation-delay: 0.22s; }
+.home-age-page.is-welcome-done .home-friends {
+  display: block !important;
+  animation: homeSectionReveal 0.65s ease both;
+  animation-delay: 0.05s;
+}
+.home-age-page.is-welcome-done .home-parent {
+  display: flex !important;
+  animation: homeSectionReveal 0.65s ease both;
+  animation-delay: 0.12s;
+}
+.home-age-page.is-welcome-done .home-footer {
+  display: flex !important;
+  animation: homeSectionReveal 0.65s ease both;
+  animation-delay: 0.22s;
+}
 
 @keyframes homeSectionReveal {
   from {

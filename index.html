@@ -15,10 +15,29 @@
   <meta name="application-name" content="LumaCubs">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="assets/home/welcome/lumacubs-welcome.mp4" as="video" type="video/mp4">
+  <link rel="preload" href="assets/home/welcome/welcome-poster.jpg" as="image">
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <!-- Critical: hide post-video homepage blocks before any JS runs -->
+  <style id="lumacubs-welcome-critical">
+    .home-hero-after-video,
+    .home-friends,
+    .home-parent,
+    .home-footer {
+      display: none !important;
+    }
+    .home-age-page.is-welcome-playing .home-video-bigplay {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+    .home-age-page.is-welcome-playing .home-video-bigplay.is-autoplay-failed {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+  </style>
 </head>
-<body>
+<body class="is-boot-welcome">
 
   <div id="bg" aria-hidden="true"></div>
 

@@ -844,6 +844,16 @@
     node.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function hydrateHomeDeferredMedia(root) {
+    if (!root) return;
+    root.querySelectorAll("img[data-home-src]").forEach((img) => {
+      const src = img.getAttribute("data-home-src");
+      if (!src) return;
+      img.setAttribute("src", src);
+      img.removeAttribute("data-home-src");
+    });
+  }
+
   function bindHomeWelcomeVideo(root) {
     const video = root.querySelector("#homeWelcomeVideo");
     if (!video) return;
@@ -855,6 +865,7 @@
     let userStarted = false;
     let sectionsRevealed = false;
     let autoplayTried = false;
+    let autoplayFailed = false;
 
     function setStatus(text, visible) {
       if (!statusEl) return;
@@ -862,14 +873,22 @@
       statusEl.classList.toggle("is-visible", !!(visible && text));
     }
 
+    function markAutoplayFailed(failed) {
+      autoplayFailed = !!failed;
+      if (bigPlayBtn) bigPlayBtn.classList.toggle("is-autoplay-failed", autoplayFailed);
+    }
+
     function syncPlayUi() {
       const playing = !video.paused && !video.ended;
       const needsSound = playing && video.muted && !userStarted;
       if (bigPlayBtn) {
-        // Big play only when video is not actively playing
-        const showPlay = !playing;
+        // During welcome: never show large play unless autoplay fully failed
+        const showPlay = sectionsRevealed
+          ? !playing
+          : (autoplayFailed && !playing);
         bigPlayBtn.hidden = !showPlay;
         bigPlayBtn.setAttribute("aria-hidden", showPlay ? "false" : "true");
+        bigPlayBtn.classList.toggle("is-autoplay-failed", !sectionsRevealed && autoplayFailed);
       }
       if (soundBtn) {
         soundBtn.hidden = !needsSound;
@@ -887,6 +906,8 @@
       sectionsRevealed = true;
       root.classList.remove("is-welcome-playing");
       root.classList.add("is-welcome-done");
+      document.body.classList.remove("is-boot-welcome");
+      hydrateHomeDeferredMedia(root);
       if (soundBtn) {
         soundBtn.hidden = true;
         soundBtn.setAttribute("aria-hidden", "true");
@@ -899,6 +920,10 @@
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "");
     video.playsInline = true;
+    // Start muted for policy-safe first paint; tryAutoplay may unmute
+    video.muted = true;
+    video.setAttribute("muted", "");
+    video.preload = "auto";
     syncPlayUi();
     setStatus("Loading magical welcome…", true);
 
@@ -911,6 +936,7 @@
     });
     video.addEventListener("playing", () => {
       if (stage) stage.classList.remove("is-loading");
+      markAutoplayFailed(false);
       if (video.muted && !userStarted) setStatus("Tap for sound", true);
       else setStatus("", false);
       syncPlayUi();
@@ -930,35 +956,43 @@
       revealHomeSections();
     });
 
+    function playMutedFallback() {
+      video.muted = true;
+      video.setAttribute("muted", "");
+      const quiet = video.play();
+      if (quiet && typeof quiet.then === "function") {
+        return quiet.then(() => {
+          markAutoplayFailed(false);
+          setStatus("Tap for sound", true);
+          syncPlayUi();
+        }).catch(() => {
+          markAutoplayFailed(true);
+          syncPlayUi();
+          setStatus("Tap to play welcome video", true);
+        });
+      }
+      markAutoplayFailed(true);
+      syncPlayUi();
+      setStatus("Tap to play welcome video", true);
+      return Promise.resolve();
+    }
+
     function tryAutoplay() {
       if (autoplayTried || sectionsRevealed) return;
       autoplayTried = true;
+      markAutoplayFailed(false);
 
-      // 1) Prefer autoplay with audio
+      // 1) Prefer autoplay with audio (may be blocked by browser policy)
       video.muted = false;
+      video.removeAttribute("muted");
       const loud = video.play();
       const onLoudOk = () => {
         userStarted = true;
+        markAutoplayFailed(false);
         setStatus("", false);
         syncPlayUi();
       };
-      const onLoudFail = () => {
-        // 2) Browser blocked sound — muted autoplay + clear sound button
-        video.muted = true;
-        const quiet = video.play();
-        if (quiet && typeof quiet.then === "function") {
-          quiet.then(() => {
-            setStatus("Tap for sound", true);
-            syncPlayUi();
-          }).catch(() => {
-            syncPlayUi();
-            setStatus("Tap to play welcome video", true);
-          });
-        } else {
-          syncPlayUi();
-          setStatus("Tap to play welcome video", true);
-        }
-      };
+      const onLoudFail = () => playMutedFallback();
 
       if (loud && typeof loud.then === "function") {
         loud.then(onLoudOk).catch(onLoudFail);
@@ -968,33 +1002,41 @@
     }
 
     if (stage) stage.classList.add("is-loading");
+    // Kick media fetch immediately
+    try { video.load(); } catch (e) { /* */ }
     if (video.readyState >= 2) tryAutoplay();
     else {
       video.addEventListener("canplay", tryAutoplay, { once: true });
-      // Safety: if media never becomes ready, still reveal sections
+      video.addEventListener("loadeddata", tryAutoplay, { once: true });
+      // Safety retries
+      setTimeout(() => { if (!autoplayTried && !sectionsRevealed) tryAutoplay(); }, 600);
       setTimeout(() => {
-        if (!sectionsRevealed && (video.readyState < 2 || (video.paused && video.currentTime === 0 && !autoplayTried))) {
-          tryAutoplay();
-        }
+        if (!sectionsRevealed && (video.paused && video.currentTime === 0)) tryAutoplay();
         if (!sectionsRevealed && video.error) revealHomeSections();
       }, 4000);
     }
 
     function enableSoundAndPlay() {
       userStarted = true;
+      const resumeAt = video.currentTime;
       video.muted = false;
+      video.removeAttribute("muted");
       // Only rewind if the welcome already finished and user wants a replay
       if (video.ended) video.currentTime = 0;
+      else if (resumeAt > 0 && Math.abs(video.currentTime - resumeAt) > 0.25) {
+        try { video.currentTime = resumeAt; } catch (e) { /* */ }
+      }
       const p = video.play();
       if (p && typeof p.catch === "function") {
         p.then(() => {
           setStatus("", false);
           syncPlayUi();
         }).catch(() => {
+          // Keep playback going muted — never restart from zero for sound unlock
           video.muted = true;
+          video.setAttribute("muted", "");
           video.play().then(() => {
-            video.muted = false;
-            setStatus("", false);
+            setStatus("Tap again for sound", true);
             syncPlayUi();
           }).catch(() => setStatus("Tap again for sound", true));
         });
@@ -1003,8 +1045,8 @@
     }
 
     function togglePlay() {
-      // While muted autoplay runs, first tap only unlocks audio
-      if (!userStarted || video.muted) {
+      // While muted autoplay runs, first tap only unlocks audio (no restart)
+      if (!sectionsRevealed && (!userStarted || video.muted)) {
         enableSoundAndPlay();
         return;
       }
@@ -1041,20 +1083,6 @@
       }
       togglePlay();
     });
-
-    video.addEventListener("loadeddata", () => {
-      try {
-        if (video.videoWidth < 16) return;
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        ctx.drawImage(video, 0, 0);
-        const url = canvas.toDataURL("image/jpeg", 0.82);
-        if (url && url.length > 64) video.setAttribute("poster", url);
-      } catch (e) {}
-    }, { once: true });
   }
 
   function bindHomeCharacters(root) {
@@ -1163,7 +1191,7 @@
                 <div class="home-video-fallback" aria-hidden="true">
                   <img src="${HOME_WELCOME_POSTER}?v=6" alt="" width="1280" height="720" decoding="async">
                 </div>
-                <button type="button" class="home-video-bigplay" id="homeVidBigPlay" aria-label="Play welcome video">
+                <button type="button" class="home-video-bigplay" id="homeVidBigPlay" hidden aria-hidden="true" aria-label="Play welcome video">
                   <span class="home-video-bigplay-icon" aria-hidden="true">▶</span>
                 </button>
                 <button type="button" class="home-video-sound" id="homeVidSound" hidden aria-hidden="true" aria-label="Enable welcome video sound">
@@ -1184,11 +1212,11 @@
           </div>
           <div class="home-hero-mascots" aria-hidden="true">
             <button type="button" class="home-char home-char-teddy" data-home-char="teddy" aria-label="Golden teddy bear says hello">
-              <img src="${HOME_TEDDY}" alt="" width="180" height="200" draggable="false" decoding="async">
+              <img data-home-src="${HOME_TEDDY}" alt="" width="180" height="200" draggable="false" decoding="async">
               <span class="home-char-bubble" data-char-bubble="teddy" role="status"></span>
             </button>
             <button type="button" class="home-char home-char-bunny" data-home-char="bunny" aria-label="Purple bunny says hello">
-              <img src="${HOME_BUNNY}" alt="" width="160" height="190" draggable="false" decoding="async">
+              <img data-home-src="${HOME_BUNNY}" alt="" width="160" height="190" draggable="false" decoding="async">
               <span class="home-char-bubble" data-char-bubble="bunny" role="status"></span>
             </button>
           </div>
@@ -1211,7 +1239,7 @@
         <div class="home-friends-row">
           <button type="button" class="home-friend-card" data-home-char="teddy" aria-label="Say hi to golden teddy">
             <span class="home-friend-art">
-              <img src="${HOME_TEDDY_ART}" alt="Golden teddy bear in the magical garden" width="420" height="480" loading="lazy" decoding="async" draggable="false">
+              <img data-home-src="${HOME_TEDDY_ART}" alt="Golden teddy bear in the magical garden" width="420" height="480" decoding="async" draggable="false">
             </span>
             <span class="home-friend-name">Golden Teddy</span>
             <span class="home-friend-role">Brave explorer</span>
@@ -1220,7 +1248,7 @@
           </button>
           <button type="button" class="home-friend-card" data-home-char="bunny" aria-label="Say hi to purple bunny">
             <span class="home-friend-art">
-              <img src="${HOME_BUNNY_ART}" alt="Purple bunny in the magical garden" width="420" height="480" loading="lazy" decoding="async" draggable="false">
+              <img data-home-src="${HOME_BUNNY_ART}" alt="Purple bunny in the magical garden" width="420" height="480" decoding="async" draggable="false">
             </span>
             <span class="home-friend-name">Purple Bunny</span>
             <span class="home-friend-role">Playful guide</span>
@@ -1234,7 +1262,7 @@
       <section class="home-parent" id="home-about" aria-label="Learning made magical">
         <div class="home-parent-intro">
           <div class="home-parent-art">
-            <img src="${HOME_TEDDY_ART}" alt="Golden teddy bear inviting little learners to explore" width="420" height="480" loading="lazy" decoding="async">
+            <img data-home-src="${HOME_TEDDY_ART}" alt="Golden teddy bear inviting little learners to explore" width="420" height="480" decoding="async">
           </div>
           <div class="home-parent-copy">
             <h3>Learning Made Magical</h3>
@@ -1280,11 +1308,10 @@
       card.innerHTML = `
         <span class="age-home-art" aria-hidden="true">
           <img
-            src="${escapeHtml(section.illustration)}"
+            data-home-src="${escapeHtml(section.illustration)}"
             alt=""
             width="640"
             height="480"
-            loading="lazy"
             decoding="async"
             draggable="false"
           >
@@ -5304,6 +5331,16 @@
 
   async function boot() {
     initBg();
+
+    // Intentional deep links still work; plain URL shows homepage FIRST
+    // before network/API waits so the welcome video can start immediately.
+    const deepAgeHub = ageHubFromHash(location.hash);
+    if (deepAgeHub) {
+      go(deepAgeHub);
+    } else {
+      go("home");
+    }
+
     const [legacyPing, foundationPing] = await Promise.all([
       apiCall("ping"),
       platformCall("/health"),
@@ -5313,7 +5350,6 @@
     await loadCatalogSegments();
 
     // Restore any saved session for UI/progress, but do NOT skip the homepage.
-    // The main LumaCubs URL must always open the welcome homepage first.
     if (platformMode) {
       await restoreParentSession();
     }
@@ -5333,15 +5369,6 @@
 
     updateParentUI();
     updateSidebarUI();
-
-    // Intentional deep links (e.g. #age/little-explorers) still work.
-    // Plain main URL / refresh without an age hash always lands on homepage.
-    const deepAgeHub = ageHubFromHash(location.hash);
-    if (deepAgeHub) {
-      go(deepAgeHub);
-      return;
-    }
-    go("home");
   }
 
   // flush pending progress right before the page is hidden or closed
