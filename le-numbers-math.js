@@ -162,16 +162,19 @@
     {
       id: "basic_mathematical_concepts",
       title: "Basic Mathematical Concepts",
-      blurb: "One, many, same, and different!",
+      blurb: "Big & small, near & far, left & right, and more!",
       tone: "sage",
       accent: "#C8F0E0",
       art: ART + "basic_mathematical_concepts.jpg",
       subs: [
-        { id: "bmc_one_many", title: "One and many", level: "A", type: "one_many", max: 5 },
-        { id: "bmc_zero", title: "None and zero (visual introduction)", level: "A", type: "none_zero", max: 3 },
-        { id: "bmc_all_some", title: "All and some", level: "B", type: "all_some", max: 6 },
-        { id: "bmc_same_diff", title: "Same and different quantities", level: "A", type: "same_qty", max: 5 },
-        { id: "bmc_part_whole", title: "Part and whole (simple visual exposure)", level: "B", type: "part_whole", max: 4 },
+        {
+          id: "bmc_discovery",
+          title: "Math Discovery World",
+          level: "A",
+          type: "bmc_hub",
+          blurb: "11 magical adventures: size, space, order and more!",
+          art: ART + "basic_mathematical_concepts.jpg",
+        },
       ],
     },
     {
@@ -436,7 +439,8 @@
       const isSorting = /^sg_/.test(sub.type);
       const isNumberSeq = /^ns_/.test(sub.type);
       const isNsHub = sub.type === "ns_mystery" || sub.type === "ns_pattern";
-      const ROUNDS = isExploreOnly || isNsHub ? 1 : (isMemory ? 4 : ((isSorting || isNumberSeq) ? (sub.level === "A" ? 4 : 5) : (sub.level === "A" ? 4 : 5)));
+      const isBmcHub = sub.type === "bmc_hub";
+      const ROUNDS = isExploreOnly || isNsHub || isBmcHub ? 1 : (isMemory ? 4 : ((isSorting || isNumberSeq) ? (sub.level === "A" ? 4 : 5) : (sub.level === "A" ? 4 : 5)));
       let round = 0;
       let score = 0;
       let locked = false;
@@ -444,7 +448,7 @@
       let wrongTries = 0;
       let exploreSeen = new Set();
 
-      if ((isSorting || isNumberSeq) && typeof trackPlatformProgress === "function") {
+      if ((isSorting || isNumberSeq || isBmcHub) && typeof trackPlatformProgress === "function") {
         trackPlatformProgress("le.numbers_math." + sub.id, "started");
       }
 
@@ -3788,11 +3792,40 @@
             if (window.LUMACUBS_NS_MP && typeof window.LUMACUBS_NS_MP.createHubs === "function") {
               Object.assign(page._nsBuilders, window.LUMACUBS_NS_MP.createHubs(nsCtx));
             }
+            // Complete Missing Number Mystery adventure overrides ns_mystery only
+            if (window.LUMACUBS_MYSTERY && typeof window.LUMACUBS_MYSTERY.create === "function") {
+              page._nsBuilders.ns_mystery = window.LUMACUBS_MYSTERY.create(nsCtx);
+            }
           }
           if (page._nsBuilders[type]) {
             page._nsBuilders[type]();
             return;
           }
+        }
+
+        // Basic Mathematical Concepts discovery hub
+        if (type === "bmc_hub" && window.LUMACUBS_BMC && typeof window.LUMACUBS_BMC.create === "function") {
+          if (!page._bmcBuilder) {
+            page._bmcBuilder = window.LUMACUBS_BMC.create({
+              stageEl,
+              promptEl,
+              choicesEl,
+              say,
+              onCorrect,
+              onWrong,
+              snd,
+              confetti,
+              sub,
+              getLocked: () => locked,
+              setLocked: (v) => { locked = !!v; },
+              getAgeHubReturn,
+              trackPlatformProgress,
+              LS,
+              roundEl,
+            });
+          }
+          page._bmcBuilder();
+          return;
         }
 
         if (type === "nt_guided" || type === "nt_follow" || type === "nt_complete" || type === "nt_freehand" || type === "trace") {
