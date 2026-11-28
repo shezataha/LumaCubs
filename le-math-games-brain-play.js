@@ -829,11 +829,10 @@
             pool: ["boat", "shell", "leaf", "rock", "car", "apple"],
           },
           {
-            title: "Food treasures",
-            speak: "Find the food treasures!",
-            ok: ["apple"],
-            pool: ["apple", "ball", "key", "gem", "flower", "rock"],
-            // apple only food in pool — add banana-like via flower? keep apple vs toys
+            title: "Nature finds",
+            speak: "Sort the nature finds into the basket!",
+            ok: ["leaf", "flower", "shell"],
+            pool: ["leaf", "flower", "shell", "car", "key", "block"],
           },
           {
             title: "Round toys",
