@@ -864,8 +864,9 @@
     const stage = root.querySelector(".home-video-stage");
     let userStarted = false;
     let sectionsRevealed = false;
-    let autoplayTried = false;
     let autoplayFailed = false;
+    let playAttempts = 0;
+    const MAX_PLAY_ATTEMPTS = 12;
 
     function setStatus(text, visible) {
       if (!statusEl) return;
@@ -878,11 +879,15 @@
       if (bigPlayBtn) bigPlayBtn.classList.toggle("is-autoplay-failed", autoplayFailed);
     }
 
+    function isPlaying() {
+      return !!(video && !video.paused && !video.ended && video.readyState > 1);
+    }
+
     function syncPlayUi() {
-      const playing = !video.paused && !video.ended;
+      const playing = isPlaying();
       const needsSound = playing && video.muted && !userStarted;
       if (bigPlayBtn) {
-        // During welcome: never show large play unless autoplay fully failed
+        // During welcome: never show large play unless muted autoplay fully failed
         const showPlay = sectionsRevealed
           ? !playing
           : (autoplayFailed && !playing);
@@ -917,22 +922,27 @@
       syncPlayUi();
     }
 
+    // Browsers block audible autoplay — muted + playsinline is the reliable path.
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "");
-    video.playsInline = true;
-    // Start muted for policy-safe first paint; tryAutoplay may unmute
-    video.muted = true;
+    video.setAttribute("autoplay", "");
     video.setAttribute("muted", "");
+    video.playsInline = true;
+    video.autoplay = true;
+    video.muted = true;
+    video.defaultMuted = true;
     video.preload = "auto";
     syncPlayUi();
     setStatus("Loading magical welcome…", true);
 
     video.addEventListener("loadeddata", () => {
       if (stage) stage.classList.remove("is-loading", "is-error");
-      if (!video.paused) setStatus("", false);
+      if (isPlaying()) setStatus(video.muted && !userStarted ? "Tap for sound" : "", video.muted && !userStarted);
+      tryAutoplay();
     });
+    video.addEventListener("canplay", () => { tryAutoplay(); });
     video.addEventListener("waiting", () => {
-      if (!sectionsRevealed) setStatus("Loading…", true);
+      if (!sectionsRevealed && !isPlaying()) setStatus("Loading…", true);
     });
     video.addEventListener("playing", () => {
       if (stage) stage.classList.remove("is-loading");
@@ -941,7 +951,13 @@
       else setStatus("", false);
       syncPlayUi();
     });
-    video.addEventListener("pause", syncPlayUi);
+    video.addEventListener("pause", () => {
+      syncPlayUi();
+      // If welcome paused unexpectedly before end, keep trying muted autoplay
+      if (!sectionsRevealed && !video.ended && video.currentTime < 0.2) {
+        setTimeout(() => tryAutoplay(), 120);
+      }
+    });
     video.addEventListener("ended", () => {
       syncPlayUi();
       setStatus("", false);
@@ -956,65 +972,85 @@
       revealHomeSections();
     });
 
-    function playMutedFallback() {
+    function tryAutoplay() {
+      if (sectionsRevealed || isPlaying() || video.ended) return;
+      if (playAttempts >= MAX_PLAY_ATTEMPTS) {
+        markAutoplayFailed(true);
+        syncPlayUi();
+        setStatus("Tap to play welcome video", true);
+        return;
+      }
+      playAttempts += 1;
+      markAutoplayFailed(false);
+
+      // ALWAYS muted first — this is what Chrome/mobile allow without a tap
       video.muted = true;
+      video.defaultMuted = true;
       video.setAttribute("muted", "");
-      const quiet = video.play();
-      if (quiet && typeof quiet.then === "function") {
-        return quiet.then(() => {
+
+      const p = video.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => {
           markAutoplayFailed(false);
           setStatus("Tap for sound", true);
           syncPlayUi();
+          // After muted playback is running, try unmute without restarting.
+          // If browser blocks it, keep muted + sound chip (no tap needed to watch).
+          tryUnmuteWhilePlaying();
         }).catch(() => {
-          markAutoplayFailed(true);
-          syncPlayUi();
-          setStatus("Tap to play welcome video", true);
+          // Retry shortly — media may not be ready yet
+          setTimeout(() => tryAutoplay(), 180);
         });
+      } else {
+        setTimeout(() => tryAutoplay(), 180);
       }
-      markAutoplayFailed(true);
-      syncPlayUi();
-      setStatus("Tap to play welcome video", true);
-      return Promise.resolve();
     }
 
-    function tryAutoplay() {
-      if (autoplayTried || sectionsRevealed) return;
-      autoplayTried = true;
-      markAutoplayFailed(false);
-
-      // 1) Prefer autoplay with audio (may be blocked by browser policy)
+    function tryUnmuteWhilePlaying() {
+      if (sectionsRevealed || userStarted || !isPlaying()) return;
+      const t = video.currentTime;
       video.muted = false;
       video.removeAttribute("muted");
-      const loud = video.play();
-      const onLoudOk = () => {
-        userStarted = true;
-        markAutoplayFailed(false);
-        setStatus("", false);
+      // If unmuting causes a pause/block, immediately restore muted playback
+      setTimeout(() => {
+        if (sectionsRevealed || userStarted) return;
+        if (video.paused && !video.ended) {
+          video.muted = true;
+          video.setAttribute("muted", "");
+          video.play().catch(() => {});
+          setStatus("Tap for sound", true);
+          syncPlayUi();
+          return;
+        }
+        if (!video.muted) {
+          userStarted = true;
+          setStatus("", false);
+          syncPlayUi();
+          return;
+        }
+        // Still muted — keep watching, offer sound chip only
+        setStatus("Tap for sound", true);
         syncPlayUi();
-      };
-      const onLoudFail = () => playMutedFallback();
-
-      if (loud && typeof loud.then === "function") {
-        loud.then(onLoudOk).catch(onLoudFail);
-      } else {
-        onLoudFail();
-      }
+        if (Math.abs(video.currentTime - t) > 1) {
+          try { video.currentTime = t; } catch (e) { /* */ }
+        }
+      }, 60);
     }
 
     if (stage) stage.classList.add("is-loading");
-    // Kick media fetch immediately
-    try { video.load(); } catch (e) { /* */ }
-    if (video.readyState >= 2) tryAutoplay();
-    else {
-      video.addEventListener("canplay", tryAutoplay, { once: true });
-      video.addEventListener("loadeddata", tryAutoplay, { once: true });
-      // Safety retries
-      setTimeout(() => { if (!autoplayTried && !sectionsRevealed) tryAutoplay(); }, 600);
-      setTimeout(() => {
-        if (!sectionsRevealed && (video.paused && video.currentTime === 0)) tryAutoplay();
-        if (!sectionsRevealed && video.error) revealHomeSections();
-      }, 4000);
-    }
+    // Do NOT call video.load() — it can cancel the first autoplay attempt.
+    tryAutoplay();
+    setTimeout(() => tryAutoplay(), 200);
+    setTimeout(() => tryAutoplay(), 600);
+    setTimeout(() => tryAutoplay(), 1200);
+    setTimeout(() => {
+      if (!sectionsRevealed && !isPlaying() && !video.ended) {
+        markAutoplayFailed(true);
+        syncPlayUi();
+        setStatus("Tap to play welcome video", true);
+      }
+      if (!sectionsRevealed && video.error) revealHomeSections();
+    }, 5000);
 
     function enableSoundAndPlay() {
       userStarted = true;
@@ -1023,7 +1059,7 @@
       video.removeAttribute("muted");
       // Only rewind if the welcome already finished and user wants a replay
       if (video.ended) video.currentTime = 0;
-      else if (resumeAt > 0 && Math.abs(video.currentTime - resumeAt) > 0.25) {
+      else if (resumeAt > 0) {
         try { video.currentTime = resumeAt; } catch (e) { /* */ }
       }
       const p = video.play();
@@ -1035,6 +1071,9 @@
           // Keep playback going muted — never restart from zero for sound unlock
           video.muted = true;
           video.setAttribute("muted", "");
+          if (resumeAt > 0) {
+            try { video.currentTime = resumeAt; } catch (e) { /* */ }
+          }
           video.play().then(() => {
             setStatus("Tap again for sound", true);
             syncPlayUi();
@@ -1047,6 +1086,19 @@
     function togglePlay() {
       // While muted autoplay runs, first tap only unlocks audio (no restart)
       if (!sectionsRevealed && (!userStarted || video.muted)) {
+        if (!isPlaying() && !video.ended) {
+          // Last-resort: user gesture can start playback if policy blocked everything
+          playAttempts = 0;
+          markAutoplayFailed(false);
+          video.muted = true;
+          video.setAttribute("muted", "");
+          video.play().then(() => {
+            enableSoundAndPlay();
+          }).catch(() => {
+            enableSoundAndPlay();
+          });
+          return;
+        }
         enableSoundAndPlay();
         return;
       }
@@ -1179,15 +1231,16 @@
                 <video
                   id="homeWelcomeVideo"
                   class="home-welcome-video"
-                  poster="${HOME_WELCOME_POSTER}?v=6"
+                  poster="${HOME_WELCOME_POSTER}?v=7"
+                  src="${HOME_WELCOME_VIDEO}?v=7"
                   preload="auto"
+                  autoplay
+                  muted
+                  defaultMuted
                   playsinline
                   webkit-playsinline
-                  muted
                   aria-label="LumaCubs welcome video"
-                >
-                  <source src="${HOME_WELCOME_VIDEO}?v=6" type="video/mp4">
-                </video>
+                ></video>
                 <div class="home-video-fallback" aria-hidden="true">
                   <img src="${HOME_WELCOME_POSTER}?v=6" alt="" width="1280" height="720" decoding="async">
                 </div>
