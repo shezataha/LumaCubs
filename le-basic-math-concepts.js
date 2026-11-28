@@ -150,6 +150,154 @@
     </svg>`;
   }
 
+  /* Premium concept illustrations — meaning must be obvious before text */
+  function figRibbon(len) {
+    return `<span class="le-nm-bmc-fig is-ribbon is-${len}" aria-hidden="true"><span class="le-nm-bmc-ribbon-bow"></span><span class="le-nm-bmc-ribbon-body"></span></span>`;
+  }
+  function figTree(h) {
+    return `<span class="le-nm-bmc-fig is-tree is-${h}" aria-hidden="true"><span class="le-nm-bmc-tree-canopy"></span><span class="le-nm-bmc-tree-trunk"></span></span>`;
+  }
+  function figJar(fill) {
+    const n = fill === "full" ? 9 : fill === "half" ? 4 : 0;
+    const balls = Array.from({ length: n }, (_, i) => `<i class="le-nm-bmc-ball c${i % 5}"></i>`).join("");
+    return `<span class="le-nm-bmc-fig is-jar is-${fill}" aria-hidden="true"><span class="le-nm-bmc-jar-glass">${balls}</span></span>`;
+  }
+  function figApple() {
+    return `<span class="le-nm-bmc-fig is-apple" aria-hidden="true"><span class="le-nm-bmc-fruit-body is-apple"></span><span class="le-nm-bmc-fruit-leaf"></span></span>`;
+  }
+  function figBanana() {
+    return `<span class="le-nm-bmc-fig is-banana" aria-hidden="true"><span class="le-nm-bmc-fruit-body is-banana"></span></span>`;
+  }
+  function figHouse() {
+    return `<span class="le-nm-bmc-fig is-house" aria-hidden="true"><span class="le-nm-bmc-house-roof"></span><span class="le-nm-bmc-house-wall"></span></span>`;
+  }
+  function figBox() {
+    return `<span class="le-nm-bmc-fig is-box" aria-hidden="true"><span class="le-nm-bmc-box-body"></span><span class="le-nm-bmc-box-lid"></span></span>`;
+  }
+  function figBall() {
+    return `<span class="le-nm-bmc-fig is-playball" aria-hidden="true"></span>`;
+  }
+  function figBird() {
+    return `<span class="le-nm-bmc-fig is-bird" aria-hidden="true"></span>`;
+  }
+  function figFeather() {
+    return `<span class="le-nm-bmc-fig is-feather" aria-hidden="true"></span>`;
+  }
+  function figRock() {
+    return `<span class="le-nm-bmc-fig is-rock" aria-hidden="true"></span>`;
+  }
+  function figAnimal(kind) {
+    const colors = { rabbit: "#C9A0FF", bear: "#E8B86D", turtle: "#7ECDB5", fox: "#FF8FAB", duck: "#FFD166" };
+    return `<span class="le-nm-bmc-fig is-racer-animal is-${kind}" style="--c:${colors[kind] || "#E8B86D"}" aria-hidden="true"></span>`;
+  }
+
+  const CONCEPT_DEMO = {
+    big_small: {
+      title: "Big & Small",
+      speak: "Look! One teddy is big. One teddy is small.",
+      explain: "Same kind of teddy — one is big, one is small.",
+      art: () => `<div class="le-nm-bmc-demo-pair is-ground">
+        <div class="le-nm-bmc-demo-item"><div class="le-nm-bmc-demo-pic is-big">${teddySVG(110)}</div><em>Big</em></div>
+        <div class="le-nm-bmc-demo-item"><div class="le-nm-bmc-demo-pic is-small">${teddySVG(48)}</div><em>Small</em></div>
+      </div>`,
+    },
+    long_short: {
+      title: "Long & Short",
+      speak: "See the long ribbon and the short ribbon.",
+      explain: "Compare length — which ribbon stretches farther?",
+      art: () => `<div class="le-nm-bmc-demo-stack">
+        <div class="le-nm-bmc-demo-item is-row">${figRibbon("long")}<em>Long</em></div>
+        <div class="le-nm-bmc-demo-item is-row">${figRibbon("short")}<em>Short</em></div>
+      </div>`,
+    },
+    tall_short: {
+      title: "Tall & Short",
+      speak: "Both trees stand on the same ground. One is tall. One is short.",
+      explain: "Same ground line — the tall tree reaches higher.",
+      art: () => `<div class="le-nm-bmc-demo-pair is-ground-line">
+        <div class="le-nm-bmc-demo-item">${figTree("tall")}<em>Tall</em></div>
+        <div class="le-nm-bmc-demo-item">${figTree("short")}<em>Short</em></div>
+      </div>`,
+    },
+    heavy_light: {
+      title: "Heavy & Light",
+      speak: "Watch the scale! The heavy rock pulls down. The feather is light.",
+      explain: "Heavy makes the scale tip down. Light goes up.",
+      art: () => `<div class="le-nm-bmc-demo-scale tilt-left">
+        <div class="le-nm-bmc-beam"></div>
+        <div class="le-nm-bmc-pan is-left">${figRock()}<em>Heavy</em></div>
+        <div class="le-nm-bmc-pan is-right">${figFeather()}<em>Light</em></div>
+        <div class="le-nm-bmc-fulcrum"></div>
+      </div>`,
+    },
+    full_empty: {
+      title: "Full & Empty",
+      speak: "One jar is full of colorful balls. The other jar is empty.",
+      explain: "Full means filled up. Empty means nothing inside.",
+      art: () => `<div class="le-nm-bmc-demo-pair">
+        <div class="le-nm-bmc-demo-item">${figJar("full")}<em>Full</em></div>
+        <div class="le-nm-bmc-demo-item">${figJar("empty")}<em>Empty</em></div>
+      </div>`,
+    },
+    same_diff: {
+      title: "Same & Different",
+      speak: "Two red apples are the same. The banana is different.",
+      explain: "Same means matching. Different means not the same.",
+      art: () => `<div class="le-nm-bmc-demo-pair">
+        <div class="le-nm-bmc-demo-item is-group">${figApple()}${figApple()}<em>Same</em></div>
+        <div class="le-nm-bmc-demo-item">${figBanana()}<em>Different</em></div>
+      </div>`,
+    },
+    near_far: {
+      title: "Near & Far",
+      speak: "One bunny is near the house. Another bunny is far away.",
+      explain: "Near means close. Far means a long way away.",
+      art: () => `<div class="le-nm-bmc-demo-distance">
+        <div class="le-nm-bmc-demo-lane is-near">${bunnySVG(44)}${figHouse()}<em>Near</em></div>
+        <div class="le-nm-bmc-demo-lane is-far">${bunnySVG(28)}<span class="le-nm-bmc-gap"></span>${figHouse()}<em>Far</em></div>
+      </div>`,
+    },
+    inside_out: {
+      title: "Inside & Outside",
+      speak: "One ball is inside the box. One ball is outside the box.",
+      explain: "Inside means in the box. Outside means not in the box.",
+      art: () => `<div class="le-nm-bmc-demo-pair">
+        <div class="le-nm-bmc-demo-item is-inbox"><span class="le-nm-bmc-box-scene is-in">${figBox()}${figBall()}</span><em>Inside</em></div>
+        <div class="le-nm-bmc-demo-item is-outbox"><span class="le-nm-bmc-box-scene is-out">${figBox()}${figBall()}</span><em>Outside</em></div>
+      </div>`,
+    },
+    above_below: {
+      title: "Above & Below",
+      speak: "The bird is above the tree. The bunny is below the tree.",
+      explain: "Above means higher up. Below means lower down.",
+      art: () => `<div class="le-nm-bmc-demo-vertical">
+        <div class="le-nm-bmc-demo-item">${figBird()}<em>Above</em></div>
+        ${figTree("mid")}
+        <div class="le-nm-bmc-demo-item">${bunnySVG(40)}<em>Below</em></div>
+      </div>`,
+    },
+    left_right: {
+      title: "Left & Right",
+      speak: "Left is this way. Right is that way. Let's dance!",
+      explain: "Left and right are opposite sides.",
+      art: () => `<div class="le-nm-bmc-demo-dance">
+        <span class="le-nm-bmc-arrow is-left" aria-hidden="true"></span>
+        <div class="le-nm-bmc-demo-item">${teddySVG(72)}<em>You</em></div>
+        <span class="le-nm-bmc-arrow is-right" aria-hidden="true"></span>
+      </div>`,
+    },
+    first_last: {
+      title: "First, Middle & Last",
+      speak: "In a line: first at the start, middle in the center, last at the end.",
+      explain: "Order matters — first, middle, then last.",
+      art: () => `<div class="le-nm-bmc-demo-line">
+        <div class="le-nm-bmc-demo-item is-pos">${figAnimal("rabbit")}<em>First</em></div>
+        <div class="le-nm-bmc-demo-item is-pos">${figAnimal("bear")}<em>Middle</em></div>
+        <div class="le-nm-bmc-demo-item is-pos">${figAnimal("turtle")}<em>Last</em></div>
+      </div>`,
+    },
+  };
+
   window.LUMACUBS_BMC = {
     create(ctx) {
       const {
@@ -272,11 +420,31 @@
         if (allDone()) setTimeout(() => onCorrect("Amazing math explorer!"), 500);
       }
 
+      function showConceptDemo(exId, onReady) {
+        const demo = CONCEPT_DEMO[exId];
+        if (!demo) { onReady(); return; }
+        if (roundEl) roundEl.textContent = "Learn";
+        promptEl.textContent = demo.title;
+        say(demo.speak);
+        choicesEl.innerHTML = "";
+        lock(false);
+        stageEl.innerHTML = `
+          <div class="le-nm-bmc le-nm-bmc-concept-demo">
+            <h3 class="le-nm-bmc-concept-title">${demo.title}</h3>
+            <div class="le-nm-bmc-concept-art is-${exId}">${demo.art()}</div>
+            <p class="le-nm-bmc-concept-explain">${demo.explain}</p>
+            <button type="button" class="le-nm-choice le-nm-done" id="leBmcPlay">Let's play!</button>
+          </div>`;
+        stageEl.querySelector("#leBmcPlay").addEventListener("click", () => {
+          snd.pop();
+          onReady();
+        });
+      }
+
       function runExercise(exId) {
         const cfg = ageCfg();
         let round = 0;
         let score = 0;
-        if (roundEl) roundEl.textContent = "1 / " + cfg.rounds;
         function next() {
           round++;
           if (roundEl) roundEl.textContent = Math.min(round, cfg.rounds) + " / " + cfg.rounds;
@@ -294,7 +462,7 @@
             setTimeout(next, 850);
           });
         }
-        next();
+        showConceptDemo(exId, next);
       }
 
       function buildRound(exId, cfg, soft, onWin) {
@@ -311,29 +479,28 @@
       /* ===== 1. Big & Small ===== */
       function exBigSmall(cfg, soft, onWin) {
         const wantBig = Math.random() > 0.5;
+        // Always same object type (teddy) with clear size difference
         const toys = soft || tier() === 0
-          ? [{ id: "a", size: "big", label: "teddy" }, { id: "b", size: "small", label: "teddy" }]
-          : shuffle([
-            { id: "a", size: "big", label: "ball" },
-            { id: "b", size: "small", label: "ball" },
-            { id: "c", size: "big", label: "block" },
-            { id: "d", size: "small", label: "block" },
-          ]).slice(0, cfg.objects);
+          ? [{ id: "a", size: "big" }, { id: "b", size: "small" }]
+          : shuffle([{ id: "a", size: "big" }, { id: "b", size: "small" }, { id: "c", size: "big" }, { id: "d", size: "small" }]).slice(0, Math.min(3, cfg.objects));
         const target = wantBig ? "big" : "small";
-        promptEl.textContent = wantBig ? "Can you find the big toy?" : "Can you find the small toy?";
-        say(wantBig ? "Can you find the big teddy?" : "Can you find the small toy?");
+        promptEl.textContent = wantBig ? "Can you find the big teddy?" : "Can you find the small teddy?";
+        say(wantBig ? "Can you find the big teddy?" : "Can you find the small teddy?");
+        function teddyBtn(t, drag) {
+          const sz = t.size === "big" ? 96 : 42;
+          return `<button type="button" class="le-nm-bmc-toy is-${t.size}${drag ? " le-nm-bmc-drag" : ""}" data-size="${t.size}" aria-label="${t.size} teddy"${drag ? ' draggable="true"' : ""}>
+            ${teddySVG(sz)}
+          </button>`;
+        }
         const mode = soft ? "tap" : "basket";
         if (mode === "tap") {
           stageEl.innerHTML = `
             <div class="le-nm-bmc le-nm-bmc-toyland">
-              <div class="le-nm-bmc-deco is-toyland" aria-hidden="true"></div>
-              <div class="le-nm-bmc-row">
-                ${toys.map((t) => `
-                  <button type="button" class="le-nm-bmc-toy is-${t.size} is-${t.label}" data-size="${t.size}" aria-label="${t.size} ${t.label}">
-                    <span class="le-nm-bmc-toy-body"></span>
-                  </button>`).join("")}
+              <div class="le-nm-bmc-visual-guide" aria-hidden="true">${teddySVG(28)} big · ${teddySVG(16)} small</div>
+              <div class="le-nm-bmc-row is-ground">
+                ${toys.map((t) => teddyBtn(t, false)).join("")}
               </div>
-              <p class="le-nm-tap-hint">Tap the ${target} one</p>
+              <p class="le-nm-tap-hint">Tap the ${target} teddy</p>
             </div>`;
           stageEl.querySelectorAll(".le-nm-bmc-toy").forEach((btn) => {
             btn.addEventListener("click", () => {
@@ -342,32 +509,28 @@
                 btn.classList.add("is-win");
                 say(wantBig ? "Big!" : "Small!");
                 onWin();
-              } else onWrong(wantBig ? "Look for the bigger toy!" : "Look for the smaller toy!");
+              } else onWrong(wantBig ? "Look for the bigger teddy!" : "Look for the smaller teddy!");
             });
           });
           return;
         }
         stageEl.innerHTML = `
           <div class="le-nm-bmc le-nm-bmc-toyland">
-            <div class="le-nm-bmc-deco is-toyland" aria-hidden="true"></div>
-            <div class="le-nm-bmc-row" id="leBmcToyPool">
-              ${toys.map((t) => `
-                <button type="button" class="le-nm-bmc-toy le-nm-bmc-drag is-${t.size} is-${t.label}" data-size="${t.size}" draggable="true">
-                  <span class="le-nm-bmc-toy-body"></span>
-                </button>`).join("")}
+            <div class="le-nm-bmc-row is-ground" id="leBmcToyPool">
+              ${toys.map((t) => teddyBtn(t, true)).join("")}
             </div>
             <div class="le-nm-bmc-baskets">
               <div class="le-nm-bmc-basket le-nm-bmc-slot" data-need="${target}">
                 <span>${wantBig ? "Big basket" : "Small basket"}</span>
               </div>
             </div>
-            <p class="le-nm-tap-hint">Drag the ${target} toy into the basket</p>
+            <p class="le-nm-tap-hint">Drag the ${target} teddy into the basket</p>
           </div>`;
         bindDrag(stageEl, ".le-nm-bmc-drag", ".le-nm-bmc-basket", (slot, item) => {
           if (getLocked()) return false;
           const need = slot.getAttribute("data-need");
           if (item.getAttribute("data-size") !== need) {
-            onWrong("That toy does not belong in this basket!");
+            onWrong("That teddy does not belong in this basket!");
             return false;
           }
           item.classList.add("is-placed");
@@ -390,28 +553,30 @@
         say(wantLong ? "Which train track is longer?" : "Which one is shorter?");
         const buildMode = !soft && tier() > 0;
         if (!buildMode) {
+          promptEl.textContent = wantLong ? "Which ribbon is longer?" : "Which ribbon is shorter?";
+          say(wantLong ? "Which ribbon is longer?" : "Which ribbon is shorter?");
           stageEl.innerHTML = `
             <div class="le-nm-bmc le-nm-bmc-railway">
-              <div class="le-nm-bmc-deco is-railshop" aria-hidden="true"></div>
-              <div class="le-nm-bmc-tracks">
+              <div class="le-nm-bmc-tracks is-ribbons">
                 ${items.map((it) => `
-                  <button type="button" class="le-nm-bmc-track is-${it.len}" data-len="${it.len}" aria-label="${it.len} track">
-                    <span class="le-nm-bmc-track-bar"></span>
+                  <button type="button" class="le-nm-bmc-track is-ribbon-btn is-${it.len}" data-len="${it.len}" aria-label="${it.len} ribbon">
+                    ${figRibbon(it.len)}
                   </button>`).join("")}
               </div>
-              <p class="le-nm-tap-hint">Tap the ${target} track</p>
+              <p class="le-nm-tap-hint">Tap the ${target} ribbon</p>
             </div>`;
           stageEl.querySelectorAll(".le-nm-bmc-track").forEach((btn) => {
             btn.addEventListener("click", () => {
               if (getLocked()) return;
               const len = btn.getAttribute("data-len");
-              if (len === target || (target === "long" && len === "long") || (target === "short" && len === "short")) {
-                if (len === "mid") { onWrong("Compare carefully!"); return; }
+              if (len === target) {
                 btn.classList.add("is-win");
                 stageEl.querySelector(".le-nm-bmc-railway").classList.add("is-chug");
                 say(wantLong ? "Long!" : "Short!");
                 onWin();
-              } else onWrong(wantLong ? "Find the longer track!" : "Find the shorter track!");
+              } else if (len === "mid") {
+                onWrong("Compare carefully!");
+              } else onWrong(wantLong ? "Find the longer ribbon!" : "Find the shorter ribbon!");
             });
           });
           return;
@@ -431,10 +596,10 @@
             <div class="le-nm-bmc-pool">
               ${order.map((it) => `
                 <button type="button" class="le-nm-bmc-track le-nm-bmc-drag is-${it.len}" data-len="${it.len}" draggable="true">
-                  <span class="le-nm-bmc-track-bar"></span>
+                  ${figRibbon(it.len)}
                 </button>`).join("")}
             </div>
-            <p class="le-nm-tap-hint">Place tracks from longest to shortest</p>
+            <p class="le-nm-tap-hint">Place ribbons from longest to shortest</p>
           </div>`;
         let focus = 0, placed = 0;
         bindDrag(stageEl, ".le-nm-bmc-drag", ".le-nm-bmc-slot.is-track", (slot, item) => {
@@ -470,18 +635,20 @@
         const target = wantTall ? "tall" : "short";
         const stackMode = !soft && tier() > 0 && Math.random() > 0.45;
         if (!stackMode) {
-          promptEl.textContent = wantTall ? "Which tower is taller?" : "Which tower is shorter?";
-          say(wantTall ? "Let's find the tall tower!" : "Which tower is shorter?");
+          promptEl.textContent = wantTall ? "Which tree is taller?" : "Which tree is shorter?";
+          say(wantTall ? "Which tree is taller?" : "Which tree is shorter?");
+          const treeSet = soft || tier() === 0
+            ? [{ size: "tall" }, { size: "short" }]
+            : towers.map((t) => ({ size: t.size === "mid" ? "mid" : t.size }));
           stageEl.innerHTML = `
             <div class="le-nm-bmc le-nm-bmc-build">
-              <div class="le-nm-bmc-deco is-site" aria-hidden="true"></div>
-              <div class="le-nm-bmc-towers">
-                ${towers.map((t, i) => `
-                  <button type="button" class="le-nm-bmc-tower" data-size="${t.size}" aria-label="${t.size} tower">
-                    ${Array.from({ length: t.h }, () => `<span class="le-nm-bmc-block"></span>`).join("")}
+              <div class="le-nm-bmc-towers is-trees is-ground-line">
+                ${treeSet.map((t) => `
+                  <button type="button" class="le-nm-bmc-tower is-tree-btn" data-size="${t.size}" aria-label="${t.size} tree">
+                    ${figTree(t.size)}
                   </button>`).join("")}
               </div>
-              <p class="le-nm-tap-hint">Tap the ${target} tower</p>
+              <p class="le-nm-tap-hint">Tap the ${target} tree · both grow from the same ground</p>
             </div>`;
           stageEl.querySelectorAll(".le-nm-bmc-tower").forEach((btn) => {
             btn.addEventListener("click", () => {
@@ -491,7 +658,7 @@
                 btn.classList.add("is-win");
                 say(wantTall ? "Tall!" : "Short!");
                 onWin();
-              } else onWrong(wantTall ? "Look for the taller tower!" : "Look for the shorter tower!");
+              } else onWrong(wantTall ? "Look for the taller tree!" : "Look for the shorter tree!");
             });
           });
           return;
@@ -526,35 +693,29 @@
 
       /* ===== 4. Heavy & Light ===== */
       function exHeavyLight(cfg, soft, onWin) {
-        // Visual mass cues: rock vs feather-like balloon, book vs leaf — size matches weight for kids
-        const pairs = [
-          { heavy: { id: "rock", label: "rock" }, light: { id: "balloon", label: "balloon" } },
-          { heavy: { id: "book", label: "book" }, light: { id: "leaf", label: "leaf" } },
-          { heavy: { id: "apple", label: "apple" }, light: { id: "feather", label: "feather" } },
-        ];
-        const pair = pick(pairs);
+        // Rock vs feather — size does NOT imply weight (feather can look "big", rock compact)
         const wantHeavy = Math.random() > 0.5;
         promptEl.textContent = wantHeavy ? "Which side is heavier?" : "Which side is lighter?";
-        say(wantHeavy ? "Which side is heavier?" : "Which object is lighter?");
+        say(wantHeavy ? "Which side is heavier?" : "Which side is lighter?");
         const leftHeavy = Math.random() > 0.5;
-        const left = leftHeavy ? pair.heavy : pair.light;
-        const right = leftHeavy ? pair.light : pair.heavy;
         const answer = wantHeavy ? (leftHeavy ? "left" : "right") : (leftHeavy ? "right" : "left");
         const tilt = leftHeavy ? "tilt-left" : "tilt-right";
+        const leftFig = leftHeavy ? figRock() : figFeather();
+        const rightFig = leftHeavy ? figFeather() : figRock();
         stageEl.innerHTML = `
           <div class="le-nm-bmc le-nm-bmc-lab">
             <div class="le-nm-bmc-scientist">${teddySVG(48)}</div>
             <div class="le-nm-bmc-scale ${tilt}" id="leBmcScale">
               <div class="le-nm-bmc-beam"></div>
               <button type="button" class="le-nm-bmc-pan is-left" data-side="left">
-                <span class="le-nm-bmc-obj is-${left.id}" title="${left.label}"></span>
+                ${leftFig}
               </button>
               <button type="button" class="le-nm-bmc-pan is-right" data-side="right">
-                <span class="le-nm-bmc-obj is-${right.id}" title="${right.label}"></span>
+                ${rightFig}
               </button>
               <div class="le-nm-bmc-fulcrum"></div>
             </div>
-            <p class="le-nm-tap-hint">Watch the scale · tap the ${wantHeavy ? "heavier" : "lighter"} side</p>
+            <p class="le-nm-tap-hint">Watch which side tips down · tap the ${wantHeavy ? "heavier" : "lighter"} side</p>
           </div>`;
         stageEl.querySelectorAll(".le-nm-bmc-pan").forEach((btn) => {
           btn.addEventListener("click", () => {
@@ -577,19 +738,18 @@
         const want = askHalf ? "half" : (Math.random() > 0.5 ? "full" : "empty");
         const fillMode = !soft && tier() > 0 && want === "full" && Math.random() > 0.4;
         if (!fillMode) {
-          promptEl.textContent = want === "full" ? "Can you find the full cup?"
-            : want === "empty" ? "Can you find the empty cup?" : "Which jar is half full?";
+          promptEl.textContent = want === "full" ? "Can you find the full jar?"
+            : want === "empty" ? "Can you find the empty jar?" : "Which jar is half full?";
           say(promptEl.textContent);
           stageEl.innerHTML = `
             <div class="le-nm-bmc le-nm-bmc-picnic">
-              <div class="le-nm-bmc-deco is-picnic" aria-hidden="true"></div>
               <div class="le-nm-bmc-jars">
                 ${states.map((st) => `
-                  <button type="button" class="le-nm-bmc-jar is-${st}" data-fill="${st}" aria-label="${st} jar">
-                    <span class="le-nm-bmc-fill"></span>
+                  <button type="button" class="le-nm-bmc-jar is-fig is-${st}" data-fill="${st}" aria-label="${st} jar">
+                    ${figJar(st)}
                   </button>`).join("")}
               </div>
-              <p class="le-nm-tap-hint">Tap the ${want} container</p>
+              <p class="le-nm-tap-hint">Tap the ${want} jar</p>
             </div>`;
           stageEl.querySelectorAll(".le-nm-bmc-jar").forEach((btn) => {
             btn.addEventListener("click", () => {
@@ -598,7 +758,7 @@
                 btn.classList.add("is-win");
                 say(want === "full" ? "Full!" : want === "empty" ? "Empty!" : "Half full!");
                 onWin();
-              } else onWrong("Look at how full each jar is!");
+              } else onWrong("Look at the colorful balls inside each jar!");
             });
           });
           return;
@@ -608,25 +768,26 @@
         const need = tier() === 2 ? 5 : 4;
         stageEl.innerHTML = `
           <div class="le-nm-bmc le-nm-bmc-picnic">
-            <div class="le-nm-bmc-jar is-empty is-fillable le-nm-bmc-slot" id="leBmcJar" data-need="${need}">
-              <span class="le-nm-bmc-fill" id="leBmcFill" style="--fill:0"></span>
+            <div class="le-nm-bmc-jar is-fig is-empty is-fillable le-nm-bmc-slot" id="leBmcJar" data-need="${need}">
+              <span class="le-nm-bmc-fig is-jar is-empty" id="leBmcJarFig"><span class="le-nm-bmc-jar-glass" id="leBmcFill"></span></span>
             </div>
             <div class="le-nm-bmc-pool">
               ${Array.from({ length: need }, (_, i) => `
                 <button type="button" class="le-nm-bmc-berry le-nm-bmc-drag" data-id="${i}" draggable="true"></button>`).join("")}
             </div>
-            <p class="le-nm-tap-hint">Drag ${need} berries into the jar</p>
+            <p class="le-nm-tap-hint">Drag ${need} colorful balls into the jar</p>
           </div>`;
         let filled = 0;
+        const glass = stageEl.querySelector("#leBmcFill");
         bindDrag(stageEl, ".le-nm-bmc-drag", ".le-nm-bmc-slot", (slot, item) => {
           if (getLocked() || item.classList.contains("is-placed")) return false;
           item.classList.add("is-placed");
           item.style.visibility = "hidden";
           filled++;
-          const pct = Math.round((filled / need) * 100);
-          stageEl.querySelector("#leBmcFill").style.setProperty("--fill", pct);
+          glass.insertAdjacentHTML("beforeend", `<i class="le-nm-bmc-ball c${filled % 5}"></i>`);
+          stageEl.querySelector("#leBmcJarFig").classList.toggle("is-full", filled >= need);
+          stageEl.querySelector("#leBmcJarFig").classList.remove("is-empty");
           slot.classList.toggle("is-full", filled >= need);
-          slot.classList.remove("is-empty");
           if (filled >= need) {
             say("Full!");
             onWin();
@@ -637,24 +798,26 @@
 
       /* ===== 6. Same & Different ===== */
       function exSameDiff(cfg, soft, onWin) {
-        const kinds = ["car", "star", "apple", "duck", "block"];
+        function fruitFig(k) {
+          if (k === "apple") return figApple();
+          if (k === "banana") return figBanana();
+          return `<span class="le-nm-bmc-match-dot is-${k}"></span>`;
+        }
         const findSame = soft || Math.random() > 0.4;
         if (findSame) {
-          const match = pick(kinds);
-          const other = pick(kinds.filter((k) => k !== match));
-          const items = tier() === 0
-            ? shuffle([{ k: match, pair: "a" }, { k: match, pair: "b" }, { k: other, pair: "x" }])
-            : shuffle([{ k: match, pair: "a" }, { k: match, pair: "b" }, { k: other, pair: "x" }, { k: pick(kinds.filter((k) => k !== match)), pair: "y" }]).slice(0, cfg.objects + 1);
-          promptEl.textContent = "Find two toys that are the same!";
-          say("Find two toys that are the same!");
+          // Soft / little: two red apples + one banana
+          const items = soft || tier() === 0
+            ? shuffle([{ k: "apple" }, { k: "apple" }, { k: "banana" }])
+            : shuffle([{ k: "apple" }, { k: "apple" }, { k: "banana" }, { k: "banana" }]).slice(0, Math.min(4, cfg.objects + 1));
+          promptEl.textContent = "Find two fruits that are the same!";
+          say("Find two red apples that are the same!");
           stageEl.innerHTML = `
             <div class="le-nm-bmc le-nm-bmc-discover">
-              <div class="le-nm-bmc-deco is-room" aria-hidden="true"></div>
               <div class="le-nm-bmc-match-row">
                 ${items.map((it, i) => `
-                  <button type="button" class="le-nm-bmc-match is-${it.k}" data-kind="${it.k}" data-i="${i}"></button>`).join("")}
+                  <button type="button" class="le-nm-bmc-match is-fruit is-${it.k}" data-kind="${it.k}" data-i="${i}">${fruitFig(it.k)}</button>`).join("")}
               </div>
-              <p class="le-nm-tap-hint">Tap two matching toys</p>
+              <p class="le-nm-tap-hint">Tap two matching fruits</p>
             </div>`;
           let first = null;
           stageEl.querySelectorAll(".le-nm-bmc-match").forEach((btn) => {
@@ -681,20 +844,18 @@
           });
           return;
         }
-        // Odd one out
-        const base = pick(kinds);
-        const odd = pick(kinds.filter((k) => k !== base));
-        const items = shuffle([base, base, base, odd]).slice(0, tier() === 0 ? 3 : 4);
-        if (!items.includes(odd)) items[items.length - 1] = odd;
+        // Odd one out: apples vs banana
+        const items = shuffle(["apple", "apple", "apple", "banana"]).slice(0, tier() === 0 ? 3 : 4);
+        if (!items.includes("banana")) items[items.length - 1] = "banana";
         promptEl.textContent = "Which one is different?";
         say("Which one is different?");
         stageEl.innerHTML = `
           <div class="le-nm-bmc le-nm-bmc-discover">
             <div class="le-nm-bmc-match-row">
-              ${items.map((k, i) => `
-                <button type="button" class="le-nm-bmc-match is-${k}" data-kind="${k}" data-odd="${k === odd ? 1 : 0}"></button>`).join("")}
+              ${items.map((k) => `
+                <button type="button" class="le-nm-bmc-match is-fruit is-${k}" data-kind="${k}" data-odd="${k === "banana" ? 1 : 0}">${fruitFig(k)}</button>`).join("")}
             </div>
-            <p class="le-nm-tap-hint">Tap the different one</p>
+            <p class="le-nm-tap-hint">Tap the different fruit</p>
           </div>`;
         stageEl.querySelectorAll(".le-nm-bmc-match").forEach((btn) => {
           btn.addEventListener("click", () => {
@@ -711,24 +872,26 @@
       /* ===== 7. Near & Far ===== */
       function exNearFar(cfg, soft, onWin) {
         const wantNear = Math.random() > 0.5;
-        const objs = soft || tier() === 0
-          ? [{ id: "tree", dist: "far" }, { id: "ball", dist: "near" }]
-          : shuffle([{ id: "tree", dist: "far" }, { id: "house", dist: "far" }, { id: "ball", dist: "near" }, { id: "flower", dist: "near" }]).slice(0, cfg.objects);
-        promptEl.textContent = wantNear ? "What is near the teddy?" : "What is far from the teddy?";
-        say(wantNear ? "What is near the teddy?" : "What is far from the teddy?");
+        promptEl.textContent = wantNear ? "Which bunny is near the house?" : "Which bunny is far from the house?";
+        say(promptEl.textContent);
         const moveMode = !soft && tier() > 0 && Math.random() > 0.5;
         if (!moveMode) {
           stageEl.innerHTML = `
             <div class="le-nm-bmc le-nm-bmc-playground">
               <div class="le-nm-bmc-scene-ground"></div>
-              <div class="le-nm-bmc-explorer" id="leBmcExplorer">${teddySVG(52)}</div>
-              <div class="le-nm-bmc-dist-row">
-                ${objs.map((o) => `
-                  <button type="button" class="le-nm-bmc-dist-obj is-${o.id} is-${o.dist}" data-dist="${o.dist}" aria-label="${o.dist} ${o.id}"></button>`).join("")}
+              <div class="le-nm-bmc-dist-scenes">
+                <button type="button" class="le-nm-bmc-dist-scene is-near" data-dist="near" aria-label="bunny near house">
+                  <span class="le-nm-bmc-dist-inner">${bunnySVG(48)}${figHouse()}</span>
+                  <em>Near</em>
+                </button>
+                <button type="button" class="le-nm-bmc-dist-scene is-far" data-dist="far" aria-label="bunny far from house">
+                  <span class="le-nm-bmc-dist-inner">${bunnySVG(36)}<span class="le-nm-bmc-gap"></span>${figHouse()}</span>
+                  <em>Far</em>
+                </button>
               </div>
-              <p class="le-nm-tap-hint">Tap the object that is ${wantNear ? "near" : "far"}</p>
+              <p class="le-nm-tap-hint">Tap the picture that shows ${wantNear ? "near" : "far"}</p>
             </div>`;
-          stageEl.querySelectorAll(".le-nm-bmc-dist-obj").forEach((btn) => {
+          stageEl.querySelectorAll(".le-nm-bmc-dist-scene").forEach((btn) => {
             btn.addEventListener("click", () => {
               if (getLocked()) return;
               const d = btn.getAttribute("data-dist");
@@ -736,34 +899,33 @@
                 btn.classList.add("is-win");
                 say(wantNear ? "Near!" : "Far!");
                 onWin();
-              } else onWrong(wantNear ? "Look closer to teddy!" : "Look farther away!");
+              } else onWrong(wantNear ? "Look for the bunny close to the house!" : "Look for the bunny far from the house!");
             });
           });
           return;
         }
-        promptEl.textContent = "Move teddy near the ball!";
-        say("Move teddy near the ball!");
+        promptEl.textContent = "Move the bunny near the house!";
+        say("Move the bunny near the house!");
         stageEl.innerHTML = `
           <div class="le-nm-bmc le-nm-bmc-playground">
             <div class="le-nm-bmc-scene-ground"></div>
-            <div class="le-nm-bmc-dist-obj is-ball is-far" id="leBmcBall" aria-hidden="true"></div>
-            <div class="le-nm-bmc-explorer is-movable" id="leBmcExplorer" style="--pos:0">${teddySVG(52)}</div>
+            <div class="le-nm-bmc-house-target" id="leBmcBall" aria-hidden="true">${figHouse()}</div>
+            <div class="le-nm-bmc-explorer is-movable" id="leBmcExplorer" style="--pos:0">${bunnySVG(52)}</div>
             <div class="le-nm-bmc-move-btns">
               <button type="button" class="le-nm-choice" id="leBmcCloser">Move closer</button>
               <button type="button" class="le-nm-choice" id="leBmcFarther">Move farther</button>
             </div>
-            <p class="le-nm-tap-hint">Move closer until teddy is near the ball</p>
+            <p class="le-nm-tap-hint">Move closer until the bunny is near the house</p>
           </div>`;
         let pos = 0;
         const explorer = stageEl.querySelector("#leBmcExplorer");
-        const ball = stageEl.querySelector("#leBmcBall");
+        const house = stageEl.querySelector("#leBmcBall");
         stageEl.querySelector("#leBmcCloser").addEventListener("click", () => {
           if (getLocked()) return;
           pos = Math.min(3, pos + 1);
           explorer.style.setProperty("--pos", pos);
           if (pos >= 3) {
-            ball.classList.remove("is-far");
-            ball.classList.add("is-near");
+            if (house) house.classList.add("is-near");
             explorer.classList.add("is-near");
             say("Near!");
             onWin();
@@ -780,31 +942,31 @@
       /* ===== 8. Inside & Outside ===== */
       function exInsideOut(cfg, soft, onWin) {
         const wantIn = Math.random() > 0.5;
-        const msg = wantIn ? "Put the ball inside the box!" : "Put the bunny outside the house!";
+        const msg = wantIn ? "Put the ball inside the box!" : "Put the ball outside the box!";
         promptEl.textContent = msg;
         say(msg);
-        const toy = wantIn ? "ball" : "bunny";
         stageEl.innerHTML = `
           <div class="le-nm-bmc le-nm-bmc-animal">
             <div class="le-nm-bmc-zones">
               <div class="le-nm-bmc-zone is-inside le-nm-bmc-slot" data-zone="inside">
                 <span class="le-nm-bmc-zone-label">Inside</span>
-                <span class="le-nm-bmc-box-house" aria-hidden="true"></span>
+                ${figBox()}
               </div>
               <div class="le-nm-bmc-zone is-outside le-nm-bmc-slot" data-zone="outside">
                 <span class="le-nm-bmc-zone-label">Outside</span>
+                ${figBox()}
               </div>
             </div>
             <div class="le-nm-bmc-pool">
-              <button type="button" class="le-nm-bmc-move-toy le-nm-bmc-drag is-${toy}" data-toy="${toy}" draggable="true"></button>
+              <button type="button" class="le-nm-bmc-move-toy le-nm-bmc-drag is-ball" data-toy="ball" draggable="true">${figBall()}</button>
             </div>
-            <p class="le-nm-tap-hint">Drag the ${toy} ${wantIn ? "inside" : "outside"}</p>
+            <p class="le-nm-tap-hint">Drag the ball ${wantIn ? "inside" : "outside"} the box</p>
           </div>`;
         const need = wantIn ? "inside" : "outside";
         bindDrag(stageEl, ".le-nm-bmc-drag", ".le-nm-bmc-zone", (slot, item) => {
           if (getLocked()) return false;
           if (slot.getAttribute("data-zone") !== need) {
-            onWrong(wantIn ? "Put it inside the box!" : "Place it outside!");
+            onWrong(wantIn ? "Put it inside the box!" : "Place it outside the box!");
             return false;
           }
           item.classList.add("is-placed");
@@ -821,17 +983,18 @@
         const wantAbove = Math.random() > 0.5;
         const placeMode = !soft && tier() > 0 && Math.random() > 0.4;
         if (!placeMode) {
-          promptEl.textContent = wantAbove ? "What is above the tree?" : "What is below the cloud?";
-          say(wantAbove ? "What is above the tree?" : "What is below the cloud?");
+          promptEl.textContent = wantAbove ? "What is above the tree?" : "What is below the tree?";
+          say(promptEl.textContent);
           stageEl.innerHTML = `
             <div class="le-nm-bmc le-nm-bmc-sky">
-              <button type="button" class="le-nm-bmc-sky-obj is-bird is-above" data-pos="above" aria-label="bird above"></button>
-              <div class="le-nm-bmc-sky-mid" aria-hidden="true">
-                <span class="le-nm-bmc-cloud"></span>
-                <span class="le-nm-bmc-tree"></span>
-              </div>
-              <button type="button" class="le-nm-bmc-sky-obj is-flower is-below" data-pos="below" aria-label="flower below"></button>
-              <p class="le-nm-tap-hint">Tap the object ${wantAbove ? "above" : "below"}</p>
+              <button type="button" class="le-nm-bmc-sky-obj is-bird is-above" data-pos="above" aria-label="bird above">
+                ${figBird()}
+              </button>
+              <div class="le-nm-bmc-sky-mid" aria-hidden="true">${figTree("mid")}</div>
+              <button type="button" class="le-nm-bmc-sky-obj is-bunny is-below" data-pos="below" aria-label="bunny below">
+                ${bunnySVG(44)}
+              </button>
+              <p class="le-nm-tap-hint">Tap who is ${wantAbove ? "above" : "below"} the tree</p>
             </div>`;
           stageEl.querySelectorAll(".le-nm-bmc-sky-obj").forEach((btn) => {
             btn.addEventListener("click", () => {
@@ -969,12 +1132,16 @@
           promptEl.textContent = want === "first" ? "Who is first in the race?"
             : want === "last" ? "Who is last?" : "Who is in the middle?";
           say(promptEl.textContent);
+          const posLabel = (i) => (i === 0 ? "First" : i === count - 1 ? "Last" : i === midIdx ? "Middle" : "");
           stageEl.innerHTML = `
             <div class="le-nm-bmc le-nm-bmc-race">
               <div class="le-nm-bmc-track-line" aria-hidden="true"></div>
               <div class="le-nm-bmc-racers">
                 ${line.map((a, i) => `
-                  <button type="button" class="le-nm-bmc-racer is-${a}" data-idx="${i}" aria-label="${a} position ${i + 1}"></button>`).join("")}
+                  <button type="button" class="le-nm-bmc-racer is-${a}" data-idx="${i}" aria-label="${a} ${posLabel(i)}">
+                    ${figAnimal(a)}
+                    <em class="le-nm-bmc-pos-tag">${posLabel(i)}</em>
+                  </button>`).join("")}
               </div>
               <p class="le-nm-tap-hint">Tap who is ${want}</p>
             </div>`;
@@ -1003,7 +1170,7 @@
             </div>
             <div class="le-nm-bmc-pool">
               ${pool.map((a) => `
-                <button type="button" class="le-nm-bmc-racer le-nm-bmc-drag is-${a}" data-animal="${a}" draggable="true"></button>`).join("")}
+                <button type="button" class="le-nm-bmc-racer le-nm-bmc-drag is-${a}" data-animal="${a}" draggable="true">${figAnimal(a)}</button>`).join("")}
             </div>
             <p class="le-nm-tap-hint">Drag each animal into the correct place</p>
           </div>`;
